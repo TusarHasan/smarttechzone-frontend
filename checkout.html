@@ -33,6 +33,7 @@
     </style>
     <script src="config.js"></script>
     <script src="cart.js"></script>
+    <script src="bd-locations.js"></script>
 </head>
 <body>
 
@@ -65,8 +66,15 @@
             <label class="required">সম্পূর্ণ ঠিকানা</label>
             <textarea id="custAddress" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
 
-            <label>শহর</label>
-            <input type="text" id="custCity" placeholder="যেমন: Dhaka">
+            <label class="required">জেলা</label>
+            <select id="custDistrict">
+                <option value="">জেলা নির্বাচন করুন</option>
+            </select>
+
+            <label class="required">উপজেলা / থানা</label>
+            <select id="custUpazila" disabled>
+                <option value="">আগে জেলা নির্বাচন করুন</option>
+            </select>
 
             <label>অর্ডার নোট (ঐচ্ছিক)</label>
             <textarea id="custNotes" placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন"></textarea>
@@ -105,6 +113,44 @@
             return 120;
         }
 
+        // ===== জেলা/উপজেলা ড্রপডাউন =====
+        function populateDistricts() {
+            const districtSelect = document.getElementById('custDistrict');
+            const sorted = [...BD_LOCATIONS].sort((a, b) => a.bn.localeCompare(b.bn, 'bn'));
+            sorted.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.en;
+                opt.textContent = d.bn;
+                districtSelect.appendChild(opt);
+            });
+        }
+
+        function populateUpazilas(districtEnName) {
+            const upazilaSelect = document.getElementById('custUpazila');
+            upazilaSelect.innerHTML = '';
+            const district = BD_LOCATIONS.find(d => d.en === districtEnName);
+
+            if (!district) {
+                upazilaSelect.innerHTML = '<option value="">আগে জেলা নির্বাচন করুন</option>';
+                upazilaSelect.disabled = true;
+                return;
+            }
+
+            upazilaSelect.disabled = false;
+            upazilaSelect.innerHTML = '<option value="">উপজেলা/থানা নির্বাচন করুন</option>';
+            district.upazilas.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.bn;
+                opt.textContent = u.bn;
+                upazilaSelect.appendChild(opt);
+            });
+        }
+
+        document.getElementById('custDistrict').addEventListener('change', function () {
+            populateUpazilas(this.value);
+            updateSummaryTotals();
+        });
+
         function renderSummary() {
             const cart = getCart();
             const container = document.getElementById('checkoutContainer');
@@ -131,8 +177,8 @@
 
         function updateSummaryTotals() {
             const subtotal = getCartTotal();
-            const city = document.getElementById('custCity').value;
-            const delivery = estimateDelivery(city);
+            const district = document.getElementById('custDistrict').value;
+            const delivery = estimateDelivery(district);
             const total = subtotal + delivery;
 
             document.getElementById('orderSummary').innerHTML = `
@@ -142,14 +188,18 @@
             `;
         }
 
-        document.getElementById('custCity').addEventListener('input', updateSummaryTotals);
+        populateDistricts();
 
         async function placeOrder() {
             const name = document.getElementById('custName').value.trim();
             const phone = document.getElementById('custPhone').value.trim();
             const email = document.getElementById('custEmail').value.trim();
             const address = document.getElementById('custAddress').value.trim();
-            const city = document.getElementById('custCity').value.trim();
+            const districtSelect = document.getElementById('custDistrict');
+            const upazilaSelect = document.getElementById('custUpazila');
+            const districtEn = districtSelect.value;
+            const districtBn = districtEn ? districtSelect.options[districtSelect.selectedIndex].textContent : '';
+            const upazilaBn = upazilaSelect.value;
             const notes = document.getElementById('custNotes').value.trim();
             const statusMsg = document.getElementById('statusMsg');
             const btn = document.getElementById('placeOrderBtn');
@@ -159,6 +209,14 @@
                 statusMsg.textContent = 'দয়া করে নাম, ফোন নাম্বার এবং ঠিকানা দিন।';
                 return;
             }
+            if (!districtEn || !upazilaBn) {
+                statusMsg.style.color = '#e74c3c';
+                statusMsg.textContent = 'দয়া করে জেলা এবং উপজেলা/থানা নির্বাচন করুন।';
+                return;
+            }
+
+            // ঠিকানায় উপজেলা ও জেলা যুক্ত করা হচ্ছে যাতে ডেলিভারি তথ্যে কিছু বাদ না যায়
+            const fullAddress = `${address}, ${upazilaBn}, ${districtBn}`;
 
             const cart = getCart();
             if (!cart.length) {
@@ -176,7 +234,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        customer: { name, phone, email, address, city, notes },
+                        customer: { name, phone, email, address: fullAddress, city: districtEn, notes },
                         items: cart.map(item => ({
                             productId: item.productId,
                             variantLabel: item.variantLabel,
