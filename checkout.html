@@ -63,30 +63,32 @@
 
         <div class="checkout-card">
             <h3>ডেলিভারি তথ্য</h3>
-            <label class="required">নাম</label>
-            <input type="text" id="custName" placeholder="আপনার পুরো নাম">
+            <form id="deliveryForm" autocomplete="on" onsubmit="return false;">
+                <label class="required">নাম</label>
+                <input type="text" id="custName" name="name" autocomplete="name" placeholder="আপনার পুরো নাম">
 
-            <label class="required">ফোন নাম্বার</label>
-            <input type="text" id="custPhone" placeholder="01XXXXXXXXX">
+                <label class="required">ফোন নাম্বার</label>
+                <input type="tel" id="custPhone" name="tel" autocomplete="tel" placeholder="01XXXXXXXXX">
 
-            <label>ইমেইল (ঐচ্ছিক)</label>
-            <input type="text" id="custEmail" placeholder="you@example.com">
+                <label>ইমেইল (ঐচ্ছিক)</label>
+                <input type="email" id="custEmail" name="email" autocomplete="email" placeholder="you@example.com">
 
-            <label class="required">সম্পূর্ণ ঠিকানা</label>
-            <textarea id="custAddress" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
+                <label class="required">সম্পূর্ণ ঠিকানা</label>
+                <textarea id="custAddress" name="street-address" autocomplete="street-address" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
 
-            <label class="required">জেলা</label>
-            <select id="custDistrict">
-                <option value="">জেলা নির্বাচন করুন</option>
-            </select>
+                <label class="required">জেলা</label>
+                <select id="custDistrict" name="address-level2" autocomplete="address-level2">
+                    <option value="">জেলা নির্বাচন করুন</option>
+                </select>
 
-            <label class="required">উপজেলা / থানা</label>
-            <select id="custUpazila" disabled>
-                <option value="">আগে জেলা নির্বাচন করুন</option>
-            </select>
+                <label class="required">উপজেলা / থানা</label>
+                <select id="custUpazila" name="address-level3" autocomplete="address-level3" disabled>
+                    <option value="">আগে জেলা নির্বাচন করুন</option>
+                </select>
 
-            <label>অর্ডার নোট (ঐচ্ছিক)</label>
-            <textarea id="custNotes" placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন"></textarea>
+                <label>অর্ডার নোট (ঐচ্ছিক)</label>
+                <textarea id="custNotes" placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন"></textarea>
+            </form>
         </div>
 
         <div class="checkout-card">
