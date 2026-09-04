@@ -19,6 +19,7 @@
         .product-card { animation: fadeInUp 0.35s ease both; }
     </style>
     <script src="config.js"></script>
+    <script src="cart.js"></script>
 </head>
 <body>
 
@@ -30,7 +31,7 @@
         </div>
         <div class="nav-icons">
             <a href="#">Login</a>
-            <a href="#">Cart (0)</a>
+            <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
         </div>
     </nav>
 
@@ -65,6 +66,11 @@
         function resolveImg(url) {
             if (!url) return 'https://via.placeholder.com/200';
             return url.startsWith('http') ? url : `${API_BASE}${url}`;
+        }
+
+        function quickAddToCart(productId, name, price, image) {
+            addToCart({ productId, name, price, variantLabel: '', image, quantity: 1 });
+            alert('কার্টে যোগ করা হয়েছে ✅');
         }
 
         let filteredProducts = [];
@@ -121,6 +127,7 @@
                     <img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/200'">
                     <h3>${p.name}</h3>
                     <div class="price">৳ ${p.price}</div>
+                    <button onclick="event.stopPropagation(); quickAddToCart('${p._id}', '${(p.name || '').replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}')" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:13px; margin-top:6px;">Add to Cart</button>
                 `;
                 grid.appendChild(card);
             });

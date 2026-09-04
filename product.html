@@ -128,6 +128,7 @@
     #loadingMsg, #errorMsg { text-align: center; padding: 60px 0; color: #888; }
 </style>
     <script src="config.js"></script>
+    <script src="cart.js"></script>
 </head>
 <body>
 <div class="container">
@@ -167,7 +168,7 @@
 
                 <div class="action-row">
                     <button class="btn-buy" onclick="buyNow()">Buy Now</button>
-                    <button class="btn-cart" onclick="addToCart()">Add to Cart</button>
+                    <button class="btn-cart" onclick="addCurrentToCart()">Add to Cart</button>
                 </div>
             </div>
         </div>
@@ -480,12 +481,45 @@
         document.getElementById('qtyValue').textContent = quantity;
     }
 
-    function buyNow() {
-        alert('Buy Now ফিচারটা এখনো তৈরি হয়নি — Payment gateway যোগ করার সময় এটা সক্রিয় করা হবে।');
+    function getSelectedVariantInfo() {
+        const variants = currentProduct.variants || [];
+        if (!variants.length) {
+            return {
+                price: currentProduct.price,
+                variantLabel: '',
+                image: (currentProduct.images && currentProduct.images[0]) || ''
+            };
+        }
+        const v = findMatchingVariant();
+        if (!v) {
+            return {
+                price: currentProduct.price,
+                variantLabel: '',
+                image: (currentProduct.images && currentProduct.images[0]) || ''
+            };
+        }
+        const image = (v.images && v.images[0]) || (currentProduct.images && currentProduct.images[0]) || '';
+        // "Default" নামের variant থাকলে সেটাকে আলাদা variant হিসেবে না দেখিয়ে মূল প্রোডাক্ট হিসেবেই কার্টে রাখা হচ্ছে
+        return { price: v.price, variantLabel: v.label && v.label !== 'Default' ? v.label : '', image };
     }
 
-    function addToCart() {
-        alert('Add to Cart ফিচারটা এখনো তৈরি হয়নি — শীঘ্রই যোগ করা হবে।');
+    function addCurrentToCart() {
+        if (!currentProduct) return;
+        const info = getSelectedVariantInfo();
+        addToCart({
+            productId: currentProduct._id,
+            name: currentProduct.name,
+            price: info.price,
+            variantLabel: info.variantLabel,
+            image: resolveImageUrl(info.image),
+            quantity: quantity
+        });
+        alert('✅ কার্টে যোগ করা হয়েছে।');
+    }
+
+    function buyNow() {
+        addCurrentToCart();
+        window.location.href = 'cart.html';
     }
 
     function starsHtml(rating) {

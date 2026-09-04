@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>চেকআউট - Smart Tech Zone</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .checkout-container { max-width: 700px; margin: 30px auto; padding: 0 20px; }
+        .checkout-card { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .checkout-card h3 { margin-top: 0; font-size: 16px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .checkout-card label { display: block; margin-top: 14px; font-size: 13px; font-weight: bold; color: #333; }
+        .checkout-card input, .checkout-card textarea, .checkout-card select {
+            width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ccc; border-radius: 4px;
+            box-sizing: border-box; font-family: Arial, sans-serif; font-size: 14px;
+        }
+        .checkout-card textarea { min-height: 70px; resize: vertical; }
+        .required::after { content: " *"; color: #e74c3c; }
+        .order-item-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f5f5f5; }
+        .order-item-name { color: #333; }
+        .order-item-name small { display: block; color: #999; font-size: 12px; }
+        .order-summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; color: #555; }
+        .order-summary-row.total { font-size: 18px; font-weight: bold; color: #333; border-top: 1px solid #eee; margin-top: 8px; padding-top: 12px; }
+        .place-order-btn {
+            width: 100%; margin-top: 10px; background: #e74c3c; color: #fff; border: none; padding: 14px;
+            font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer;
+        }
+        .place-order-btn:hover { background: #c0392b; }
+        .place-order-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        #statusMsg { margin-top: 12px; font-size: 14px; text-align: center; }
+        .empty-cart { text-align: center; padding: 60px 20px; color: #888; }
+        .empty-cart a { color: #e74c3c; font-weight: bold; text-decoration: none; }
+    </style>
+    <script src="config.js"></script>
+    <script src="cart.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <a href="#">Login</a>
+            <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
+        </div>
+    </nav>
+
+    <div class="checkout-container" id="checkoutContainer">
+        <h2 style="color:#333;">চেকআউট</h2>
+
+        <div class="checkout-card">
+            <h3>ডেলিভারি তথ্য</h3>
+            <label class="required">নাম</label>
+            <input type="text" id="custName" placeholder="আপনার পুরো নাম">
+
+            <label class="required">ফোন নাম্বার</label>
+            <input type="text" id="custPhone" placeholder="01XXXXXXXXX">
+
+            <label>ইমেইল (ঐচ্ছিক)</label>
+            <input type="text" id="custEmail" placeholder="you@example.com">
+
+            <label class="required">সম্পূর্ণ ঠিকানা</label>
+            <textarea id="custAddress" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
+
+            <label>শহর</label>
+            <input type="text" id="custCity" placeholder="যেমন: Dhaka">
+
+            <label>অর্ডার নোট (ঐচ্ছিক)</label>
+            <textarea id="custNotes" placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন"></textarea>
+        </div>
+
+        <div class="checkout-card">
+            <h3>অর্ডার সামারি</h3>
+            <div id="orderItemsList"></div>
+            <div id="orderSummary"></div>
+        </div>
+
+        <button class="place-order-btn" id="placeOrderBtn" onclick="placeOrder()">অর্ডার করুন — পেমেন্টে যান</button>
+        <div id="statusMsg"></div>
+    </div>
+
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+
+    <script>
+        const API_BASE = BACKEND_URL;
+
+        function resolveImg(url) {
+            if (!url) return 'https://via.placeholder.com/100';
+            return url.startsWith('http') ? url : `${API_BASE}${url}`;
+        }
+
+        function formatPrice(n) {
+            return Number(n).toLocaleString('en-IN');
+        }
+
+        function estimateDelivery(city) {
+            if (!city) return 120;
+            const c = city.trim().toLowerCase();
+            if (c.includes('dhaka') || c.includes('ঢাকা')) return 70;
+            return 120;
+        }
+
+        function renderSummary() {
+            const cart = getCart();
+            const container = document.getElementById('checkoutContainer');
+
+            if (!cart.length) {
+                container.innerHTML = `
+                    <div class="empty-cart">
+                        আপনার কার্ট খালি — অর্ডার করার আগে কিছু প্রোডাক্ট কার্টে যোগ করুন।<br><br>
+                        <a href="index.html">কেনাকাটা শুরু করুন →</a>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('orderItemsList').innerHTML = cart.map(item => `
+                <div class="order-item-row">
+                    <span class="order-item-name">${item.name}${item.variantLabel ? `<small>${item.variantLabel} × ${item.quantity}</small>` : `<small>× ${item.quantity}</small>`}</span>
+                    <span>৳ ${formatPrice(item.price * item.quantity)}</span>
+                </div>
+            `).join('');
+
+            updateSummaryTotals();
+        }
+
+        function updateSummaryTotals() {
+            const subtotal = getCartTotal();
+            const city = document.getElementById('custCity').value;
+            const delivery = estimateDelivery(city);
+            const total = subtotal + delivery;
+
+            document.getElementById('orderSummary').innerHTML = `
+                <div class="order-summary-row"><span>সাবটোটাল</span><span>৳ ${formatPrice(subtotal)}</span></div>
+                <div class="order-summary-row"><span>ডেলিভারি চার্জ</span><span>৳ ${formatPrice(delivery)}</span></div>
+                <div class="order-summary-row total"><span>মোট</span><span>৳ ${formatPrice(total)}</span></div>
+            `;
+        }
+
+        document.getElementById('custCity').addEventListener('input', updateSummaryTotals);
+
+        async function placeOrder() {
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const email = document.getElementById('custEmail').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            const city = document.getElementById('custCity').value.trim();
+            const notes = document.getElementById('custNotes').value.trim();
+            const statusMsg = document.getElementById('statusMsg');
+            const btn = document.getElementById('placeOrderBtn');
+
+            if (!name || !phone || !address) {
+                statusMsg.style.color = '#e74c3c';
+                statusMsg.textContent = 'দয়া করে নাম, ফোন নাম্বার এবং ঠিকানা দিন।';
+                return;
+            }
+
+            const cart = getCart();
+            if (!cart.length) {
+                statusMsg.style.color = '#e74c3c';
+                statusMsg.textContent = 'কার্ট খালি।';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'প্রসেস হচ্ছে...';
+            statusMsg.textContent = '';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/orders/checkout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customer: { name, phone, email, address, city, notes },
+                        items: cart.map(item => ({
+                            productId: item.productId,
+                            variantLabel: item.variantLabel,
+                            quantity: item.quantity
+                        }))
+                    })
+                });
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error || 'অর্ডার করা যায়নি।');
+
+                // পেমেন্ট গেটওয়েতে পাঠানোর আগে কার্ট খালি করা হচ্ছে
+                clearCart();
+                window.location.href = data.paymentUrl;
+
+            } catch (err) {
+                statusMsg.style.color = '#e74c3c';
+                statusMsg.textContent = '❌ ' + err.message;
+                btn.disabled = false;
+                btn.textContent = 'অর্ডার করুন — পেমেন্টে যান';
+            }
+        }
+
+        renderSummary();
+    </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>অর্ডার সফল হয়েছে - Smart Tech Zone</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .result-container { max-width: 600px; margin: 60px auto; padding: 0 20px; text-align: center; }
+        .result-card {
+            background: #fff; border-radius: 10px; padding: 40px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .result-icon { font-size: 56px; margin-bottom: 10px; }
+        .result-card h2 { color: #27ae60; margin: 10px 0; }
+        .order-number-box {
+            background: #f7f9fa; border: 1px dashed #ccc; border-radius: 6px; padding: 14px;
+            margin: 20px 0; font-size: 18px; font-weight: bold; color: #333; letter-spacing: 0.5px;
+        }
+        .result-note { color: #666; font-size: 14px; line-height: 1.7; }
+        .result-actions { margin-top: 26px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .result-actions a {
+            display: inline-block; padding: 12px 24px; border-radius: 6px; text-decoration: none;
+            font-weight: bold; font-size: 14px;
+        }
+        .btn-primary { background: #e74c3c; color: #fff; }
+        .btn-secondary { background: #f0f0f0; color: #333; }
+    </style>
+    <script src="config.js"></script>
+    <script src="cart.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <a href="#">Login</a>
+            <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
+        </div>
+    </nav>
+
+    <div class="result-container">
+        <div class="result-card">
+            <div class="result-icon">✅</div>
+            <h2>অর্ডার সফলভাবে সম্পন্ন হয়েছে!</h2>
+            <div class="order-number-box" id="orderNumberBox">অর্ডার নাম্বার: ...</div>
+            <p class="result-note">
+                আপনার পেমেন্ট সফলভাবে সম্পন্ন হয়েছে এবং অর্ডারটি প্রসেসিংয়ে পাঠানো হয়েছে।<br>
+                অর্ডার ট্র্যাক করতে আপনার ফোন নাম্বার এবং উপরের অর্ডার নাম্বারটি ব্যবহার করুন।<br>
+                কোনো প্রশ্ন থাকলে আমাদের সাথে যোগাযোগ করুন।
+            </p>
+            <div class="result-actions">
+                <a href="track.html" class="btn-primary">অর্ডার ট্র্যাক করুন</a>
+                <a href="index.html" class="btn-secondary">কেনাকাটা চালিয়ে যান</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const orderNumber = params.get('order') || params.get('tran_id') || '';
+        document.getElementById('orderNumberBox').textContent = orderNumber
+            ? `অর্ডার নাম্বার: ${orderNumber}`
+            : 'অর্ডার সম্পন্ন হয়েছে';
+    </script>
+</body>
+</html>

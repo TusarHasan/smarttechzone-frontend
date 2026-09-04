@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>পেমেন্ট ব্যর্থ হয়েছে - Smart Tech Zone</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .result-container { max-width: 600px; margin: 60px auto; padding: 0 20px; text-align: center; }
+        .result-card {
+            background: #fff; border-radius: 10px; padding: 40px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .result-icon { font-size: 56px; margin-bottom: 10px; }
+        .result-card h2 { color: #e74c3c; margin: 10px 0; }
+        .order-number-box {
+            background: #f7f9fa; border: 1px dashed #ccc; border-radius: 6px; padding: 14px;
+            margin: 20px 0; font-size: 16px; font-weight: bold; color: #333; letter-spacing: 0.5px;
+        }
+        .result-note { color: #666; font-size: 14px; line-height: 1.7; }
+        .result-actions { margin-top: 26px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .result-actions a {
+            display: inline-block; padding: 12px 24px; border-radius: 6px; text-decoration: none;
+            font-weight: bold; font-size: 14px;
+        }
+        .btn-primary { background: #e74c3c; color: #fff; }
+        .btn-secondary { background: #f0f0f0; color: #333; }
+    </style>
+    <script src="config.js"></script>
+    <script src="cart.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <a href="#">Login</a>
+            <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
+        </div>
+    </nav>
+
+    <div class="result-container">
+        <div class="result-card">
+            <div class="result-icon" id="resultIcon">❌</div>
+            <h2 id="resultTitle">পেমেন্ট ব্যর্থ হয়েছে</h2>
+            <div class="order-number-box" id="orderNumberBox" style="display:none;"></div>
+            <p class="result-note" id="resultNote">
+                দুঃখিত, আপনার পেমেন্ট সম্পন্ন করা যায়নি। অর্ডারটি সংরক্ষিত আছে, তবে পেমেন্ট ছাড়া প্রসেস করা হবে না।<br>
+                অনুগ্রহ করে আবার চেষ্টা করুন অথবা অন্য কোনো পেমেন্ট পদ্ধতি ব্যবহার করুন।
+            </p>
+            <div class="result-actions">
+                <a href="cart.html" class="btn-primary">কার্টে ফিরে যান</a>
+                <a href="index.html" class="btn-secondary">কেনাকাটা চালিয়ে যান</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const orderNumber = params.get('order') || params.get('tran_id') || '';
+        const cancelled = params.get('cancelled');
+
+        if (orderNumber) {
+            const box = document.getElementById('orderNumberBox');
+            box.style.display = 'block';
+            box.textContent = `অর্ডার নাম্বার: ${orderNumber}`;
+        }
+
+        if (cancelled) {
+            document.getElementById('resultIcon').textContent = '⚠️';
+            document.getElementById('resultTitle').textContent = 'পেমেন্ট বাতিল করা হয়েছে';
+            document.getElementById('resultNote').innerHTML =
+                'আপনি পেমেন্ট প্রক্রিয়াটি বাতিল করেছেন। কোনো টাকা কাটা হয়নি।<br>চাইলে আবার অর্ডার করতে পারেন।';
+        }
+    </script>
+</body>
+</html>
