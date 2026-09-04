@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>Product Details - SmartTechZone</title>
+<style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 30px; }
+    .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .product-layout { display: flex; gap: 30px; flex-wrap: wrap; }
+    .image-section { flex: 1; min-width: 280px; }
+    .main-image { width: 100%; border-radius: 8px; border: 1px solid #eee; }
+    .thumb-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .thumb-row img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; }
+    .info-section { flex: 1; min-width: 280px; }
+    h1 { font-size: 22px; color: #333; margin-top: 0; }
+    .price-block { margin: 14px 0; }
+    .price { font-size: 26px; color: #e74c3c; font-weight: bold; }
+    .original-price { font-size: 14px; color: #999; text-decoration: line-through; font-weight: normal; }
+    .discount-badge { font-size: 13px; color: #e74c3c; background: #fdf1f0; padding: 1px 6px; border-radius: 3px; margin-left: 8px; font-weight: bold; }
+    .meta { color: #666; font-size: 14px; margin-bottom: 6px; }
+    .attr-group { margin-top: 16px; }
+    .attr-group-label { font-size: 13px; color: #666; font-weight: bold; }
+    .attr-selected-value { font-size: 13px; color: #333; margin-bottom: 8px; }
+    .attr-swatch-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .attr-swatch {
+        width: 36px; height: 36px; padding: 2px; box-sizing: border-box;
+        border: 1px solid #ddd; border-radius: 4px; cursor: pointer; background: #fff;
+    }
+    .attr-swatch img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; display: block; }
+    .attr-swatch.active { border-color: #e74c3c; border-width: 2px; padding: 1px; }
+    .attr-btn-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .attr-btn {
+        display: inline-flex; align-items: center; padding: 6px 14px;
+        border: 1px solid #ddd; border-radius: 4px;
+        cursor: pointer; background: #fff; font-size: 13px;
+    }
+    .attr-btn.active { border-color: #e74c3c; color: #e74c3c; background: #fdf1f0; }
+    .qty-row { display: flex; align-items: center; gap: 15px; margin-top: 16px; }
+    .qty-box { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; }
+    .qty-box button { padding: 6px 14px; background: #f5f5f5; border: none; cursor: pointer; font-size: 16px; }
+    .qty-box span { padding: 0 15px; font-weight: bold; }
+    .action-row { display: flex; gap: 15px; margin-top: 20px; }
+    .btn-buy { flex: 1; background: #2bbef9; color: #fff; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+    .btn-cart { flex: 1; background: #e74c3c; color: #fff; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+    .stock-note { font-size: 13px; color: #888; margin-top: 6px; }
+
+    .lower-section { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+    .section-title { font-size: 17px; color: #333; margin: 0 0 14px; font-weight: bold; }
+    .description { line-height: 1.7; color: #444; white-space: pre-wrap; font-size: 14px; }
+    .description.collapsed { max-height: 260px; overflow: hidden; position: relative; }
+    .description.collapsed::after {
+        content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+        background: linear-gradient(to bottom, transparent, #fff);
+    }
+    .view-more-btn {
+        display: block; margin: 14px auto 0; background: #fff; border: 1px solid #e74c3c; color: #e74c3c;
+        padding: 8px 24px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;
+    }
+
+    .spec-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+    .spec-table tr { border-bottom: 1px solid #f0f0f0; }
+    .spec-table td { padding: 10px 8px; }
+    .spec-table td:first-child { color: #888; width: 160px; }
+    .spec-table td:last-child { color: #333; font-weight: bold; }
+
+    .box-content { font-size: 14px; color: #444; margin-top: 8px; }
+
+    .review-summary { display: flex; gap: 40px; align-items: center; flex-wrap: wrap; }
+    .review-score-box { text-align: center; min-width: 100px; }
+    .review-score-num { font-size: 40px; font-weight: bold; color: #333; }
+    .review-score-max { font-size: 16px; color: #999; }
+    .review-stars-display { color: #f5a623; font-size: 18px; margin: 6px 0; }
+    .review-count-text { font-size: 13px; color: #888; }
+    .review-breakdown { flex: 1; min-width: 220px; }
+    .breakdown-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+    .breakdown-row .star-num { width: 40px; color: #666; }
+    .breakdown-bar-bg { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+    .breakdown-bar-fill { height: 100%; background: #f5a623; }
+    .breakdown-row .count { width: 30px; text-align: right; color: #888; }
+
+    .review-list { margin-top: 24px; }
+    .review-item { padding: 16px 0; border-bottom: 1px solid #f0f0f0; }
+    .review-item-header { display: flex; justify-content: space-between; align-items: center; }
+    .review-customer { font-weight: bold; font-size: 14px; color: #333; }
+    .review-date { font-size: 12px; color: #999; }
+    .review-stars { color: #f5a623; font-size: 14px; margin: 4px 0; }
+    .review-comment { font-size: 14px; color: #444; line-height: 1.6; }
+    .no-reviews { color: #888; font-size: 14px; padding: 20px 0; }
+
+    .write-review-box { margin-top: 24px; padding: 18px; background: #fafafa; border-radius: 8px; }
+    .write-review-box h4 { margin: 0 0 12px; font-size: 15px; color: #333; }
+    .star-input { font-size: 26px; cursor: pointer; }
+    .star-input span { color: #ddd; margin-right: 4px; }
+    .star-input span.selected { color: #f5a623; }
+    .write-review-box input[type=text], .write-review-box textarea {
+        width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ddd; border-radius: 4px;
+        font-family: Arial, sans-serif; font-size: 14px; box-sizing: border-box;
+    }
+    .write-review-box textarea { min-height: 70px; resize: vertical; }
+    .submit-review-btn {
+        margin-top: 12px; background: #e74c3c; color: #fff; border: none; padding: 10px 24px;
+        border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;
+    }
+    .review-status-msg { margin-top: 10px; font-size: 13px; }
+
+    .qa-list { margin-top: 10px; }
+    .qa-item { padding: 14px 0; border-bottom: 1px solid #f0f0f0; }
+    .qa-question { font-size: 14px; color: #333; font-weight: bold; }
+    .qa-question::before { content: 'Q: '; color: #e74c3c; }
+    .qa-meta { font-size: 12px; color: #999; margin-top: 2px; }
+    .qa-answer { font-size: 14px; color: #444; margin-top: 8px; padding: 10px 12px; background: #f7f7f7; border-radius: 4px; }
+    .qa-answer::before { content: 'A: '; color: #27ae60; font-weight: bold; }
+    .qa-no-answer { font-size: 13px; color: #aaa; margin-top: 6px; font-style: italic; }
+    .no-questions { color: #888; font-size: 14px; padding: 10px 0; }
+    .ask-question-box { margin-top: 20px; padding: 18px; background: #fafafa; border-radius: 8px; }
+    .ask-question-box h4 { margin: 0 0 12px; font-size: 15px; color: #333; }
+    .ask-question-box input[type=text], .ask-question-box textarea {
+        width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ddd; border-radius: 4px;
+        font-family: Arial, sans-serif; font-size: 14px; box-sizing: border-box;
+    }
+    .ask-question-box textarea { min-height: 60px; resize: vertical; }
+    .submit-question-btn {
+        margin-top: 12px; background: #2bbef9; color: #fff; border: none; padding: 10px 24px;
+        border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;
+    }
+    .question-status-msg { margin-top: 10px; font-size: 13px; }
+
+    #loadingMsg, #errorMsg { text-align: center; padding: 60px 0; color: #888; }
+</style>
+    <script src="config.js"></script>
+</head>
+<body>
+<div class="container">
+    <div id="loadingMsg">লোড হচ্ছে...</div>
+    <div id="errorMsg" style="display:none;">প্রোডাক্টটি খুঁজে পাওয়া যায়নি।</div>
+
+    <div id="productContent" style="display:none;">
+        <div class="product-layout">
+            <div class="image-section">
+                <img id="mainImage" class="main-image" src="" onerror="this.src='https://via.placeholder.com/400?text=No+Image'">
+                <div class="thumb-row" id="thumbRow"></div>
+            </div>
+            <div class="info-section">
+                <h1 id="productName"></h1>
+                <div class="meta">Brand: <span id="productBrand"></span> | Model: <span id="productModel"></span></div>
+                <div class="meta">Part Type: <span id="productPartType"></span></div>
+                <div class="price-block">
+                    <div class="price">৳<span id="productPrice"></span></div>
+                    <div id="originalPriceWrap" style="display:none;">
+                        <span class="original-price">৳<span id="originalPrice"></span></span>
+                        <span class="discount-badge" id="discountBadge"></span>
+                    </div>
+                </div>
+
+                <div id="attrGroupsWrapper"></div>
+
+                <div class="stock-note" id="stockNote"></div>
+
+                <div class="qty-row">
+                    <label style="font-weight:bold; font-size:14px;">Quantity:</label>
+                    <div class="qty-box">
+                        <button onclick="updateQty(-1)">-</button>
+                        <span id="qtyValue">1</span>
+                        <button onclick="updateQty(1)">+</button>
+                    </div>
+                </div>
+
+                <div class="action-row">
+                    <button class="btn-buy" onclick="buyNow()">Buy Now</button>
+                    <button class="btn-cart" onclick="addToCart()">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="lower-section">
+            <div class="section-title">Product Description</div>
+            <div class="description collapsed" id="productDescription"></div>
+            <button class="view-more-btn" id="viewMoreBtn" onclick="toggleDescription()">VIEW MORE</button>
+        </div>
+
+        <div class="lower-section" id="specSection">
+            <div class="section-title">Specifications</div>
+            <table class="spec-table" id="specTable"></table>
+        </div>
+
+        <div class="lower-section" id="boxSection">
+            <div class="section-title">What's in the Box</div>
+            <div class="box-content" id="boxContent"></div>
+        </div>
+
+        <div class="lower-section">
+            <div class="section-title">Ratings &amp; Reviews</div>
+            <div class="review-summary">
+                <div class="review-score-box">
+                    <span class="review-score-num" id="reviewAvg">0</span><span class="review-score-max">/5</span>
+                    <div class="review-stars-display" id="reviewAvgStars"></div>
+                    <div class="review-count-text" id="reviewCountText">0 Ratings</div>
+                </div>
+                <div class="review-breakdown" id="reviewBreakdown"></div>
+            </div>
+
+            <div class="review-list" id="reviewList"></div>
+
+            <div class="write-review-box">
+                <h4>Write a Review</h4>
+                <div class="star-input" id="starInput">
+                    <span data-val="1">&#9733;</span><span data-val="2">&#9733;</span><span data-val="3">&#9733;</span><span data-val="4">&#9733;</span><span data-val="5">&#9733;</span>
+                </div>
+                <input type="text" id="reviewerName" placeholder="আপনার নাম">
+                <textarea id="reviewComment" placeholder="প্রোডাক্ট নিয়ে আপনার মতামত লিখুন (ঐচ্ছিক)"></textarea>
+                <button class="submit-review-btn" onclick="submitReview()">Submit Review</button>
+                <div class="review-status-msg" id="reviewStatusMsg"></div>
+            </div>
+        </div>
+
+        <div class="lower-section">
+            <div class="section-title">Questions about this product</div>
+            <div class="qa-list" id="qaList"></div>
+
+            <div class="ask-question-box">
+                <h4>Ask a Question</h4>
+                <input type="text" id="askerName" placeholder="আপনার নাম">
+                <textarea id="questionText" placeholder="প্রোডাক্টটা নিয়ে আপনার প্রশ্ন লিখুন..."></textarea>
+                <button class="submit-question-btn" onclick="submitQuestion()">Submit Question</button>
+                <div class="question-status-msg" id="questionStatusMsg"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = BACKEND_URL;
+
+    function resolveImageUrl(url) {
+        if (!url) return 'https://via.placeholder.com/400?text=No+Image';
+        return url.startsWith('http') ? url : `${API_BASE}${url}`;
+    }
+
+    function formatPrice(n) {
+        return Number(n).toLocaleString('en-IN');
+    }
+
+    function updatePriceDisplay(price, originalPrice) {
+        const wrap = document.getElementById('originalPriceWrap');
+        if (originalPrice && originalPrice > price) {
+            document.getElementById('originalPrice').textContent = formatPrice(originalPrice);
+            const pct = Math.round(((originalPrice - price) / originalPrice) * 100);
+            document.getElementById('discountBadge').textContent = `-${pct}%`;
+            wrap.style.display = 'block';
+        } else {
+            wrap.style.display = 'none';
+        }
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('id');
+    let quantity = 1;
+    let currentProduct = null;
+    let selectedAttrs = {};
+    let selectedStars = 0;
+
+    async function loadProduct() {
+        if (!productId) {
+            showError();
+            return;
+        }
+        try {
+            const res = await fetch(`${API_BASE}/api/products/${productId}`);
+            if (!res.ok) {
+                showError();
+                return;
+            }
+            const product = await res.json();
+            currentProduct = product;
+            renderProduct(product);
+            loadReviews();
+            loadQuestions();
+        } catch (err) {
+            showError();
+        }
+    }
+
+    function renderProduct(product) {
+        document.getElementById('loadingMsg').style.display = 'none';
+        document.getElementById('productContent').style.display = 'block';
+
+        document.getElementById('productName').textContent = product.name;
+        document.getElementById('productBrand').textContent = product.brand || '-';
+        document.getElementById('productModel').textContent = product.model || '-';
+        document.getElementById('productPartType').textContent = product.partType || '-';
+        document.getElementById('productPrice').textContent = formatPrice(product.price);
+        updatePriceDisplay(product.price, product.originalPrice);
+
+        const descBox = document.getElementById('productDescription');
+        const viewMoreBtn = document.getElementById('viewMoreBtn');
+        descBox.textContent = product.description || 'এই প্রোডাক্টের জন্য এখনো কোনো বিস্তারিত বিবরণ যোগ করা হয়নি।';
+        if ((product.description || '').length < 400) {
+            descBox.classList.remove('collapsed');
+            viewMoreBtn.style.display = 'none';
+        } else {
+            descBox.classList.add('collapsed');
+            viewMoreBtn.style.display = 'block';
+            viewMoreBtn.textContent = 'VIEW MORE';
+        }
+
+        const specRows = [];
+        if (product.brand) specRows.push(['Brand', product.brand]);
+        if (product.sku) specRows.push(['SKU', product.sku]);
+        if (product.model) specRows.push(['Model', product.model]);
+        const specTable = document.getElementById('specTable');
+        if (specRows.length) {
+            specTable.innerHTML = specRows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+            document.getElementById('specSection').style.display = 'block';
+        } else {
+            document.getElementById('specSection').style.display = 'none';
+        }
+
+        if (product.whatsInBox) {
+            document.getElementById('boxContent').textContent = product.whatsInBox;
+            document.getElementById('boxSection').style.display = 'block';
+        } else {
+            document.getElementById('boxSection').style.display = 'none';
+        }
+
+        const images = (product.images && product.images.length) ? product.images.map(resolveImageUrl) : [];
+        const mainImg = document.getElementById('mainImage');
+        mainImg.src = images.length ? images[0] : 'https://via.placeholder.com/400?text=No+Image';
+
+        const thumbRow = document.getElementById('thumbRow');
+        thumbRow.innerHTML = images.map(url =>
+            `<img src="${url}" onerror="this.src='https://via.placeholder.com/100?text=No+Image'" onclick="document.getElementById('mainImage').src=this.src">`
+        ).join('');
+
+        renderAttributeGroups(product);
+    }
+
+    function renderAttributeGroups(product) {
+        const wrapper = document.getElementById('attrGroupsWrapper');
+        wrapper.innerHTML = '';
+
+        const variants = product.variants || [];
+        const hasAttributes = variants.length && variants[0].attributes && variants[0].attributes.length;
+
+        if (!hasAttributes) {
+            if (variants.length > 1 || (variants.length === 1 && variants[0].label !== 'Default')) {
+                const group = document.createElement('div');
+                group.className = 'attr-group';
+                group.innerHTML = `<div class="attr-group-label">Variant</div><div class="attr-btn-grid">` +
+                    variants.map((v, i) => `
+                        <span class="attr-btn" onclick="selectLegacyVariant(${i})" id="legacy-btn-${i}">
+                            <img src="${resolveImageUrl((v.images && v.images[0]) || product.images[0])}" onerror="this.style.display='none'">
+                            <span>${v.label}</span>
+                        </span>
+                    `).join('') + `</div>`;
+                wrapper.appendChild(group);
+            }
+            return;
+        }
+
+        const attrNames = [];
+        variants[0].attributes.forEach(a => {
+            if (!attrNames.includes(a.name)) attrNames.push(a.name);
+        });
+
+        selectedAttrs = {};
+        attrNames.forEach(name => {
+            const first = variants[0].attributes.find(a => a.name === name);
+            if (first) selectedAttrs[name] = first.value;
+        });
+
+        let thumbAlreadyShown = false;
+        attrNames.forEach(name => {
+            const values = [];
+            variants.forEach(v => {
+                const found = (v.attributes || []).find(a => a.name === name);
+                if (found && !values.includes(found.value)) values.push(found.value);
+            });
+
+            const group = document.createElement('div');
+            group.className = 'attr-group';
+            // শুধু প্রথম যেই attribute কে "Option"/"Color" মনে হচ্ছে, সেটাতেই ছবি দেখানো হবে —
+            // একই প্রোডাক্টে একাধিক attribute (যেমন Option 1, Option 2) একসাথে "option" শব্দ ধারণ করলেও
+            // দ্বিতীয়টায় আর ছবি দেখানো হবে না (ডুপ্লিকেট ছবি এড়াতে)
+            const wantsThumb = name.toLowerCase().includes('option') || name.toLowerCase().includes('color');
+            const showThumb = wantsThumb && !thumbAlreadyShown;
+            if (showThumb) thumbAlreadyShown = true;
+            const currentVal = selectedAttrs[name] || '';
+
+            if (showThumb) {
+                // Daraz এর মতো: উপরে লেবেল + বর্তমান মান (টেক্সট), নিচে শুধু ছোট ছবির swatch (টেক্সট ছাড়া)
+                group.innerHTML = `<span class="attr-group-label">${name}</span> <span class="attr-selected-value" id="selectedValue-${name.replace(/\s+/g, '_')}">${currentVal}</span>
+                    <div class="attr-swatch-row">` +
+                    values.map(val => {
+                        const matchingVariant = variants.find(v => (v.attributes || []).some(a => a.name === name && a.value === val));
+                        const thumbUrl = matchingVariant && matchingVariant.images && matchingVariant.images.length
+                            ? resolveImageUrl(matchingVariant.images[0]) : resolveImageUrl(product.images[0]);
+                        const safeId = `attr-${name.replace(/\s+/g, '_')}-${val.replace(/\s+/g, '_')}`;
+                        return `<span class="attr-swatch" onclick="selectAttribute('${name.replace(/'/g, "\\'")}', '${val.replace(/'/g, "\\'")}')" id="${safeId}" title="${val}">
+                            <img src="${thumbUrl}" onerror="this.style.display='none'">
+                        </span>`;
+                    }).join('') + `</div>`;
+            } else {
+                // টেক্সট-ভিত্তিক attribute (যেমন Model) — শুধু টেক্সট বক্স, ছবি ছাড়া
+                group.innerHTML = `<div class="attr-group-label" style="margin-bottom:8px;">${name}</div><div class="attr-btn-grid">` +
+                    values.map(val => {
+                        const safeId = `attr-${name.replace(/\s+/g, '_')}-${val.replace(/\s+/g, '_')}`;
+                        return `<span class="attr-btn" onclick="selectAttribute('${name.replace(/'/g, "\\'")}', '${val.replace(/'/g, "\\'")}')" id="${safeId}">${val}</span>`;
+                    }).join('') + `</div>`;
+            }
+            wrapper.appendChild(group);
+        });
+
+        updateAttrButtonStates();
+        applySelectedVariant();
+    }
+
+    function selectAttribute(name, value) {
+        selectedAttrs[name] = value;
+        updateAttrButtonStates();
+        applySelectedVariant();
+    }
+
+    function updateAttrButtonStates() {
+        document.querySelectorAll('.attr-btn, .attr-swatch').forEach(btn => btn.classList.remove('active'));
+        Object.entries(selectedAttrs).forEach(([name, val]) => {
+            const safeId = `attr-${name.replace(/\s+/g, '_')}-${val.replace(/\s+/g, '_')}`;
+            const btn = document.getElementById(safeId);
+            if (btn) btn.classList.add('active');
+            const valLabel = document.getElementById(`selectedValue-${name.replace(/\s+/g, '_')}`);
+            if (valLabel) valLabel.textContent = val;
+        });
+    }
+
+    function findMatchingVariant() {
+        const variants = currentProduct.variants || [];
+        let match = variants.find(v =>
+            (v.attributes || []).length &&
+            Object.keys(selectedAttrs).every(name => (v.attributes || []).some(a => a.name === name && a.value === selectedAttrs[name]))
+        );
+        return match || variants[0];
+    }
+
+    function applySelectedVariant() {
+        const v = findMatchingVariant();
+        if (!v) return;
+        document.getElementById('productPrice').textContent = formatPrice(v.price);
+        updatePriceDisplay(v.price, v.originalPrice);
+        if (v.images && v.images.length) {
+            document.getElementById('mainImage').src = resolveImageUrl(v.images[0]);
+        }
+        const stockNote = document.getElementById('stockNote');
+        if (typeof v.stock === 'number') {
+            stockNote.textContent = v.stock > 0 ? `স্টকে আছে (${v.stock} পিস)` : 'স্টক নেই';
+            stockNote.style.color = v.stock > 0 ? '#888' : '#e74c3c';
+        } else {
+            stockNote.textContent = '';
+        }
+    }
+
+    function selectLegacyVariant(i) {
+        const v = currentProduct.variants[i];
+        document.querySelectorAll('.attr-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`legacy-btn-${i}`).classList.add('active');
+        document.getElementById('productPrice').textContent = formatPrice(v.price);
+        if (v.images && v.images.length) {
+            document.getElementById('mainImage').src = resolveImageUrl(v.images[0]);
+        }
+    }
+
+    function toggleDescription() {
+        const descBox = document.getElementById('productDescription');
+        const btn = document.getElementById('viewMoreBtn');
+        const collapsed = descBox.classList.toggle('collapsed');
+        btn.textContent = collapsed ? 'VIEW MORE' : 'VIEW LESS';
+    }
+
+    function updateQty(change) {
+        quantity += change;
+        if (quantity < 1) quantity = 1;
+        document.getElementById('qtyValue').textContent = quantity;
+    }
+
+    function buyNow() {
+        alert('Buy Now ফিচারটা এখনো তৈরি হয়নি — Payment gateway যোগ করার সময় এটা সক্রিয় করা হবে।');
+    }
+
+    function addToCart() {
+        alert('Add to Cart ফিচারটা এখনো তৈরি হয়নি — শীঘ্রই যোগ করা হবে।');
+    }
+
+    function starsHtml(rating) {
+        const full = Math.round(rating);
+        let html = '';
+        for (let i = 1; i <= 5; i++) {
+            html += i <= full ? '&#9733;' : '&#9734;';
+        }
+        return html;
+    }
+
+    async function loadReviews() {
+        try {
+            const res = await fetch(`${API_BASE}/api/products/${productId}/reviews`);
+            const data = await res.json();
+            renderReviews(data);
+        } catch (err) {
+            console.error('Review load error:', err);
+        }
+    }
+
+    function renderReviews(data) {
+        document.getElementById('reviewAvg').textContent = data.average || 0;
+        document.getElementById('reviewAvgStars').innerHTML = starsHtml(data.average || 0);
+        document.getElementById('reviewCountText').textContent = `${data.total || 0} Ratings`;
+
+        const breakdown = document.getElementById('reviewBreakdown');
+        breakdown.innerHTML = [5, 4, 3, 2, 1].map(star => {
+            const count = (data.breakdown && data.breakdown[star]) || 0;
+            const pct = data.total ? Math.round((count / data.total) * 100) : 0;
+            return `<div class="breakdown-row">
+                <span class="star-num">${star} ★</span>
+                <div class="breakdown-bar-bg"><div class="breakdown-bar-fill" style="width:${pct}%"></div></div>
+                <span class="count">${count}</span>
+            </div>`;
+        }).join('');
+
+        const list = document.getElementById('reviewList');
+        if (!data.reviews || !data.reviews.length) {
+            list.innerHTML = '<div class="no-reviews">এখনো কোনো রিভিউ নেই। প্রথম রিভিউ দিন!</div>';
+            return;
+        }
+        list.innerHTML = data.reviews.map(r => `
+            <div class="review-item">
+                <div class="review-item-header">
+                    <span class="review-customer">${escapeHtml(r.customerName)}</span>
+                    <span class="review-date">${new Date(r.createdAt).toLocaleDateString('bn-BD')}</span>
+                </div>
+                <div class="review-stars">${starsHtml(r.rating)}</div>
+                ${r.comment ? `<div class="review-comment">${escapeHtml(r.comment)}</div>` : ''}
+            </div>
+        `).join('');
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str || '';
+        return div.innerHTML;
+    }
+
+    document.getElementById('starInput').addEventListener('click', (e) => {
+        if (e.target.tagName !== 'SPAN') return;
+        selectedStars = Number(e.target.dataset.val);
+        document.querySelectorAll('#starInput span').forEach(s => {
+            s.classList.toggle('selected', Number(s.dataset.val) <= selectedStars);
+        });
+    });
+
+    async function submitReview() {
+        const name = document.getElementById('reviewerName').value.trim();
+        const comment = document.getElementById('reviewComment').value.trim();
+        const statusMsg = document.getElementById('reviewStatusMsg');
+
+        if (!name || !selectedStars) {
+            statusMsg.textContent = 'দয়া করে নাম এবং রেটিং (স্টার) দিন।';
+            statusMsg.style.color = '#e74c3c';
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/api/products/${productId}/reviews`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customerName: name, rating: selectedStars, comment })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to submit review');
+
+            statusMsg.textContent = '✅ ধন্যবাদ! আপনার রিভিউ যোগ হয়েছে।';
+            statusMsg.style.color = '#27ae60';
+            document.getElementById('reviewerName').value = '';
+            document.getElementById('reviewComment').value = '';
+            selectedStars = 0;
+            document.querySelectorAll('#starInput span').forEach(s => s.classList.remove('selected'));
+            loadReviews();
+        } catch (err) {
+            statusMsg.textContent = '❌ ' + err.message;
+            statusMsg.style.color = '#e74c3c';
+        }
+    }
+
+    async function loadQuestions() {
+        try {
+            const res = await fetch(`${API_BASE}/api/products/${productId}/questions`);
+            const data = await res.json();
+            renderQuestions(data);
+        } catch (err) {
+            console.error('Question load error:', err);
+        }
+    }
+
+    function renderQuestions(questions) {
+        const list = document.getElementById('qaList');
+        if (!questions || !questions.length) {
+            list.innerHTML = '<div class="no-questions">এখনো কোনো প্রশ্ন নেই। প্রথম প্রশ্নটি জিজ্ঞাসা করুন!</div>';
+            return;
+        }
+        list.innerHTML = questions.map(q => `
+            <div class="qa-item">
+                <div class="qa-question">${escapeHtml(q.question)}</div>
+                <div class="qa-meta">${escapeHtml(q.askedBy)} • ${new Date(q.createdAt).toLocaleDateString('bn-BD')}</div>
+                ${q.answer
+                    ? `<div class="qa-answer">${escapeHtml(q.answer)}</div>`
+                    : `<div class="qa-no-answer">এখনো উত্তর দেওয়া হয়নি</div>`}
+            </div>
+        `).join('');
+    }
+
+    async function submitQuestion() {
+        const name = document.getElementById('askerName').value.trim();
+        const question = document.getElementById('questionText').value.trim();
+        const statusMsg = document.getElementById('questionStatusMsg');
+
+        if (!name || !question) {
+            statusMsg.textContent = 'দয়া করে নাম এবং প্রশ্ন দুটোই লিখুন।';
+            statusMsg.style.color = '#e74c3c';
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/api/products/${productId}/questions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ askedBy: name, question })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to submit question');
+
+            statusMsg.textContent = '✅ আপনার প্রশ্নটি জমা হয়েছে। বিক্রেতা শীঘ্রই উত্তর দেবেন।';
+            statusMsg.style.color = '#27ae60';
+            document.getElementById('askerName').value = '';
+            document.getElementById('questionText').value = '';
+            loadQuestions();
+        } catch (err) {
+            statusMsg.textContent = '❌ ' + err.message;
+            statusMsg.style.color = '#e74c3c';
+        }
+    }
+
+    function showError() {
+        document.getElementById('loadingMsg').style.display = 'none';
+        document.getElementById('errorMsg').style.display = 'block';
+    }
+
+    loadProduct();
+</script>
+<div id="siteFooter"></div>
+<script src="footer.js"></script>
+</body>
+</html>
