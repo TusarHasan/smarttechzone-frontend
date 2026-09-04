@@ -109,6 +109,7 @@
                     </div>
                     <div class="pay-${order.paymentStatus}" style="font-size:13px; font-weight:bold; margin-bottom:10px;">
                         ${payLabels[order.paymentStatus] || order.paymentStatus}
+                        <span style="color:#999; font-weight:normal;">— ${order.paymentMethod === 'cod' ? 'ক্যাশ অন ডেলিভারি' : 'অনলাইন পেমেন্ট'}</span>
                     </div>
 
                     ${order.items.map(item => `

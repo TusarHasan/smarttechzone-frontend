@@ -27,6 +27,15 @@
         }
         .place-order-btn:hover { background: #c0392b; }
         .place-order-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .payment-option {
+            display: flex; align-items: flex-start; gap: 10px; border: 1.5px solid #e2e2e2; border-radius: 6px;
+            padding: 12px 14px; margin-top: 10px; cursor: pointer; transition: border-color .15s, background .15s;
+        }
+        .payment-option:hover { border-color: #f0a8a0; }
+        .payment-option.selected { border-color: #e74c3c; background: #fdf6f5; }
+        .payment-option input { width: auto; margin: 3px 0 0; padding: 0; }
+        .payment-option .po-text strong { display: block; font-size: 14px; color: #333; }
+        .payment-option .po-text span { font-size: 12.5px; color: #888; }
         #statusMsg { margin-top: 12px; font-size: 14px; text-align: center; }
         .empty-cart { text-align: center; padding: 60px 20px; color: #888; }
         .empty-cart a { color: #e74c3c; font-weight: bold; text-decoration: none; }
@@ -81,12 +90,30 @@
         </div>
 
         <div class="checkout-card">
+            <h3>পেমেন্ট পদ্ধতি</h3>
+            <label class="payment-option selected" for="payCod">
+                <input type="radio" name="paymentMethod" id="payCod" value="cod" checked>
+                <div class="po-text">
+                    <strong>ক্যাশ অন ডেলিভারি</strong>
+                    <span>প্রোডাক্ট হাতে পেয়ে টাকা পরিশোধ করুন</span>
+                </div>
+            </label>
+            <label class="payment-option" for="payOnline">
+                <input type="radio" name="paymentMethod" id="payOnline" value="online">
+                <div class="po-text">
+                    <strong>অনলাইন পেমেন্ট</strong>
+                    <span>bKash, Nagad, Rocket অথবা কার্ড দিয়ে এখনই পরিশোধ করুন</span>
+                </div>
+            </label>
+        </div>
+
+        <div class="checkout-card">
             <h3>অর্ডার সামারি</h3>
             <div id="orderItemsList"></div>
             <div id="orderSummary"></div>
         </div>
 
-        <button class="place-order-btn" id="placeOrderBtn" onclick="placeOrder()">অর্ডার করুন — পেমেন্টে যান</button>
+        <button class="place-order-btn" id="placeOrderBtn" onclick="placeOrder()">অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)</button>
         <div id="statusMsg"></div>
     </div>
 
@@ -149,6 +176,21 @@
         document.getElementById('custDistrict').addEventListener('change', function () {
             populateUpazilas(this.value);
             updateSummaryTotals();
+        });
+
+        // ===== পেমেন্ট পদ্ধতি বাছাই =====
+        function updatePlaceOrderBtnText() {
+            const isCod = document.getElementById('payCod').checked;
+            const btn = document.getElementById('placeOrderBtn');
+            btn.textContent = isCod ? 'অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)' : 'অর্ডার করুন — পেমেন্টে যান';
+        }
+
+        document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+                this.closest('.payment-option').classList.add('selected');
+                updatePlaceOrderBtnText();
+            });
         });
 
         function renderSummary() {
@@ -225,6 +267,8 @@
                 return;
             }
 
+            const isCod = document.getElementById('payCod').checked;
+
             btn.disabled = true;
             btn.textContent = 'প্রসেস হচ্ছে...';
             statusMsg.textContent = '';
@@ -235,6 +279,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         customer: { name, phone, email, address: fullAddress, city: districtEn, notes },
+                        paymentMethod: isCod ? 'cod' : 'online',
                         items: cart.map(item => ({
                             productId: item.productId,
                             variantLabel: item.variantLabel,
@@ -246,15 +291,20 @@
 
                 if (!res.ok) throw new Error(data.error || 'অর্ডার করা যায়নি।');
 
-                // পেমেন্ট গেটওয়েতে পাঠানোর আগে কার্ট খালি করা হচ্ছে
+                // পেমেন্ট গেটওয়েতে (বা সরাসরি সফল পেজে) পাঠানোর আগে কার্ট খালি করা হচ্ছে
                 clearCart();
-                window.location.href = data.paymentUrl;
+
+                if (data.cod) {
+                    window.location.href = `order-success.html?order=${encodeURIComponent(data.orderNumber)}`;
+                } else {
+                    window.location.href = data.paymentUrl;
+                }
 
             } catch (err) {
                 statusMsg.style.color = '#e74c3c';
                 statusMsg.textContent = '❌ ' + err.message;
                 btn.disabled = false;
-                btn.textContent = 'অর্ডার করুন — পেমেন্টে যান';
+                updatePlaceOrderBtnText();
             }
         }
 
