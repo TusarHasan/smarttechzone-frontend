@@ -88,6 +88,34 @@ body {
     color: #e74c3c;
 }
 
+/* ===== Navbar — Mobile Responsive =====
+   ছোট স্ক্রিনে লোগো + সার্চ বার + নাম আইকন একই লাইনে আটার চেষ্টা করলে সার্চ বক্স/বাটন
+   একদম চিপে/অদৃশ্য হয়ে যাচ্ছিল। তাই মোবাইলে সার্চ বারকে আলাদা, পূর্ণ-প্রস্থ দ্বিতীয় লাইনে
+   নামিয়ে আনা হলো — Daraz/অন্যান্য ই-কমার্স সাইটের মতো। */
+@media (max-width: 768px) {
+    .navbar {
+        flex-wrap: wrap;
+        padding: 10px 16px;
+        row-gap: 10px;
+    }
+
+    .logo img {
+        height: 32px;
+    }
+
+    .nav-icons a {
+        margin-left: 14px;
+        font-size: 13px;
+    }
+
+    .search-bar {
+        order: 3;
+        flex: 1 1 100%;
+        max-width: 100%;
+        margin: 0;
+    }
+}
+
 /* ===== Hero Banner — কালো লোগোর সাথে মানানসই ডার্ক থিম, লাল শুধু accent এ ===== */
 .hero {
     background: linear-gradient(135deg, #161616 0%, #2b2b2b 60%, #3a3a3a 100%);
