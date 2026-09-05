@@ -133,11 +133,17 @@
                 card.style.cursor = 'pointer';
                 card.onclick = () => window.location.href = `../product.html?id=${p._id}`;
                 card.innerHTML = `
-                    <img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/200'">
+                    <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'">
                     <h3>${p.name}</h3>
                     <div class="price">৳ ${p.price}</div>
-                    <button onclick="event.stopPropagation(); quickAddToCart('${p._id}', '${(p.name || '').replace(/'/g, \"\\\\'\")}', ${p.price}, '${imgUrl}')" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:13px; margin-top:6px;">Add to Cart</button>
+                    <button class="quick-add-btn" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:13px; margin-top:6px;">Add to Cart</button>
                 `;
+                // নাম/ছবির মধ্যে quote বা বিশেষ ক্যারেক্টার থাকলেও যাতে ভেঙে না যায়,
+                // তাই onclick অ্যাট্রিবিউটে স্ট্রিং বসিয়ে না দিয়ে সরাসরি JS ক্লোজার ব্যবহার করা হলো
+                card.querySelector('.quick-add-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    quickAddToCart(p._id, p.name, p.price, imgUrl);
+                };
                 grid.appendChild(card);
             });
 

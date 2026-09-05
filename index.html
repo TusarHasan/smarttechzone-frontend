@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Tech Zone - Mobile Replacement Parts</title>
+    <title>Smart Tech Zone | মোবাইল রিপ্লেসমেন্ট পার্টস — বাংলাদেশ</title>
+    <meta name="description" content="Smart Tech Zone (SmartTechZone.com.bd) — বাংলাদেশের অনলাইন মোবাইল রিপ্লেসমেন্ট পার্টস স্টোর। ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট, বডি হাউজিং সহ সব ব্র্যান্ডের (Apple, Samsung, Xiaomi, Oppo, Vivo, Realme, Nokia, Symphony) অরিজিনাল পার্টস, সারা বাংলাদেশে হোম ডেলিভারি।">
+    <link rel="canonical" href="https://smarttechzone.com.bd/index.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Smart Tech Zone">
+    <meta property="og:title" content="Smart Tech Zone | মোবাইল রিপ্লেসমেন্ট পার্টস — বাংলাদেশ">
+    <meta property="og:description" content="সব ব্র্যান্ডের মোবাইল রিপ্লেসমেন্ট পার্টস, সারা বাংলাদেশে ডেলিভারি। ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট এবং আরও অনেক কিছু।">
+    <meta property="og:url" content="https://smarttechzone.com.bd/index.html">
+    <meta property="og:image" content="https://smarttechzone.com.bd/images/logo.png">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -47,7 +55,6 @@
         .product-card { animation: fadeInUp 0.35s ease both; }
     </style>
     <script src="config.js"></script>
-    <script src="cart.js"></script>
 </head>
 <body>
 
@@ -59,7 +66,7 @@
         </div>
         <div class="nav-icons">
             <a href="#">Login</a>
-            <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
+            <a href="#">Cart (0)</a>
         </div>
     </nav>
 <div class="hero">
@@ -203,7 +210,7 @@
         async function loadHomeProducts() {
             const container = document.getElementById('product-list');
             try {
-                const response = await fetch(`${API_BASE}/api/products`);
+                const response = await fetch(`${API_BASE}/api/products?status=published`);
                 allProducts = await response.json();
 
                 renderCategoryGrid(allProducts);
@@ -231,7 +238,7 @@
                 const img = iconImage[cat] ? resolveImg(iconImage[cat]) : 'https://via.placeholder.com/64?text=%20';
                 return `
                     <div class="part-cat-card" onclick="goToCategory('${cat.replace(/'/g, "\\'")}')">
-                        <div class="part-cat-icon"><img src="${img}" onerror="this.src='https://via.placeholder.com/64?text=%20'"></div>
+                        <div class="part-cat-icon"><img src="${img}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/64?text=%20'"></div>
                         <div class="part-cat-name">${cat}</div>
                         <div class="part-cat-count">${counts[cat]} items</div>
                     </div>
@@ -242,11 +249,6 @@
         function resolveImg(url) {
             if (!url) return 'https://via.placeholder.com/200';
             return url.startsWith('http') ? url : `${API_BASE}${url}`;
-        }
-
-        function quickAddToCart(productId, name, price, image) {
-            addToCart({ productId, name, price, variantLabel: '', image, quantity: 1 });
-            alert('কার্টে যোগ করা হয়েছে ✅');
         }
 
         function goToCategory(catName) {
@@ -314,10 +316,9 @@
                 card.style.cssText = 'border: 1px solid #ddd; padding: 10px; border-radius: 5px; cursor: pointer; margin: 10px; display: inline-block; width: 200px; vertical-align: top;';
                 card.onclick = () => window.location.href = `product.html?id=${p._id}`;
                 card.innerHTML = `
-                    <img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/200'" style="width: 100%; height: 150px; object-fit: contain;">
+                    <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'" style="width: 100%; height: 150px; object-fit: contain;">
                     <h4>${p.name}</h4>
                     <p>৳ ${p.price}</p>
-                    <button onclick="event.stopPropagation(); quickAddToCart('${p._id}', '${(p.name || '').replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}')" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:13px; margin-top:6px;">Add to Cart</button>
                 `;
                 container.appendChild(card);
             });

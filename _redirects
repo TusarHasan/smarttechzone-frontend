@@ -1,0 +1,2 @@
+# sitemap.xml নিজের ব্যাকএন্ড থেকে লাইভ জেনারেট হয় — নিজের ডোমেইনেই দেখানোর জন্য প্রক্সি করা হলো
+/sitemap.xml  https://smarttechzone-backend.onrender.com/sitemap.xml  200
