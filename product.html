@@ -55,7 +55,11 @@
     .action-row { display: flex; gap: 15px; margin-top: 20px; }
     .btn-buy { flex: 1; background: #2bbef9; color: #fff; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
     .btn-cart { flex: 1; background: #e74c3c; color: #fff; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+    /* স্টকে না থাকলে বাটন দুটো এবং Quantity স্টেপার ধূসর/অচল দেখানোর জন্য */
+    .btn-buy:disabled, .btn-cart:disabled { background: #ccc; color: #888; cursor: not-allowed; }
+    .qty-box button:disabled { color: #bbb; cursor: not-allowed; background: #f5f5f5; }
     .stock-note { font-size: 13px; color: #888; margin-top: 6px; }
+    .oos-label { color: #e74c3c; font-weight: 700; font-size: 14px; margin-top: 8px; }
 
     .lower-section { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
     .section-title { font-size: 17px; color: #333; margin: 0 0 14px; font-weight: bold; }
@@ -272,6 +276,7 @@
     let currentProduct = null;
     let selectedAttrs = {};
     let selectedStars = 0;
+    let isOutOfStock = false; // বর্তমানে সিলেক্ট করা ভ্যারিয়েন্ট স্টকে নেই কিনা — Buy Now/Add to Cart গার্ড করতে ব্যবহৃত
 
     async function loadProduct() {
         if (!productId) {
@@ -404,6 +409,18 @@
                         </span>
                     `).join('') + `</div>`;
                 wrapper.appendChild(group);
+                // আগে এখানে কোনো ভ্যারিয়েন্ট প্রাথমিকভাবে সিলেক্ট/হাইলাইট করা হতো না, ফলে পেজ লোড হওয়ার সাথে
+                // সাথে দাম ও স্টক তথ্য (এবং Buy বাটনের স্টক-গেটিং) আপডেট হতো না যতক্ষণ না ইউজার নিজে ক্লিক করতো।
+                selectLegacyVariant(0);
+            } else if (variants.length === 1) {
+                // এখানে কোনো ভ্যারিয়েন্ট বাটন দেখানো হচ্ছে না (single "Default" variant), কিন্তু স্টক-তথ্য এখনো
+                // ওই ভ্যারিয়েন্ট থেকেই আসে — তাই বাটন না থাকলেও স্টক-গেটিং প্রয়োগ করা দরকার, নাহলে স্টক ০ থাকা
+                // সত্ত্বেও Buy Now/Add to Cart সবসময় সক্রিয় থেকে যায়।
+                document.getElementById('productPrice').textContent = formatPrice(variants[0].price);
+                updatePriceDisplay(variants[0].price, variants[0].originalPrice);
+                updateStockAndButtons(typeof variants[0].stock === 'number' ? variants[0].stock : null);
+            } else {
+                updateStockAndButtons(null);
             }
             return;
         }
@@ -499,12 +516,42 @@
         if (v.images && v.images.length) {
             document.getElementById('mainImage').src = resolveImageUrl(v.images[0]);
         }
+        updateStockAndButtons(typeof v.stock === 'number' ? v.stock : null);
+    }
+
+    // স্টক অনুযায়ী "স্টকে আছে/নেই" টেক্সট দেখানো এবং Buy Now/Add to Cart/Quantity বাটন অচল করা —
+    // আগে শুধু একটা তথ্যমূলক নোট দেখানো হতো, বাটনগুলো স্টক ০ থাকলেও সবসময় সক্রিয়ই থেকে যেত এবং অর্ডার
+    // করা যেত। এখন Daraz এর মতো স্টক শেষ হলে বাটনগুলো ধূসর/অচল হয়ে যায় এবং লাল করে "স্টকে নেই" দেখায়।
+    function updateStockAndButtons(stock) {
         const stockNote = document.getElementById('stockNote');
-        if (typeof v.stock === 'number') {
-            stockNote.textContent = v.stock > 0 ? `স্টকে আছে (${v.stock} পিস)` : 'স্টক নেই';
-            stockNote.style.color = v.stock > 0 ? '#888' : '#e74c3c';
+        if (typeof stock === 'number') {
+            stockNote.textContent = stock > 0 ? `স্টকে আছে (${stock} পিস)` : 'স্টক নেই';
+            stockNote.style.color = stock > 0 ? '#888' : '#e74c3c';
         } else {
             stockNote.textContent = '';
+        }
+
+        isOutOfStock = typeof stock === 'number' && stock <= 0;
+
+        const buyBtn = document.querySelector('.btn-buy');
+        const cartBtn = document.querySelector('.btn-cart');
+        const qtyButtons = document.querySelectorAll('.qty-box button');
+        if (buyBtn) buyBtn.disabled = isOutOfStock;
+        if (cartBtn) cartBtn.disabled = isOutOfStock;
+        qtyButtons.forEach(btn => { btn.disabled = isOutOfStock; });
+
+        let oosLabel = document.getElementById('oosLabel');
+        if (isOutOfStock) {
+            if (!oosLabel) {
+                oosLabel = document.createElement('div');
+                oosLabel.id = 'oosLabel';
+                oosLabel.className = 'oos-label';
+                oosLabel.textContent = '❌ বর্তমানে স্টকে নেই';
+                const actionRow = document.querySelector('.action-row');
+                actionRow.parentNode.insertBefore(oosLabel, actionRow);
+            }
+        } else if (oosLabel) {
+            oosLabel.remove();
         }
     }
 
@@ -513,9 +560,11 @@
         document.querySelectorAll('.attr-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(`legacy-btn-${i}`).classList.add('active');
         document.getElementById('productPrice').textContent = formatPrice(v.price);
+        updatePriceDisplay(v.price, v.originalPrice);
         if (v.images && v.images.length) {
             document.getElementById('mainImage').src = resolveImageUrl(v.images[0]);
         }
+        updateStockAndButtons(typeof v.stock === 'number' ? v.stock : null);
     }
 
     function toggleDescription() {
@@ -555,6 +604,9 @@
 
     function addCurrentToCart() {
         if (!currentProduct) return;
+        // UI তে বাটন disable করা থাকলেও, সরাসরি ফাংশন কল হয়ে গেলে (যেমন কনসোল থেকে) যাতে অর্ডার না হয়ে
+        // যায় তার জন্য এখানেও একটা সেফটি-চেক রাখা হলো
+        if (isOutOfStock) { alert('❌ এই প্রোডাক্টটি বর্তমানে স্টকে নেই।'); return; }
         const info = getSelectedVariantInfo();
         addToCart({
             productId: currentProduct._id,
@@ -568,6 +620,7 @@
     }
 
     function buyNow() {
+        if (isOutOfStock) { alert('❌ এই প্রোডাক্টটি বর্তমানে স্টকে নেই।'); return; }
         addCurrentToCart();
         window.location.href = 'cart.html';
     }
