@@ -93,6 +93,24 @@
         </div>
 
         <div class="checkout-card">
+            <h3>ডেলিভারি ধরণ</h3>
+            <label class="payment-option selected" for="deliveryStandard">
+                <input type="radio" name="deliveryType" id="deliveryStandard" value="standard" checked>
+                <div class="po-text">
+                    <strong>স্ট্যান্ডার্ড ডেলিভারি</strong>
+                    <span>সাধারণ ডেলিভারি চার্জ প্রযোজ্য</span>
+                </div>
+            </label>
+            <label class="payment-option" for="deliverySameDay">
+                <input type="radio" name="deliveryType" id="deliverySameDay" value="sameday">
+                <div class="po-text">
+                    <strong>সেইম ডে ডেলিভারি</strong>
+                    <span>একই দিনে ডেলিভারি (শুধুমাত্র ক্যাশ অন ডেলিভারি) — ডেলিভারি চার্জ অর্ডার কনফার্ম হওয়ার পর জানানো হবে</span>
+                </div>
+            </label>
+        </div>
+
+        <div class="checkout-card">
             <h3>পেমেন্ট পদ্ধতি</h3>
             <label class="payment-option selected" for="payCod">
                 <input type="radio" name="paymentMethod" id="payCod" value="cod" checked>
@@ -101,13 +119,14 @@
                     <span>প্রোডাক্ট হাতে পেয়ে টাকা পরিশোধ করুন</span>
                 </div>
             </label>
-            <label class="payment-option" for="payOnline">
+            <label class="payment-option" for="payOnline" id="payOnlineOption">
                 <input type="radio" name="paymentMethod" id="payOnline" value="online">
                 <div class="po-text">
                     <strong>অনলাইন পেমেন্ট</strong>
                     <span>bKash, Nagad, Rocket অথবা কার্ড দিয়ে এখনই পরিশোধ করুন</span>
                 </div>
             </label>
+            <div id="sameDayPaymentNote" style="display:none; font-size:12.5px; color:#888; margin-top:8px;">সেইম ডে ডেলিভারিতে শুধুমাত্র ক্যাশ অন ডেলিভারি সুবিধা রয়েছে।</div>
         </div>
 
         <div class="checkout-card">
@@ -192,9 +211,48 @@
 
         document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
             radio.addEventListener('change', function () {
-                document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+                document.querySelectorAll('.payment-option').forEach(el => {
+                    if (el.querySelector('input[name="paymentMethod"]')) el.classList.remove('selected');
+                });
                 this.closest('.payment-option').classList.add('selected');
                 updatePlaceOrderBtnText();
+            });
+        });
+
+        // ===== ডেলিভারি ধরণ বাছাই (Same Day হলে শুধু COD, চার্জ পরে অ্যাডমিন বসাবে) =====
+        function isSameDaySelected() {
+            return document.getElementById('deliverySameDay').checked;
+        }
+
+        document.querySelectorAll('input[name="deliveryType"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                document.querySelectorAll('input[name="deliveryType"]').forEach(r => r.closest('.payment-option').classList.remove('selected'));
+                this.closest('.payment-option').classList.add('selected');
+
+                const sameDay = isSameDaySelected();
+                const payOnlineInput = document.getElementById('payOnline');
+                const payOnlineOption = document.getElementById('payOnlineOption');
+                const sameDayNote = document.getElementById('sameDayPaymentNote');
+
+                if (sameDay) {
+                    document.getElementById('payCod').checked = true;
+                    document.querySelectorAll('.payment-option').forEach(el => {
+                        if (el.querySelector('input[name="paymentMethod"]')) el.classList.remove('selected');
+                    });
+                    document.getElementById('payCod').closest('.payment-option').classList.add('selected');
+                    payOnlineInput.disabled = true;
+                    payOnlineOption.style.opacity = '0.5';
+                    payOnlineOption.style.pointerEvents = 'none';
+                    sameDayNote.style.display = 'block';
+                } else {
+                    payOnlineInput.disabled = false;
+                    payOnlineOption.style.opacity = '1';
+                    payOnlineOption.style.pointerEvents = 'auto';
+                    sameDayNote.style.display = 'none';
+                }
+
+                updatePlaceOrderBtnText();
+                updateSummaryTotals();
             });
         });
 
@@ -224,6 +282,16 @@
 
         function updateSummaryTotals() {
             const subtotal = getCartTotal();
+
+            if (isSameDaySelected()) {
+                document.getElementById('orderSummary').innerHTML = `
+                    <div class="order-summary-row"><span>সাবটোটাল</span><span>৳ ${formatPrice(subtotal)}</span></div>
+                    <div class="order-summary-row"><span>ডেলিভারি চার্জ</span><span>অর্ডার কনফার্ম হওয়ার পর জানানো হবে</span></div>
+                    <div class="order-summary-row total"><span>মোট (ডেলিভারি চার্জ ছাড়া)</span><span>৳ ${formatPrice(subtotal)}</span></div>
+                `;
+                return;
+            }
+
             const district = document.getElementById('custDistrict').value;
             const delivery = estimateDelivery(district);
             const total = subtotal + delivery;
@@ -272,7 +340,8 @@
                 return;
             }
 
-            const isCod = document.getElementById('payCod').checked;
+            const sameDay = isSameDaySelected();
+            const isCod = document.getElementById('payCod').checked || sameDay;
 
             btn.disabled = true;
             btn.textContent = 'প্রসেস হচ্ছে...';
@@ -283,8 +352,9 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        customer: { name, phone, email, address: fullAddress, city: districtEn, notes },
+                        customer: { name, phone, email, address: fullAddress, city: districtEn, district: districtBn, thana: upazilaBn, notes },
                         paymentMethod: isCod ? 'cod' : 'online',
+                        deliveryType: sameDay ? 'sameday' : 'standard',
                         items: cart.map(item => ({
                             productId: item.productId,
                             variantLabel: item.variantLabel,
