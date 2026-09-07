@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="../analytics.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Brand Parts - Smart Tech Zone</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .load-more-wrapper { text-align: center; margin: 30px 0; }
+        .load-more-btn {
+            background: #fff; border: 1px solid #e74c3c; color: #e74c3c; padding: 10px 32px;
+            border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 700;
+        }
+        .load-more-btn:hover { background: #fdf1f0; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .product-card { animation: fadeInUp 0.35s ease both; }
+        .brand-product-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+        }
+        @media (max-width: 992px) { .brand-product-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 576px) { .brand-product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+    </style>
+    <script src="../config.js"></script>
+    <script src="../cart.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="../index.html" class="logo"><img src="../images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <a href="#">Login</a>
+            <a href="../cart.html">Cart (<span id="cartCount">0</span>)</a>
+        </div>
+    </nav>
+
+    <div class="brand-header">
+        <div class="breadcrumb">
+            <a href="../index.html">Home</a> / <span id="breadcrumbBrand">Brand</span>
+        </div>
+        <h1 id="brandHeading">Replacement Parts</h1>
+        <p id="brandSub">আপনার ফোনের জন্য উপযুক্ত পার্টস</p>
+    </div>
+
+    <section class="product-section">
+        <div class="container">
+            <div class="brand-product-grid" id="brandProductGrid">
+                <p style="grid-column: 1/-1; text-align:center; color:#999;">লোড হচ্ছে...</p>
+            </div>
+            <div class="load-more-wrapper" id="loadMoreWrapper" style="display:none;">
+                <button class="load-more-btn" id="loadMoreBtn" onclick="renderNextPage()">Load More</button>
+            </div>
+        </div>
+    </section>
+
+    <div id="siteFooter"></div>
+    <script src="../footer.js"></script>
+    <script src="../search.js"></script>
+
+    <script>
+        const API_BASE = BACKEND_URL;
+        const params = new URLSearchParams(window.location.search);
+        // brand-counts থেকে যেই নামটা আসে (যেমন "Itel", "Samsung") ঠিক সেটাই এখানে ?name= এ পাস করা হয় —
+        // তাই কোনো নতুন ব্র্যান্ড ডিটেক্ট হওয়ার সাথে সাথে এই একই টেমপ্লেট পেজ তার জন্যও কাজ করবে,
+        // নতুন কোনো HTML ফাইল বানানোর দরকার নেই।
+        const TARGET_BRAND = (params.get('name') || '').trim();
+
+        if (TARGET_BRAND) {
+            document.getElementById('pageTitle').textContent = `${TARGET_BRAND} Parts - Smart Tech Zone`;
+            document.getElementById('breadcrumbBrand').textContent = TARGET_BRAND;
+            document.getElementById('brandHeading').textContent = `${TARGET_BRAND} Replacement Parts`;
+            document.getElementById('brandSub').textContent = `আপনার ${TARGET_BRAND} ফোনের জন্য উপযুক্ত পার্টস`;
+        }
+
+        function resolveImg(url) {
+            if (!url) return 'https://via.placeholder.com/200';
+            return url.startsWith('http') ? url : `${API_BASE}${url}`;
+        }
+
+        function quickAddToCart(productId, name, price, image) {
+            addToCart({ productId, name, price, variantLabel: '', image, quantity: 1 });
+            alert('কার্টে যোগ করা হয়েছে ✅');
+        }
+
+        let currentPage = 1;
+        let totalPages = 1;
+        const PAGE_SIZE = 24;
+
+        async function loadBrandProducts() {
+            const grid = document.getElementById('brandProductGrid');
+            if (!TARGET_BRAND) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999;">কোনো ব্র্যান্ড উল্লেখ করা হয়নি।</p>';
+                return;
+            }
+            currentPage = 1;
+            await loadPage();
+        }
+
+        async function loadPage() {
+            const grid = document.getElementById('brandProductGrid');
+            try {
+                // phoneBrand — প্রোডাক্ট আপলোডের সময় নাম দেখে ব্যাকএন্ডে স্বয়ংক্রিয়ভাবে বসানো ফিল্ড
+                const qs = new URLSearchParams({ status: 'published', fields: 'summary', phoneBrand: TARGET_BRAND, page: currentPage, limit: PAGE_SIZE });
+                const res = await fetch(`${API_BASE}/api/products?${qs.toString()}`);
+                const data = await res.json();
+                totalPages = data.totalPages || 1;
+
+                if (currentPage === 1) grid.innerHTML = '';
+
+                const items = data.products || [];
+                if (currentPage === 1 && items.length === 0) {
+                    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999;">এই ব্র্যান্ডের জন্য এখনো কোনো প্রোডাক্ট যোগ করা হয়নি।</p>';
+                    document.getElementById('loadMoreWrapper').style.display = 'none';
+                    return;
+                }
+
+                renderItems(items);
+                document.getElementById('loadMoreWrapper').style.display = currentPage < totalPages ? 'block' : 'none';
+            } catch (err) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999;">প্রোডাক্ট লোড করতে সমস্যা হয়েছে।</p>';
+            }
+        }
+
+        function renderItems(items) {
+            const grid = document.getElementById('brandProductGrid');
+            items.forEach(p => {
+                const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0]) : 'https://via.placeholder.com/200';
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.style.cursor = 'pointer';
+                card.onclick = () => window.location.href = `../product.html?id=${p._id}`;
+                card.innerHTML = `
+                    <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'">
+                    <h3>${p.name}</h3>
+                    <div class="price">৳ ${p.price}</div>
+                    <button class="quick-add-btn" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:13px; margin-top:6px;">Add to Cart</button>
+                `;
+                // নাম/ছবির মধ্যে quote বা বিশেষ ক্যারেক্টার থাকলেও যাতে ভেঙে না যায়,
+                // তাই onclick অ্যাট্রিবিউটে স্ট্রিং বসিয়ে না দিয়ে সরাসরি JS ক্লোজার ব্যবহার করা হলো
+                card.querySelector('.quick-add-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    quickAddToCart(p._id, p.name, p.price, imgUrl);
+                };
+                grid.appendChild(card);
+            });
+        }
+
+        function renderNextPage() {
+            currentPage++;
+            loadPage();
+        }
+
+        loadBrandProducts();
+    </script>
+</body>
+</html>

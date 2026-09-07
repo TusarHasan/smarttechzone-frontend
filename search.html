@@ -74,8 +74,8 @@
             alert('কার্টে যোগ করা হয়েছে ✅');
         }
 
-        let filteredProducts = [];
-        let currentPage = 0;
+        let currentPage = 1;
+        let totalPages = 1;
         const PAGE_SIZE = 24;
 
         async function loadSearchResults() {
@@ -91,34 +91,42 @@
             }
 
             titleEl.textContent = `"${QUERY}" এর ফলাফল`;
+            currentPage = 1;
+            await loadSearchPage();
+        }
 
+        async function loadSearchPage() {
+            const grid = document.getElementById('searchGrid');
+            const subtitleEl = document.getElementById('searchSubtitle');
             try {
-                const res = await fetch(`${API_BASE}/api/products?status=published`);
-                const allProducts = await res.json();
+                // পুরো ক্যাটালগ ব্রাউজারে এনে ক্লায়েন্ট-সাইডে ফিল্টার করার বদলে ব্যাকএন্ডের search+pagination
+                // ব্যবহার করা হচ্ছে — নাম/SKU/ব্র্যান্ড/মডেল সবগুলোতেই মিলিয়ে দেখে (fields=summary: ছোট পেলোড)
+                const qs = new URLSearchParams({ status: 'published', fields: 'summary', search: QUERY, page: currentPage, limit: PAGE_SIZE });
+                const res = await fetch(`${API_BASE}/api/products?${qs.toString()}`);
+                const data = await res.json();
+                totalPages = data.totalPages || 1;
 
-                const q = QUERY.toLowerCase();
-                filteredProducts = allProducts.filter(p => (p.name || '').toLowerCase().includes(q));
+                subtitleEl.textContent = `${data.total || 0} টি প্রোডাক্ট পাওয়া গেছে`;
 
-                subtitleEl.textContent = `${filteredProducts.length} টি প্রোডাক্ট পাওয়া গেছে`;
+                if (currentPage === 1) grid.innerHTML = '';
 
-                if (filteredProducts.length === 0) {
+                const items = data.products || [];
+                if (currentPage === 1 && items.length === 0) {
                     grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999;">কোনো প্রোডাক্ট পাওয়া যায়নি। অন্য কিছু লিখে খুঁজে দেখুন।</p>';
+                    document.getElementById('loadMoreWrapper').style.display = 'none';
                     return;
                 }
 
-                grid.innerHTML = '';
-                renderNextPage();
+                renderItems(items);
+                document.getElementById('loadMoreWrapper').style.display = currentPage < totalPages ? 'block' : 'none';
             } catch (err) {
                 grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999;">সার্চ করতে সমস্যা হয়েছে।</p>';
             }
         }
 
-        function renderNextPage() {
+        function renderItems(items) {
             const grid = document.getElementById('searchGrid');
-            const start = currentPage * PAGE_SIZE;
-            const pageItems = filteredProducts.slice(start, start + PAGE_SIZE);
-
-            pageItems.forEach(p => {
+            items.forEach(p => {
                 const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0]) : 'https://via.placeholder.com/200';
                 const card = document.createElement('div');
                 card.className = 'product-card';
@@ -132,10 +140,11 @@
                 `;
                 grid.appendChild(card);
             });
+        }
 
+        function renderNextPage() {
             currentPage++;
-            const hasMore = currentPage * PAGE_SIZE < filteredProducts.length;
-            document.getElementById('loadMoreWrapper').style.display = hasMore ? 'block' : 'none';
+            loadSearchPage();
         }
 
         loadSearchResults();

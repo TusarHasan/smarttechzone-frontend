@@ -99,62 +99,11 @@
             <h2 class="section-title">Shop by Brand</h2>
             <p class="section-subtitle">আপনার ফোনের Brand বেছে নিন</p>
 
-            <div class="category-grid">
-                <a href="brands/apple.html" class="category-card">
-                    <div class="category-icon">
-                        <img src="images/brand-apple.png" alt="Apple">
-                    </div>
-                    <h3>Apple</h3>
-                </a>
-
-                <a href="brands/samsung.html" class="category-card">
-                    <div class="category-icon">
-                        <img src="images/brand-samsung.png" alt="Samsung">
-                    </div>
-                    <h3>Samsung</h3>
-                </a>
-
-                <a href="brands/xiaomi.html" class="category-card">
-                    <div class="category-icon">
-                        <img src="images/brand-xiaomi.png" alt="Xiaomi">
-                    </div>
-                    <h3>Xiaomi</h3>
-                </a>
-
-                <a href="brands/oppo.html" class="category-card">
-                    <div class="category-icon">
-                        <img src="images/brand-oppo.png" alt="Oppo">
-                    </div>
-                    <h3>Oppo</h3>
-                </a>
-
-                <a href="brands/vivo.html" class="category-card">
-                    <div class="category-icon">
-                        <img src="images/brand-vivo.png" alt="Vivo">
-                    </div>
-                    <h3>Vivo</h3>
-                </a>
-
-                <a href="brands/realme.html" class="category-card">
-                    <div class="category-icon">
-                        <img src="images/brand-realme.png" alt="Realme">
-                    </div>
-                    <h3>Realme</h3>
-                </a>
-
-                <a href="brands/nokia.html" class="category-card">
-                    <div class="category-icon">
-                        <img src="images/brand-nokia.png" alt="Nokia">
-                    </div>
-                    <h3>Nokia</h3>
-                </a>
-
-                <a href="brands/symphony.html" class="category-card">
-                    <div class="category-icon">
-                        <img src="images/brand-symphony.png" alt="Symphony">
-                    </div>
-                    <h3>Symphony</h3>
-                </a>
+            <!-- এই গ্রিডটা এখন ডাইনামিক — /api/products/brand-counts থেকে যেসব ব্র্যান্ডে অন্তত ১টা published
+                 প্রোডাক্ট আছে সেগুলোই এখানে দেখাবে। নতুন কোনো ব্র্যান্ড (itel, Nothing ইত্যাদি) ডিটেক্ট হয়ে
+                 প্রোডাক্ট পাবলিশ হলে এখানে আপনাআপনি যোগ হয়ে যাবে, কোনো ফাইল বদলাতে হবে না। -->
+            <div class="category-grid" id="brandGrid">
+                <p style="grid-column: 1/-1; text-align:center; color:#999;">লোড হচ্ছে...</p>
             </div>
         </div>
     </section>
@@ -167,89 +116,63 @@
     <script>
         const API_BASE = BACKEND_URL;
 
-        // ============ পার্টস ক্যাটাগরি সনাক্ত করার নিয়ম ============
-        // priority অনুযায়ী উপর থেকে নিচে চেক হয়, প্রথম মিল পেলেই থেমে যায়
-        const PART_CATEGORIES = [
-            { name: 'Body Housing', keywords: ['body housing', 'full body', 'housing with', 'housing kit'] },
-            { name: 'Back Panel', keywords: ['back panel', 'back cover', 'battery cover', 'backshell', 'back door', 'rear glass', 'back glass'] },
-            { name: 'Fingerprint Sensor', keywords: ['fingerprint', 'finger print', 'touch id'] },
-            { name: 'Outside Key', keywords: ['outside key', 'plastic key', 'key cap', 'external button'] },
-            { name: 'Power Volume Flex', keywords: ['power volume', 'volume flex', 'power flex', 'volume button', 'power button', 'side key', 'side button'] },
-            { name: 'Touch Screen Digitizer', keywords: ['digitizer', 'touch screen', 'touch glass'] },
-            { name: 'Front Glass Lens', keywords: ['front glass'] },
-            { name: 'LCD / OLED Display', keywords: ['lcd', 'oled', 'display', ' screen '] },
-            { name: 'Battery', keywords: ['battery'] },
-            { name: 'Charging Port Flex', keywords: ['charging port', 'charging flex', 'usb port', 'dock connector', 'charging dock'] },
-            { name: 'Wireless Charging Coil', keywords: ['wireless charging', 'charging coil'] },
-            { name: 'Front Camera Module', keywords: ['front camera', 'selfie camera'] },
-            { name: 'Rear Camera Module', keywords: ['rear camera', 'back camera', 'main camera', 'camera lens', 'camera glass', 'camera module', ' camera '] },
-            { name: 'Loudspeaker', keywords: ['loudspeaker', 'loud speaker', 'buzzer', 'ringer'] },
-            { name: 'Earpiece Speaker', keywords: ['earpiece', 'ear speaker', 'ear net', 'receiver'] },
-            { name: 'Microphone', keywords: ['microphone', ' mic '] },
-            { name: 'Middle Frame', keywords: ['middle frame', 'mid frame', 'side frame'] },
-            { name: 'SIM Card Tray', keywords: ['sim tray', 'sim card tray', 'sim slot'] },
-            { name: 'Motherboard', keywords: ['motherboard', 'logic board', 'main board'] },
-            { name: 'Integrated Circuits (IC)', keywords: [' ic ', 'power ic', 'audio ic', 'wifi ic'] },
-            { name: 'Vibrator Motor', keywords: ['vibrator', 'vibration motor'] },
-            { name: 'Antenna Flex', keywords: ['antenna', 'network flex'] },
-        ];
-
-        function detectPartCategory(name) {
-            const n = ' ' + (name || '').toLowerCase() + ' ';
-            for (const cat of PART_CATEGORIES) {
-                if (cat.keywords.some(k => n.includes(k))) return cat.name;
-            }
-            return 'Other Parts';
-        }
-
-        // ============ প্রোডাক্ট লোড ও Pagination ============
-        let allProducts = [];
-        let filteredProducts = [];
-        let currentPage = 0;
-        const PAGE_SIZE = 24;
-
-        async function loadHomeProducts() {
-            const container = document.getElementById('product-list');
-            try {
-                const response = await fetch(`${API_BASE}/api/products?status=published`);
-                allProducts = await response.json();
-
-                renderCategoryGrid(allProducts);
-                applyCategoryFilterFromUrl();
-            } catch (err) {
-                console.error('Error loading products:', err);
-                container.innerHTML = '<p>প্রোডাক্ট লোড করা সম্ভব হয়নি।</p>';
-            }
-        }
-
-        function renderCategoryGrid(products) {
-            const counts = {};
-            const iconImage = {};
-            products.forEach(p => {
-                const cat = detectPartCategory(p.name);
-                counts[cat] = (counts[cat] || 0) + 1;
-                if (!iconImage[cat] && p.images && p.images.length) {
-                    iconImage[cat] = p.images[0];
-                }
-            });
-
-            const sortedCats = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
-            const grid = document.getElementById('partCategoryGrid');
-            grid.innerHTML = sortedCats.map(cat => {
-                const img = iconImage[cat] ? resolveImg(iconImage[cat]) : 'https://via.placeholder.com/64?text=%20';
-                return `
-                    <div class="part-cat-card" onclick="goToCategory('${cat.replace(/'/g, "\\'")}')">
-                        <div class="part-cat-icon"><img src="${img}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/64?text=%20'"></div>
-                        <div class="part-cat-name">${cat}</div>
-                        <div class="part-cat-count">${counts[cat]} items</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
+        // ============ Category ও Brand গ্রিড — এখন backend aggregation endpoint থেকে সরাসরি কাউন্ট/ছবি
+        // আসে (হাজার হাজার প্রোডাক্ট ব্রাউজারে ডাউনলোড করে হিসেব করতে হয় না, তাই অনেক দ্রুত) ============
         function resolveImg(url) {
             if (!url) return 'https://via.placeholder.com/200';
             return url.startsWith('http') ? url : `${API_BASE}${url}`;
+        }
+
+        async function renderCategoryGrid() {
+            const grid = document.getElementById('partCategoryGrid');
+            try {
+                const res = await fetch(`${API_BASE}/api/products/category-counts`);
+                const rows = await res.json();
+                grid.innerHTML = rows.map(r => {
+                    const img = r.image ? resolveImg(r.image) : 'https://via.placeholder.com/64?text=%20';
+                    return `
+                        <div class="part-cat-card" onclick="goToCategory('${r.name.replace(/'/g, "\\'")}')">
+                            <div class="part-cat-icon"><img src="${img}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/64?text=%20'"></div>
+                            <div class="part-cat-name">${r.name}</div>
+                            <div class="part-cat-count">${r.count} items</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                grid.innerHTML = '';
+            }
+        }
+
+        async function renderBrandGrid() {
+            const grid = document.getElementById('brandGrid');
+            try {
+                const res = await fetch(`${API_BASE}/api/products/brand-counts`);
+                const rows = await res.json();
+                grid.innerHTML = rows.map(r => {
+                    const img = r.image ? resolveImg(r.image) : 'https://via.placeholder.com/80?text=%20';
+                    return `
+                        <a href="brands/brand.html?name=${encodeURIComponent(r.name)}" class="category-card">
+                            <div class="category-icon"><img src="${img}" alt="${r.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/80?text=%20'"></div>
+                            <h3>${r.name}</h3>
+                        </a>
+                    `;
+                }).join('');
+            } catch (err) {
+                grid.innerHTML = '';
+            }
+        }
+
+        // ============ প্রোডাক্ট লিস্ট — এখন সার্ভার-সাইড pagination ব্যবহার করে, প্রথমেই মাত্র ১২টা আনে,
+        // Load More চাপলে পরের ব্যাচ আনে (আগে পুরো ক্যাটালগ একসাথে ডাউনলোড হয়ে ব্রাউজারে ভাগ হতো) ============
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentCategory = null;
+        const PAGE_SIZE = 12;
+
+        async function loadHomeProducts() {
+            renderCategoryGrid();
+            renderBrandGrid();
+            applyCategoryFilterFromUrl();
         }
 
         function goToCategory(catName) {
@@ -265,52 +188,67 @@
         }
 
         // ব্রাউজারের Back/Forward বাটনেও ঠিকভাবে কাজ করার জন্য
-        window.addEventListener('popstate', () => {
-            if (allProducts.length) applyCategoryFilterFromUrl();
-        });
+        window.addEventListener('popstate', () => applyCategoryFilterFromUrl());
 
-        function applyCategoryFilterFromUrl() {
+        async function applyCategoryFilterFromUrl() {
             const params = new URLSearchParams(window.location.search);
-            const cat = params.get('category');
-            const banner = document.getElementById('categoryBanner');
+            currentCategory = params.get('category');
             const titleEl = document.getElementById('productsSectionTitle');
+            const banner = document.getElementById('categoryBanner');
 
-            if (cat) {
-                filteredProducts = allProducts.filter(p => detectPartCategory(p.name) === cat);
-                titleEl.textContent = cat;
-                banner.innerHTML = `<div class="active-category-banner">
-                    দেখাচ্ছে: <b>${cat}</b> (${filteredProducts.length}টি) — <a href="index.html" onclick="clearCategory(event)">সব প্রোডাক্ট দেখুন</a>
-                </div>`;
-            } else {
-                filteredProducts = allProducts;
-                titleEl.textContent = 'Latest Products';
-                banner.innerHTML = '';
-            }
+            titleEl.textContent = currentCategory || 'Latest Products';
+            if (!currentCategory) banner.innerHTML = '';
 
             const listEl = document.getElementById('product-list');
             listEl.classList.add('fading');
-            setTimeout(() => {
-                currentPage = 0;
-                listEl.innerHTML = '';
-                renderNextPage();
-                listEl.classList.remove('fading');
-            }, 120);
+            currentPage = 1;
+            await loadProductsPage();
+            listEl.classList.remove('fading');
 
             // ক্যাটাগরি সিলেক্ট থাকলে স্বয়ংক্রিয়ভাবে প্রোডাক্ট লিস্টের কাছে স্ক্রল করা,
             // যাতে ক্লিক করার পর কাস্টমারকে আবার হাতে করে স্ক্রল করতে না হয়
-            if (cat) {
-                setTimeout(() => {
-                    titleEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 150);
+            if (currentCategory) {
+                setTimeout(() => titleEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
             }
         }
 
-        function renderNextPage() {
+        async function loadProductsPage() {
             const container = document.getElementById('product-list');
-            const start = currentPage * PAGE_SIZE;
-            const pageItems = filteredProducts.slice(start, start + PAGE_SIZE);
+            const banner = document.getElementById('categoryBanner');
+            try {
+                const qs = new URLSearchParams({ status: 'published', fields: 'summary', page: currentPage, limit: PAGE_SIZE });
+                if (currentCategory) qs.set('category', currentCategory);
 
-            pageItems.forEach(p => {
+                const res = await fetch(`${API_BASE}/api/products?${qs.toString()}`);
+                const data = await res.json();
+                totalPages = data.totalPages || 1;
+
+                if (currentCategory) {
+                    banner.innerHTML = `<div class="active-category-banner">
+                        দেখাচ্ছে: <b>${currentCategory}</b> (${data.total}টি) — <a href="index.html" onclick="clearCategory(event)">সব প্রোডাক্ট দেখুন</a>
+                    </div>`;
+                }
+
+                if (currentPage === 1) container.innerHTML = '';
+
+                const items = data.products || [];
+                if (currentPage === 1 && items.length === 0) {
+                    container.innerHTML = '<p>এই ক্যাটাগরিতে কোনো প্রোডাক্ট পাওয়া যায়নি।</p>';
+                } else {
+                    renderProductCards(items);
+                }
+
+                const loadMoreWrapper = document.getElementById('loadMoreWrapper');
+                loadMoreWrapper.style.display = currentPage < totalPages ? 'block' : 'none';
+            } catch (err) {
+                console.error('Error loading products:', err);
+                container.innerHTML = '<p>প্রোডাক্ট লোড করা সম্ভব হয়নি।</p>';
+            }
+        }
+
+        function renderProductCards(items) {
+            const container = document.getElementById('product-list');
+            items.forEach(p => {
                 const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0]) : 'https://via.placeholder.com/200';
                 const card = document.createElement('div');
                 card.className = 'product-card';
@@ -323,20 +261,11 @@
                 `;
                 container.appendChild(card);
             });
-
-            currentPage++;
-
-            const loadMoreWrapper = document.getElementById('loadMoreWrapper');
-            const hasMore = currentPage * PAGE_SIZE < filteredProducts.length;
-            loadMoreWrapper.style.display = hasMore ? 'block' : 'none';
-
-            if (filteredProducts.length === 0) {
-                container.innerHTML = '<p>এই ক্যাটাগরিতে কোনো প্রোডাক্ট পাওয়া যায়নি।</p>';
-            }
         }
 
         function loadMoreProducts() {
-            renderNextPage();
+            currentPage++;
+            loadProductsPage();
         }
 
         loadHomeProducts();
