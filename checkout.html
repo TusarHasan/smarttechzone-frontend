@@ -45,6 +45,9 @@
     <script src="config.js"></script>
     <script src="cart.js"></script>
     <script src="bd-locations.js"></script>
+    <script src="customer-auth.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="chat-widget.js"></script>
 </head>
 <body>
 
@@ -55,7 +58,7 @@
             <button>Search</button>
         </div>
         <div class="nav-icons">
-            <a href="#">Login</a>
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
             <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
         </div>
     </nav>
@@ -306,6 +309,31 @@
 
         populateDistricts();
 
+        // ===== লগইন করা থাকলে সেভড প্রোফাইল/ঠিকানা দিয়ে ফর্ম অটো-ফিল করা হয় (তবে এডিট করা যায়,
+        // এবং লগইন না থাকলেও guest হিসেবে চেকআউট আগের মতোই কাজ করে) =====
+        async function prefillFromAccount() {
+            if (!getCustomerToken() || !getCustomerData()) return;
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/me`);
+                if (!res.ok) return; // টোকেন মেয়াদোত্তীর্ণ হলেও চেকআউট আটকাবে না, শুধু অটো-ফিল হবে না
+                const data = await res.json();
+
+                document.getElementById('custName').value = data.name || '';
+                document.getElementById('custPhone').value = data.phone || '';
+                if (data.address) document.getElementById('custAddress').value = data.address;
+
+                if (data.city) {
+                    document.getElementById('custDistrict').value = data.city;
+                    populateUpazilas(data.city);
+                    if (data.thana) document.getElementById('custUpazila').value = data.thana;
+                }
+                updateSummaryTotals();
+            } catch (err) {
+                // নেটওয়ার্ক এরর হলেও guest checkout হিসেবে এগিয়ে যেতে দেওয়া হচ্ছে
+            }
+        }
+        prefillFromAccount();
+
         async function placeOrder() {
             const name = document.getElementById('custName').value.trim();
             const phone = document.getElementById('custPhone').value.trim();
@@ -349,9 +377,10 @@
             statusMsg.textContent = '';
 
             try {
-                const res = await fetch(`${API_BASE}/api/orders/checkout`, {
+                // লগইন করা থাকলে টোকেন পাঠানো হয় যাতে অর্ডারটা অ্যাকাউন্টের সাথে যুক্ত হয়
+                // (customerAuthFetch টোকেন না থাকলে চুপচাপ শুধু Content-Type হেডার পাঠায় — guest checkout ভাঙে না)
+                const res = await customerAuthFetch(`${API_BASE}/api/orders/checkout`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         customer: { name, phone, email, address: fullAddress, city: districtEn, district: districtBn, thana: upazilaBn, notes },
                         paymentMethod: isCod ? 'cod' : 'online',

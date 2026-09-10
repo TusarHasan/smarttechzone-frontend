@@ -29,6 +29,15 @@
     .original-price { font-size: 14px; color: #999; text-decoration: line-through; font-weight: normal; }
     .discount-badge { font-size: 13px; color: #e74c3c; background: #fdf1f0; padding: 1px 6px; border-radius: 3px; margin-left: 8px; font-weight: bold; }
     .meta { color: #666; font-size: 14px; margin-bottom: 6px; }
+    .sold-by-row {
+        display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #555;
+        margin: 10px 0 6px; padding: 8px 10px; background: #fafafa; border-radius: 6px;
+    }
+    .chat-seller-btn {
+        background: #fff; border: 1px solid #e74c3c; color: #e74c3c; border-radius: 16px;
+        padding: 5px 14px; font-size: 12.5px; font-weight: bold; cursor: pointer; margin-left: auto;
+    }
+    .chat-seller-btn:hover { background: #fdf1f0; }
     .attr-group { margin-top: 16px; }
     .attr-group-label { font-size: 13px; color: #666; font-weight: bold; }
     .attr-selected-value { font-size: 13px; color: #333; margin-bottom: 8px; }
@@ -147,6 +156,9 @@
 </style>
     <script src="config.js"></script>
     <script src="cart.js"></script>
+    <script src="customer-auth.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="chat-widget.js"></script>
 </head>
 <body>
 <div class="container">
@@ -163,6 +175,10 @@
                 <h1 id="productName"></h1>
                 <div class="meta">Brand: <span id="productBrand"></span> | Model: <span id="productModel"></span></div>
                 <div class="meta">Part Type: <span id="productPartType"></span></div>
+                <div class="sold-by-row">
+                    Sold by <strong>Smart Tech Zone</strong>
+                    <button class="chat-seller-btn" onclick="openVendorChat(productId, document.getElementById('productName').textContent)">💬 চ্যাট করুন</button>
+                </div>
                 <div class="price-block">
                     <div class="price">৳<span id="productPrice"></span></div>
                     <div id="originalPriceWrap" style="display:none;">

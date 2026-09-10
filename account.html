@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <script src="analytics.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আমার অ্যাকাউন্ট - Smart Tech Zone</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .account-container { max-width: 700px; margin: 30px auto; padding: 0 20px; }
+        .account-card { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .account-card h3 { margin-top: 0; font-size: 16px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .account-card label { display: block; margin-top: 14px; font-size: 13px; font-weight: bold; color: #333; }
+        .account-card input, .account-card textarea, .account-card select {
+            width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ccc; border-radius: 4px;
+            box-sizing: border-box; font-family: Arial, sans-serif; font-size: 14px;
+        }
+        .account-card input:disabled { background: #f5f5f5; color: #888; }
+        .account-card textarea { min-height: 60px; resize: vertical; }
+        .save-btn {
+            margin-top: 16px; background: #e74c3c; color: #fff; border: none; padding: 11px 22px;
+            font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;
+        }
+        .save-btn:hover { background: #c0392b; }
+        .save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .logout-btn { background: none; border: 1px solid #ccc; color: #666; padding: 6px 14px; border-radius: 4px; font-size: 12.5px; cursor: pointer; }
+        .logout-btn:hover { border-color: #e74c3c; color: #e74c3c; }
+        #profileMsg, #addressMsg { margin-top: 10px; font-size: 13.5px; }
+
+        .order-item-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #f5f5f5; }
+        .order-result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .order-status-badge { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: 11.5px; font-weight: bold; color: #fff; }
+        .status-pending { background: #999; }
+        .status-processing { background: #f39c12; }
+        .status-shipped { background: #2980b9; }
+        .status-delivered { background: #27ae60; }
+        .status-cancelled { background: #e74c3c; }
+        .order-mini-card { border: 1px solid #eee; border-radius: 6px; padding: 14px; margin-top: 14px; }
+        .order-mini-total { font-size: 14px; font-weight: bold; color: #333; margin-top: 8px; text-align: right; }
+        .no-orders { text-align: center; color: #999; padding: 30px 0; font-size: 14px; }
+        .no-orders a { color: #e74c3c; font-weight: bold; text-decoration: none; }
+        .loading-hint { text-align: center; color: #999; padding: 20px 0; font-size: 13.5px; }
+    </style>
+    <script src="config.js"></script>
+    <script src="customer-auth.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="chat-widget.js"></script>
+    <script src="bd-locations.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
+            <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
+        </div>
+    </nav>
+
+    <div class="account-container">
+        <h2 style="color:#333;">আমার অ্যাকাউন্ট</h2>
+
+        <div class="account-card">
+            <h3>প্রোফাইল <button class="logout-btn" onclick="customerLogout()">লগ আউট</button></h3>
+            <label>নাম</label>
+            <input type="text" id="acName" placeholder="আপনার পুরো নাম">
+            <label>ফোন নাম্বার</label>
+            <input type="text" id="acPhone" disabled>
+            <button class="save-btn" id="saveProfileBtn" onclick="saveProfile()">প্রোফাইল সেভ করুন</button>
+            <div id="profileMsg"></div>
+        </div>
+
+        <div class="account-card">
+            <h3>সেভড ডেলিভারি ঠিকানা</h3>
+            <p style="font-size:12.5px; color:#999; margin:0;">এখানে ঠিকানা সেভ করলে পরের বার চেকআউট করার সময় এটা অটোমেটিক ভরে যাবে।</p>
+            <label>সম্পূর্ণ ঠিকানা</label>
+            <textarea id="acAddress" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
+            <label>জেলা</label>
+            <select id="acDistrict">
+                <option value="">জেলা নির্বাচন করুন</option>
+            </select>
+            <label>উপজেলা / থানা</label>
+            <select id="acUpazila" disabled>
+                <option value="">আগে জেলা নির্বাচন করুন</option>
+            </select>
+            <button class="save-btn" id="saveAddressBtn" onclick="saveAddress()">ঠিকানা সেভ করুন</button>
+            <div id="addressMsg"></div>
+        </div>
+
+        <div class="account-card">
+            <h3>আমার অর্ডারসমূহ</h3>
+            <div id="ordersList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+        </div>
+    </div>
+
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+
+    <script>
+        const API_BASE = BACKEND_URL;
+
+        // লগইন করা না থাকলে সরাসরি লগইন পেজে পাঠিয়ে দেওয়া হচ্ছে
+        if (!getCustomerToken() || !getCustomerData()) {
+            window.location.href = 'login.html?redirect=account.html';
+        }
+
+        function formatPrice(n) {
+            return Number(n).toLocaleString('en-IN');
+        }
+
+        const statusLabels = {
+            pending: 'পেন্ডিং', processing: 'প্রসেসিং হচ্ছে', shipped: 'শিপড',
+            delivered: 'ডেলিভারড', cancelled: 'বাতিল'
+        };
+
+        // ===== জেলা/উপজেলা ড্রপডাউন (checkout.html এর মতোই) =====
+        function populateDistricts() {
+            const districtSelect = document.getElementById('acDistrict');
+            const sorted = [...BD_LOCATIONS].sort((a, b) => a.bn.localeCompare(b.bn, 'bn'));
+            sorted.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.en;
+                opt.textContent = d.bn;
+                districtSelect.appendChild(opt);
+            });
+        }
+
+        function populateUpazilas(districtEnName, selectedUpazilaBn) {
+            const upazilaSelect = document.getElementById('acUpazila');
+            upazilaSelect.innerHTML = '';
+            const district = BD_LOCATIONS.find(d => d.en === districtEnName);
+
+            if (!district) {
+                upazilaSelect.innerHTML = '<option value="">আগে জেলা নির্বাচন করুন</option>';
+                upazilaSelect.disabled = true;
+                return;
+            }
+
+            upazilaSelect.disabled = false;
+            upazilaSelect.innerHTML = '<option value="">উপজেলা/থানা নির্বাচন করুন</option>';
+            const sortedUpazilas = [...district.upazilas].sort((a, b) => a.bn.localeCompare(b.bn, 'bn'));
+            sortedUpazilas.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.bn;
+                opt.textContent = u.bn;
+                if (selectedUpazilaBn && u.bn === selectedUpazilaBn) opt.selected = true;
+                upazilaSelect.appendChild(opt);
+            });
+        }
+
+        document.getElementById('acDistrict').addEventListener('change', function () {
+            populateUpazilas(this.value, '');
+        });
+
+        populateDistricts();
+
+        // ===== প্রোফাইল ও ঠিকানা লোড =====
+        async function loadProfile() {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/me`);
+                if (res.status === 401 || res.status === 403) {
+                    customerLogout();
+                    return;
+                }
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'প্রোফাইল লোড করা যায়নি।');
+
+                document.getElementById('acName').value = data.name || '';
+                document.getElementById('acPhone').value = data.phone || '';
+                document.getElementById('acAddress').value = data.address || '';
+
+                if (data.city) {
+                    document.getElementById('acDistrict').value = data.city;
+                    populateUpazilas(data.city, data.thana || '');
+                }
+
+                // সবচেয়ে আপডেটেড নাম localStorage-এও রেখে দেওয়া হচ্ছে (নেভবারে দেখানোর জন্য)
+                setCustomerSession(getCustomerToken(), data);
+                renderNavAuth();
+            } catch (err) {
+                document.getElementById('profileMsg').style.color = '#e74c3c';
+                document.getElementById('profileMsg').textContent = '❌ ' + err.message;
+            }
+        }
+
+        async function saveProfile() {
+            const name = document.getElementById('acName').value.trim();
+            const msg = document.getElementById('profileMsg');
+            const btn = document.getElementById('saveProfileBtn');
+
+            if (!name) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = 'নাম খালি রাখা যাবে না।';
+                return;
+            }
+
+            btn.disabled = true;
+            msg.textContent = '';
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/me`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ name })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'সেভ করা যায়নি।');
+
+                setCustomerSession(getCustomerToken(), data);
+                renderNavAuth();
+                msg.style.color = '#16a34a';
+                msg.textContent = '✅ প্রোফাইল সেভ হয়েছে।';
+            } catch (err) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = '❌ ' + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function saveAddress() {
+            const address = document.getElementById('acAddress').value.trim();
+            const districtSelect = document.getElementById('acDistrict');
+            const upazilaSelect = document.getElementById('acUpazila');
+            const districtEn = districtSelect.value;
+            const districtBn = districtEn ? districtSelect.options[districtSelect.selectedIndex].textContent : '';
+            const upazilaBn = upazilaSelect.value;
+            const msg = document.getElementById('addressMsg');
+            const btn = document.getElementById('saveAddressBtn');
+
+            btn.disabled = true;
+            msg.textContent = '';
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/me`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ address, city: districtEn, district: districtBn, thana: upazilaBn })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'সেভ করা যায়নি।');
+
+                setCustomerSession(getCustomerToken(), data);
+                msg.style.color = '#16a34a';
+                msg.textContent = '✅ ঠিকানা সেভ হয়েছে — পরের চেকআউটে এটা অটোমেটিক ভরে যাবে।';
+            } catch (err) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = '❌ ' + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ===== অর্ডার হিস্টরি =====
+        function renderOrders(orders) {
+            const box = document.getElementById('ordersList');
+            if (!orders.length) {
+                box.innerHTML = `<div class="no-orders">এখনো কোনো অর্ডার নেই।<br><br><a href="index.html">কেনাকাটা শুরু করুন →</a></div>`;
+                return;
+            }
+            box.innerHTML = orders.map(order => `
+                <div class="order-mini-card">
+                    <div class="order-result-header">
+                        <div>
+                            <strong>${order.orderNumber}</strong>
+                            <div style="font-size:12px; color:#999; margin-top:2px;">${new Date(order.createdAt).toLocaleDateString('bn-BD')}</div>
+                        </div>
+                        <span class="order-status-badge status-${order.orderStatus}">${statusLabels[order.orderStatus] || order.orderStatus}</span>
+                    </div>
+                    ${order.items.map(item => `
+                        <div class="order-item-row">
+                            <span>${item.name}${item.variantLabel ? ` (${item.variantLabel})` : ''} × ${item.quantity}</span>
+                            <span>৳ ${formatPrice(item.price * item.quantity)}</span>
+                        </div>
+                    `).join('')}
+                    <div class="order-mini-total">মোট: ৳ ${formatPrice(order.total)}</div>
+                </div>
+            `).join('');
+        }
+
+        async function loadOrders() {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/orders/my`);
+                if (res.status === 401 || res.status === 403) {
+                    customerLogout();
+                    return;
+                }
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'অর্ডার লোড করা যায়নি।');
+                renderOrders(data);
+            } catch (err) {
+                document.getElementById('ordersList').innerHTML = `<div class="no-orders">❌ ${err.message}</div>`;
+            }
+        }
+
+        loadProfile();
+        loadOrders();
+    </script>
+</body>
+</html>
