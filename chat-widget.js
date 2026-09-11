@@ -34,43 +34,83 @@
     function injectStyles() {
         const style = document.createElement('style');
         style.textContent = `
+            @keyframes stzSway {
+                0%, 100% { transform: rotate(-7deg); }
+                50% { transform: rotate(7deg); }
+            }
             #stzChatFab {
-                position: fixed; top: 90px; right: 18px; z-index: 9998;
-                width: 52px; height: 52px; border-radius: 50%;
-                background: #e74c3c; color: #fff; border: none; cursor: pointer;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.25); font-size: 24px;
+                position: fixed; bottom: 22px; right: 22px; z-index: 9998;
+                width: 64px; height: 64px; padding: 0;
+                background: transparent; border: none; cursor: pointer;
                 display: flex; align-items: center; justify-content: center;
+                filter: drop-shadow(0 6px 14px rgba(0,0,0,0.3));
+                transform-origin: 50% 100%;
+                animation: stzSway 2.4s ease-in-out infinite;
+            }
+            #stzChatFab img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+            #stzChatFab:hover {
+                animation-play-state: paused;
+                filter: drop-shadow(0 10px 20px rgba(0,0,0,0.38));
+            }
+            @media (prefers-reduced-motion: reduce) {
+                #stzChatFab { animation: none; }
             }
             #stzChatFab .stz-dot {
-                position: absolute; top: 2px; right: 2px; width: 12px; height: 12px;
+                position: absolute; top: -2px; right: 4px; width: 13px; height: 13px;
                 background: #ffd400; border: 2px solid #fff; border-radius: 50%; display: none;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
             }
             @media (max-width: 700px) {
-                #stzChatFab { top: auto; bottom: 18px; right: 14px; width: 46px; height: 46px; font-size: 20px; }
+                #stzChatFab { bottom: 16px; right: 14px; width: 52px; height: 52px; }
             }
             #stzChatPanel {
-                position: fixed; top: 0; right: -360px; width: 340px; max-width: 92vw; height: 100%;
-                background: #fff; z-index: 9999; box-shadow: -2px 0 16px rgba(0,0,0,0.2);
-                display: flex; flex-direction: column; transition: right .25s ease;
-                font-family: Arial, sans-serif;
+                position: fixed; bottom: 96px; right: 18px; z-index: 9999;
+                width: 368px; max-width: calc(100vw - 24px); height: 540px; max-height: calc(100vh - 130px);
+                background: #fff; border-radius: 18px; overflow: hidden;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.22), 0 6px 20px rgba(0,0,0,0.12);
+                display: flex; flex-direction: column; font-family: Arial, sans-serif;
+                transform-origin: bottom right;
+                transform: scale(0.9) translateY(16px); opacity: 0; visibility: hidden; pointer-events: none;
+                transition: transform .2s cubic-bezier(.2,.9,.3,1.2), opacity .18s ease, visibility 0s linear .2s;
             }
-            #stzChatPanel.open { right: 0; }
+            #stzChatPanel.open {
+                transform: scale(1) translateY(0); opacity: 1; visibility: visible; pointer-events: auto;
+                transition: transform .2s cubic-bezier(.2,.9,.3,1.2), opacity .18s ease, visibility 0s;
+            }
+            @media (max-width: 700px) {
+                #stzChatPanel {
+                    bottom: 0; right: 0; left: 0; width: 100%; max-width: 100%;
+                    height: 78vh; max-height: 78vh; border-radius: 18px 18px 0 0;
+                    transform-origin: bottom center; transform: scale(0.96) translateY(24px);
+                }
+                #stzChatPanel.open { transform: scale(1) translateY(0); }
+            }
             #stzChatPanelHeader {
-                background: #e74c3c; color: #fff; padding: 14px 16px; font-weight: bold; font-size: 14px;
-                display: flex; justify-content: space-between; align-items: center;
+                background: linear-gradient(120deg, #ff5c46, #d6321f); color: #fff; padding: 16px 18px; font-weight: bold; font-size: 14.5px;
+                display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
             }
-            #stzChatPanelHeader small { display: block; font-weight: normal; font-size: 11px; opacity: .9; margin-top: 2px; }
-            #stzChatClose { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; line-height: 1; }
-            #stzChatMessages { flex: 1; overflow-y: auto; padding: 12px; background: #f7f7f7; }
-            .stz-msg { max-width: 80%; margin-bottom: 10px; padding: 8px 12px; border-radius: 12px; font-size: 13.5px; line-height: 1.5; word-wrap: break-word; }
-            .stz-msg.customer { background: #e74c3c; color: #fff; margin-left: auto; border-bottom-right-radius: 3px; }
-            .stz-msg.admin { background: #fff; color: #333; border: 1px solid #eee; margin-right: auto; border-bottom-left-radius: 3px; }
+            #stzChatPanelHeader small { display: block; font-weight: normal; font-size: 11px; opacity: .9; margin-top: 3px; }
+            #stzChatClose {
+                background: rgba(255,255,255,0.18); border: none; color: #fff; font-size: 18px; cursor: pointer;
+                line-height: 1; width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+                display: flex; align-items: center; justify-content: center; transition: background .15s;
+            }
+            #stzChatClose:hover { background: rgba(255,255,255,0.32); }
+            #stzChatMessages { flex: 1; overflow-y: auto; padding: 14px; background: #f6f7f9; }
+            .stz-msg { max-width: 80%; margin-bottom: 10px; padding: 9px 13px; border-radius: 14px; font-size: 13.5px; line-height: 1.5; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+            .stz-msg.customer { background: #e74c3c; color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
+            .stz-msg.admin { background: #fff; color: #333; border: 1px solid #ececec; margin-right: auto; border-bottom-left-radius: 4px; }
             .stz-msg-time { font-size: 10px; opacity: .7; margin-top: 3px; }
             #stzChatEmpty { color: #999; font-size: 13px; text-align: center; margin-top: 30px; }
-            #stzChatInputRow { display: flex; gap: 8px; padding: 10px; border-top: 1px solid #eee; }
-            #stzChatInput { flex: 1; border: 1px solid #ddd; border-radius: 20px; padding: 9px 14px; font-size: 13.5px; font-family: Arial, sans-serif; }
-            #stzChatSend { background: #e74c3c; color: #fff; border: none; border-radius: 50%; width: 38px; height: 38px; cursor: pointer; font-size: 15px; flex-shrink: 0; }
-            #stzChatSend:disabled { background: #ccc; cursor: not-allowed; }
+            #stzChatInputRow { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #eee; background: #fff; flex-shrink: 0; }
+            #stzChatInput { flex: 1; border: 1px solid #e2e2e2; border-radius: 22px; padding: 10px 15px; font-size: 13.5px; font-family: Arial, sans-serif; background: #f6f7f9; }
+            #stzChatInput:focus { outline: none; border-color: #e74c3c; background: #fff; }
+            #stzChatSend {
+                background: linear-gradient(145deg, #ff5c46, #e0301e); color: #fff; border: none; border-radius: 50%;
+                width: 40px; height: 40px; cursor: pointer; font-size: 15px; flex-shrink: 0;
+                box-shadow: 0 3px 8px rgba(231,76,60,0.35);
+            }
+            #stzChatSend:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
         `;
         document.head.appendChild(style);
     }
@@ -79,7 +119,7 @@
         const fab = document.createElement('button');
         fab.id = 'stzChatFab';
         fab.title = 'Smart Tech Zone সাপোর্টের সাথে চ্যাট করুন';
-        fab.innerHTML = '💬<span class="stz-dot" id="stzChatDot"></span>';
+        fab.innerHTML = `<img src="${BASE_PATH}images/chat-icon.png" alt="চ্যাট"><span class="stz-dot" id="stzChatDot"></span>`;
         fab.onclick = function () { openPlatformChat(); };
         document.body.appendChild(fab);
 

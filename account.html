@@ -67,10 +67,12 @@
 
         <div class="account-card">
             <h3>প্রোফাইল <button class="logout-btn" onclick="customerLogout()">লগ আউট</button></h3>
-            <label>নাম</label>
-            <input type="text" id="acName" placeholder="আপনার পুরো নাম">
-            <label>ফোন নাম্বার</label>
-            <input type="text" id="acPhone" disabled>
+            <form id="profileForm" autocomplete="on" onsubmit="return false;">
+                <label>নাম</label>
+                <input type="text" id="acName" name="name" autocomplete="name" placeholder="আপনার পুরো নাম">
+                <label>ফোন নাম্বার</label>
+                <input type="text" id="acPhone" name="tel" autocomplete="tel" disabled>
+            </form>
             <button class="save-btn" id="saveProfileBtn" onclick="saveProfile()">প্রোফাইল সেভ করুন</button>
             <div id="profileMsg"></div>
         </div>
@@ -78,16 +80,18 @@
         <div class="account-card">
             <h3>সেভড ডেলিভারি ঠিকানা</h3>
             <p style="font-size:12.5px; color:#999; margin:0;">এখানে ঠিকানা সেভ করলে পরের বার চেকআউট করার সময় এটা অটোমেটিক ভরে যাবে।</p>
-            <label>সম্পূর্ণ ঠিকানা</label>
-            <textarea id="acAddress" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
-            <label>জেলা</label>
-            <select id="acDistrict">
-                <option value="">জেলা নির্বাচন করুন</option>
-            </select>
-            <label>উপজেলা / থানা</label>
-            <select id="acUpazila" disabled>
-                <option value="">আগে জেলা নির্বাচন করুন</option>
-            </select>
+            <form id="addressForm" autocomplete="on" onsubmit="return false;">
+                <label>সম্পূর্ণ ঠিকানা</label>
+                <textarea id="acAddress" name="street-address" autocomplete="street-address" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
+                <label>জেলা</label>
+                <select id="acDistrict" name="address-level2" autocomplete="address-level2">
+                    <option value="">জেলা নির্বাচন করুন</option>
+                </select>
+                <label>উপজেলা / থানা</label>
+                <select id="acUpazila" name="address-level3" autocomplete="address-level3" disabled>
+                    <option value="">আগে জেলা নির্বাচন করুন</option>
+                </select>
+            </form>
             <button class="save-btn" id="saveAddressBtn" onclick="saveAddress()">ঠিকানা সেভ করুন</button>
             <div id="addressMsg"></div>
         </div>
