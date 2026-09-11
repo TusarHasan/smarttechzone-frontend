@@ -25,6 +25,13 @@
         #authMsg { margin-top: 12px; font-size: 14px; text-align: center; }
         .auth-switch { text-align: center; margin-top: 18px; font-size: 13.5px; color: #666; }
         .auth-switch a { color: #e74c3c; font-weight: bold; text-decoration: none; }
+        .pw-wrap { position: relative; }
+        .pw-wrap input { padding-right: 42px; }
+        .pw-toggle {
+            position: absolute; right: 4px; top: 6px; background: none; border: none;
+            cursor: pointer; font-size: 17px; padding: 8px; line-height: 1; color: #888;
+        }
+        .pw-toggle:hover { color: #333; }
     </style>
     <script src="config.js"></script>
     <script src="customer-auth.js"></script>
@@ -51,7 +58,10 @@
                 <input type="tel" id="loginPhone" name="tel" autocomplete="tel" placeholder="01XXXXXXXXX">
 
                 <label>পাসওয়ার্ড</label>
-                <input type="password" id="loginPassword" name="password" autocomplete="current-password" placeholder="আপনার পাসওয়ার্ড">
+                <div class="pw-wrap">
+                    <input type="password" id="loginPassword" name="password" autocomplete="current-password" placeholder="আপনার পাসওয়ার্ড">
+                    <button type="button" class="pw-toggle" onclick="togglePassword('loginPassword', this)" aria-label="পাসওয়ার্ড দেখান">👁️</button>
+                </div>
             </form>
             <button class="auth-btn" id="loginBtn" onclick="doLogin()">লগইন করুন</button>
             <div id="authMsg"></div>
@@ -65,6 +75,19 @@
 
     <script>
         const API_BASE = BACKEND_URL;
+
+        function togglePassword(id, btn) {
+            const input = document.getElementById(id);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+                btn.setAttribute('aria-label', 'পাসওয়ার্ড লুকান');
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+                btn.setAttribute('aria-label', 'পাসওয়ার্ড দেখান');
+            }
+        }
 
         // চেকআউট থেকে ?redirect=checkout.html দিয়ে এলে লগইনের পর সরাসরি সেখানে ফেরত পাঠানো হয়
         const params = new URLSearchParams(window.location.search);
