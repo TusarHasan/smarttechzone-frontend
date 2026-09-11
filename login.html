@@ -32,9 +32,15 @@
             cursor: pointer; font-size: 17px; padding: 8px; line-height: 1; color: #888;
         }
         .pw-toggle:hover { color: #333; }
+
+        .auth-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: #999; font-size: 12.5px; }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #eee; }
+        .social-login-row { display: flex; justify-content: center; }
+        #googleSignInBtn { display: flex; justify-content: center; }
     </style>
     <script src="config.js"></script>
     <script src="customer-auth.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -65,6 +71,20 @@
             </form>
             <button class="auth-btn" id="loginBtn" onclick="doLogin()">লগইন করুন</button>
             <div id="authMsg"></div>
+
+            <div class="auth-divider">অথবা</div>
+            <div class="social-login-row">
+                <div id="g_id_onload"
+                     data-client_id="558401107682-uh42vi22bqerhsn08j7obr6cq0n480r1.apps.googleusercontent.com"
+                     data-callback="handleGoogleCredentialResponse"
+                     data-auto_prompt="false">
+                </div>
+                <div id="googleSignInBtn" class="g_id_signin"
+                     data-type="standard" data-size="large" data-theme="outline"
+                     data-text="signin_with" data-shape="rectangular" data-logo_alignment="left" data-locale="bn">
+                </div>
+            </div>
+
             <div class="auth-switch">নতুন কাস্টমার? <a id="registerLink" href="register.html">অ্যাকাউন্ট তৈরি করুন</a></div>
         </div>
     </div>
@@ -139,6 +159,29 @@
         document.getElementById('loginPassword').addEventListener('keydown', e => {
             if (e.key === 'Enter') doLogin();
         });
+
+        // Google-এর "Sign in with Google" বাটনে ক্লিক করলে গুগল নিজে থেকেই এই ফাংশনটা কল করে,
+        // একটা যাচাইকৃত ID টোকেন (credential) সহ — সেটা ব্যাকএন্ডে পাঠিয়ে লগইন/অ্যাকাউন্ট তৈরি হচ্ছে
+        async function handleGoogleCredentialResponse(response) {
+            const msg = document.getElementById('authMsg');
+            msg.style.color = '#333';
+            msg.textContent = 'লগইন হচ্ছে...';
+            try {
+                const res = await fetch(`${API_BASE}/api/customer-auth/google`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ credential: response.credential })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Google লগইন ব্যর্থ হয়েছে।');
+
+                setCustomerSession(data.token, data.customer);
+                window.location.href = redirectTo;
+            } catch (err) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = '❌ ' + err.message;
+            }
+        }
     </script>
 </body>
 </html>
