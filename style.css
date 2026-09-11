@@ -88,6 +88,80 @@ body {
     color: #e74c3c;
 }
 
+/* ===== লগইন আইকন — লগইন করা না থাকলে navAuthArea-তে টেক্সট লিংকের বদলে এই বাটন-স্টাইল
+   আইকনটা দেখানো হয় (customer-auth.js এর renderNavAuth()) ===== */
+.stz-login-icon-link {
+    display: inline-flex; align-items: center; margin-left: 18px;
+    transition: transform .15s ease;
+}
+.stz-login-icon-link:hover { transform: scale(1.06); }
+.stz-login-icon { height: 36px; width: auto; display: block; }
+@media (max-width: 768px) {
+    .stz-login-icon-link { margin-left: 12px; }
+    .stz-login-icon { height: 30px; }
+}
+
+/* ===== "Add to Cart" বাটনের ভেতরের কার্ট আইকন — product.html, search.html, brands/brand.html ===== */
+.btn-cart-icon, .quick-add-icon {
+    height: 18px; width: auto; vertical-align: middle; margin-right: 6px; margin-top: -2px;
+}
+
+/* ===== প্রোফাইল হোভার ড্রপডাউন — লগইন করা থাকলে নেভবারে নামের উপর মাউস নিলে দেখা যায়
+   (customer-auth.js এর renderNavAuth()) ===== */
+.stz-profile-wrap {
+    position: relative; display: inline-block; margin-left: 18px;
+}
+.stz-profile-trigger {
+    display: inline-flex; align-items: center; gap: 3px;
+    color: #333; text-decoration: none; font-size: 14px; font-weight: 500;
+}
+.stz-profile-wrap:hover .stz-profile-trigger { color: #e74c3c; }
+.stz-caret { font-size: 10px; transition: transform .2s ease; display: inline-block; }
+.stz-profile-wrap:hover .stz-caret { transform: rotate(180deg); }
+
+.stz-profile-dropdown {
+    position: absolute; top: 100%; right: 0; margin-top: 6px; width: 240px;
+    background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.06);
+    padding: 16px 0 8px; z-index: 200;
+    opacity: 0; visibility: hidden; transform: translateY(-8px);
+    transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+}
+/* মাউস trigger আর dropdown এর মাঝে ছোট্ট একটা অদৃশ্য প্যাডিং-ব্রিজ, যাতে মাঝখানে মাউস
+   সরানোর সময় হোভার স্টেট হারিয়ে ড্রপডাউন হঠাৎ বন্ধ হয়ে না যায় */
+.stz-profile-dropdown::before {
+    content: ''; position: absolute; top: -10px; left: 0; right: 0; height: 10px;
+}
+.stz-profile-wrap:hover .stz-profile-dropdown {
+    opacity: 1; visibility: visible; transform: translateY(0);
+    transition: opacity .18s ease, transform .18s ease, visibility 0s;
+}
+.stz-profile-header {
+    display: flex; align-items: center; gap: 12px; padding: 0 18px 12px;
+}
+.stz-profile-avatar {
+    width: 42px; height: 42px; border-radius: 50%; background: #fdf1f0; color: #e74c3c;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px;
+    flex-shrink: 0;
+}
+.stz-profile-welcome { font-size: 13px; color: #666; line-height: 1.4; }
+.stz-profile-welcome strong { color: #222; font-size: 14.5px; }
+.stz-signout-link {
+    display: block; margin: 0 18px 12px; color: #e74c3c; font-size: 13.5px; font-weight: 600;
+    text-decoration: none; cursor: pointer;
+}
+.stz-signout-link:hover { text-decoration: underline; }
+.stz-dropdown-divider { height: 1px; background: #f0f0f0; margin: 0 0 6px; }
+.stz-dropdown-item {
+    display: flex; align-items: center; gap: 8px; padding: 11px 18px; font-size: 13.5px;
+    color: #333; text-decoration: none; cursor: pointer; transition: background .12s ease;
+}
+.stz-dropdown-item:hover { background: #fafafa; color: #e74c3c; }
+.stz-unread-badge { color: #e74c3c; font-weight: 700; font-size: 12.5px; }
+@media (max-width: 480px) {
+    .stz-profile-dropdown { width: 210px; }
+    .stz-profile-wrap { margin-left: 10px; }
+}
+
 /* ===== Navbar — Mobile Responsive =====
    ছোট স্ক্রিনে লোগো + সার্চ বার + নাম আইকন একই লাইনে আটার চেষ্টা করলে সার্চ বক্স/বাটন
    একদম চিপে/অদৃশ্য হয়ে যাচ্ছিল। তাই মোবাইলে সার্চ বারকে আলাদা, পূর্ণ-প্রস্থ দ্বিতীয় লাইনে

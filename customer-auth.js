@@ -18,7 +18,7 @@ function setCustomerSession(token, customer) {
 function customerLogout() {
     localStorage.removeItem(CUSTOMER_TOKEN_KEY);
     localStorage.removeItem(CUSTOMER_DATA_KEY);
-    window.location.href = 'index.html';
+    window.location.href = getAuthBasePath() + 'index.html';
 }
 
 // অথেনটিকেটেড API কল — টোকেন থাকলে Authorization হেডারে যোগ হয়
@@ -29,18 +29,82 @@ async function customerAuthFetch(url, options = {}) {
     return fetch(url, Object.assign({}, options, { headers }));
 }
 
+// এই স্ক্রিপ্টটা root থেকে নাকি সাবফোল্ডার থেকে (../customer-auth.js) লোড হয়েছে সেটা বের করে —
+// chat-widget.js এর getBasePath() এর মতোই — যাতে লগইন আইকনের ছবির পাথ সব পেজেই ঠিক থাকে
+function getAuthBasePath() {
+    const scripts = document.getElementsByTagName('script');
+    for (let i = 0; i < scripts.length; i++) {
+        const src = scripts[i].getAttribute('src') || '';
+        if (src.indexOf('customer-auth.js') !== -1) {
+            return src.slice(0, src.lastIndexOf('customer-auth.js'));
+        }
+    }
+    return '';
+}
+
+// নেভবারের প্রোফাইল ড্রপডাউনের "Message Center" ক্লিক করলে চ্যাট উইজেট খুলে যায়
+// (chat-widget.js লোড না থাকলে চুপচাপ কিছু হবে না)
+function stzOpenMessageCenter() {
+    if (typeof openPlatformChat === 'function') openPlatformChat();
+}
+
+// "Payment" ফিচারটা এখনো তৈরি হয়নি — সাইটে এখনো সেভড পেমেন্ট মেথড/হিস্ট্রি পেজ নেই,
+// তাই আপাতত একটা "শীঘ্রই আসছে" বার্তা দেখানো হচ্ছে
+function stzPaymentComingSoon() {
+    alert('পেমেন্ট সেকশনটি শীঘ্রই যুক্ত হবে।');
+}
+
+// নেভবারের প্রোফাইল ড্রপডাউনে থাকা "Message Center"-এর পাশে আনরিড থ্রেডের সংখ্যা দেখানো হয়
+// (থ্রেড-লেভেলে unreadByCustomer ফ্ল্যাগ গণনা করে — চ্যাট উইজেটের ডট-ব্যাজের মতোই সোর্স)
+async function loadNavUnreadCount() {
+    try {
+        if (!getCustomerToken() || typeof BACKEND_URL === 'undefined') return;
+        const res = await customerAuthFetch(`${BACKEND_URL}/api/chat/threads`);
+        if (!res.ok) return;
+        const threads = await res.json();
+        const count = Array.isArray(threads) ? threads.filter(t => t.unreadByCustomer).length : 0;
+        const badge = document.getElementById('stzNavUnreadBadge');
+        if (!badge) return;
+        if (count > 0) {
+            badge.textContent = `(${count})`;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    } catch (e) { /* নন-ক্রিটিক্যাল — ব্যাজ না দেখালেও সমস্যা নেই */ }
+}
+
 // প্রতিটা পেজের নেভবারে #navAuthArea থাকলে সেটা লগইন স্টেট অনুযায়ী আপডেট করে —
-// লগইন করা থাকলে নাম দেখিয়ে account.html-এ লিংক, না থাকলে Login → login.html
+// লগইন করা থাকলে হোভার করলে ড্রপডাউন (Sign Out, My Orders, Message Center, Payment),
+// না থাকলে একটা Login আইকন বাটন → login.html
 function renderNavAuth() {
     const el = document.getElementById('navAuthArea');
     if (!el) return;
     const customer = getCustomerData();
     const token = getCustomerToken();
+    const base = getAuthBasePath();
     if (customer && token) {
         const firstName = (customer.name || '').trim().split(' ')[0] || 'অ্যাকাউন্ট';
-        el.innerHTML = `<a href="account.html">${firstName}</a>`;
+        const initial = firstName.charAt(0).toUpperCase();
+        el.innerHTML = `
+            <div class="stz-profile-wrap">
+                <a href="${base}account.html" class="stz-profile-trigger">${firstName} <span class="stz-caret">&#9662;</span></a>
+                <div class="stz-profile-dropdown">
+                    <div class="stz-profile-header">
+                        <div class="stz-profile-avatar">${initial}</div>
+                        <div class="stz-profile-welcome">স্বাগতম,<br><strong>${firstName}</strong></div>
+                    </div>
+                    <a href="javascript:void(0)" onclick="customerLogout()" class="stz-signout-link">Sign Out</a>
+                    <div class="stz-dropdown-divider"></div>
+                    <a href="${base}account.html" class="stz-dropdown-item">📦 My Orders</a>
+                    <a href="javascript:void(0)" onclick="stzOpenMessageCenter()" class="stz-dropdown-item">💬 Message Center <span id="stzNavUnreadBadge" class="stz-unread-badge" style="display:none;"></span></a>
+                    <a href="javascript:void(0)" onclick="stzPaymentComingSoon()" class="stz-dropdown-item">💳 Payment</a>
+                </div>
+            </div>
+        `;
+        loadNavUnreadCount();
     } else {
-        el.innerHTML = `<a href="login.html">Login</a>`;
+        el.innerHTML = `<a href="${base}login.html" class="stz-login-icon-link" title="লগইন করুন"><img src="${base}images/login-icon.png" alt="Login" class="stz-login-icon"></a>`;
     }
 }
 

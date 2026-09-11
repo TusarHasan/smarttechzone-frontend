@@ -88,9 +88,10 @@
             return url.startsWith('http') ? url : `${API_BASE}${url}`;
         }
 
-        function quickAddToCart(productId, name, price, image) {
+        function quickAddToCart(productId, name, price, image, btnEl) {
             addToCart({ productId, name, price, variantLabel: '', image, quantity: 1 });
-            alert('কার্টে যোগ করা হয়েছে ✅');
+            const card = btnEl ? btnEl.closest('.product-card') : null;
+            flyToCart(image, name, (card && card.querySelector('img')) || btnEl);
         }
 
         let currentPage = 1;
@@ -144,13 +145,13 @@
                     <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'">
                     <h3>${p.name}</h3>
                     <div class="price">৳ ${p.price}</div>
-                    <button class="quick-add-btn" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:13px; margin-top:6px;">Add to Cart</button>
+                    <button class="quick-add-btn" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:13px; margin-top:6px;"><img src="../images/cart-add-icon.png" class="quick-add-icon" alt="">Add to Cart</button>
                 `;
                 // নাম/ছবির মধ্যে quote বা বিশেষ ক্যারেক্টার থাকলেও যাতে ভেঙে না যায়,
                 // তাই onclick অ্যাট্রিবিউটে স্ট্রিং বসিয়ে না দিয়ে সরাসরি JS ক্লোজার ব্যবহার করা হলো
                 card.querySelector('.quick-add-btn').onclick = (e) => {
                     e.stopPropagation();
-                    quickAddToCart(p._id, p.name, p.price, imgUrl);
+                    quickAddToCart(p._id, p.name, p.price, imgUrl, e.currentTarget);
                 };
                 grid.appendChild(card);
             });

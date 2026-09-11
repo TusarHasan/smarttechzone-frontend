@@ -73,9 +73,10 @@
             return url.startsWith('http') ? url : `${API_BASE}${url}`;
         }
 
-        function quickAddToCart(productId, name, price, image) {
+        function quickAddToCart(productId, name, price, image, btnEl) {
             addToCart({ productId, name, price, variantLabel: '', image, quantity: 1 });
-            alert('কার্টে যোগ করা হয়েছে ✅');
+            const card = btnEl ? btnEl.closest('.product-card') : null;
+            flyToCart(image, name, (card && card.querySelector('img')) || btnEl);
         }
 
         let currentPage = 1;
@@ -140,7 +141,7 @@
                     <img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/200'">
                     <h3>${p.name}</h3>
                     <div class="price">৳ ${p.price}</div>
-                    <button onclick="event.stopPropagation(); quickAddToCart('${p._id}', '${(p.name || '').replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}')" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:13px; margin-top:6px;">Add to Cart</button>
+                    <button onclick="event.stopPropagation(); quickAddToCart('${p._id}', '${(p.name || '').replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}', this)" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:13px; margin-top:6px;"><img src="images/cart-add-icon.png" class="quick-add-icon" alt="">Add to Cart</button>
                 `;
                 grid.appendChild(card);
             });
