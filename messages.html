@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <script src="analytics.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>মেসেজ সেন্টার - Smart Tech Zone</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .msgc-container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        .msgc-container h2 { color: #333; margin-bottom: 16px; }
+        .msgc-shell { display: flex; height: 68vh; min-height: 460px; max-height: 640px; border: 1px solid #eee; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+        .msgc-thread-list { width: 300px; flex-shrink: 0; border-right: 1px solid #eee; overflow-y: auto; background: #fafafa; }
+        .msgc-thread-item { display: block; width: 100%; text-align: left; padding: 14px 16px; border: none; border-bottom: 1px solid #eee; background: #fff; cursor: pointer; font-family: Arial, sans-serif; }
+        .msgc-thread-item:hover { background: #fdf1f0; }
+        .msgc-thread-item.active { background: #fdf1f0; border-left: 3px solid #e74c3c; }
+        .msgc-thread-top { display: flex; align-items: center; gap: 10px; }
+        .msgc-thread-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(145deg,#ff5c46,#d6321f); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; flex-shrink: 0; }
+        .msgc-thread-info { flex: 1; min-width: 0; }
+        .msgc-thread-name-row { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+        .msgc-thread-name { font-weight: 700; font-size: 13.5px; color: #222; }
+        .msgc-thread-time { font-size: 11px; color: #999; white-space: nowrap; flex-shrink: 0; }
+        .msgc-thread-snippet { font-size: 12.5px; color: #777; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .msgc-thread-unread-badge { background: #e74c3c; color: #fff; font-size: 10px; font-weight: bold; border-radius: 50%; width: 9px; height: 9px; display: inline-block; flex-shrink: 0; padding: 0; }
+        .msgc-thread-empty { padding: 40px 16px; text-align: center; color: #999; font-size: 13px; }
+
+        .msgc-conv-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .msgc-conv-header { padding: 14px 18px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
+        .msgc-conv-header .msgc-thread-avatar { width: 34px; height: 34px; font-size: 13px; }
+        .msgc-conv-header .name { font-weight: 700; font-size: 14.5px; color: #222; }
+        .msgc-conv-header .sub { font-size: 11.5px; color: #888; margin-top: 2px; }
+        .msgc-conv-messages { flex: 1; overflow-y: auto; padding: 16px; background: #f6f7f9; }
+        .msgc-conv-empty { color: #999; text-align: center; margin-top: 60px; font-size: 13.5px; padding: 0 20px; }
+
+        .msgc-bubble { max-width: 68%; margin-bottom: 10px; padding: 9px 13px; border-radius: 14px; font-size: 13.5px; line-height: 1.5; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+        .msgc-bubble.customer { background: #e74c3c; color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
+        .msgc-bubble.admin { background: #fff; color: #333; border: 1px solid #ececec; margin-right: auto; border-bottom-left-radius: 4px; }
+        .msgc-bubble-time { font-size: 10px; opacity: .7; margin-top: 3px; }
+
+        .msgc-input-row { display: flex; gap: 10px; padding: 12px; border-top: 1px solid #eee; background: #fff; }
+        .msgc-input-row input { flex: 1; border: 1px solid #ddd; border-radius: 22px; padding: 10px 16px; font-size: 13.5px; font-family: Arial, sans-serif; background: #f6f7f9; }
+        .msgc-input-row input:focus { outline: none; border-color: #e74c3c; background: #fff; }
+        .msgc-input-row button { background: linear-gradient(145deg,#ff5c46,#e0301e); color: #fff; border: none; border-radius: 50%; width: 42px; height: 42px; font-size: 15px; cursor: pointer; flex-shrink: 0; box-shadow: 0 3px 8px rgba(231,76,60,0.35); }
+        .msgc-input-row button:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+
+        @media (max-width: 700px) {
+            .msgc-shell { flex-direction: column; height: auto; max-height: none; }
+            .msgc-thread-list { width: 100%; max-height: 220px; border-right: none; border-bottom: 1px solid #eee; }
+            .msgc-conv-panel { height: 60vh; }
+        }
+    </style>
+    <script src="config.js"></script>
+    <script src="customer-auth.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
+            <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
+        </div>
+    </nav>
+
+    <div class="msgc-container">
+        <h2>মেসেজ সেন্টার</h2>
+        <div class="msgc-shell">
+            <div class="msgc-thread-list" id="msgcThreadList">
+                <div class="msgc-thread-empty">লোড হচ্ছে...</div>
+            </div>
+            <div class="msgc-conv-panel">
+                <div class="msgc-conv-header" id="msgcConvHeader" style="display:none;">
+                    <div class="msgc-thread-avatar" id="msgcConvAvatar">S</div>
+                    <div>
+                        <div class="name" id="msgcConvName"></div>
+                        <div class="sub" id="msgcConvSub"></div>
+                    </div>
+                </div>
+                <div class="msgc-conv-messages" id="msgcConvMessages">
+                    <div class="msgc-conv-empty">লোড হচ্ছে...</div>
+                </div>
+                <div class="msgc-input-row" id="msgcInputRow" style="display:none;">
+                    <input type="text" id="msgcInput" placeholder="মেসেজ লিখুন..." maxlength="2000">
+                    <button id="msgcSendBtn">➤</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+
+    <script>
+        // লগইন করা না থাকলে সরাসরি লগইন পেজে পাঠিয়ে দেওয়া হচ্ছে
+        if (!getCustomerToken() || !getCustomerData()) {
+            window.location.href = 'login.html?redirect=messages.html';
+        }
+
+        const API_BASE = BACKEND_URL;
+        const PLATFORM_PLACEHOLDER_ID = 'platform-new';
+
+        let threads = [];
+        let activeThreadId = null;
+        let activeIsPlaceholder = false;
+        let socket = null;
+
+        function escapeHtml(s) {
+            return (s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function timeLabel(iso) {
+            try { return new Date(iso).toLocaleString('bn-BD', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+            catch (e) { return ''; }
+        }
+        function threadDisplayName(t) {
+            return t.type === 'vendor' ? 'Smart Tech Zone (ভেন্ডর)' : 'Smart Tech Zone সাপোর্ট';
+        }
+        function threadSub(t) {
+            return t.type === 'vendor' ? 'ভেন্ডর চ্যাট' + (t.productName ? ` · প্রসঙ্গ: ${t.productName}` : '') : 'প্ল্যাটফর্ম সাপোর্ট';
+        }
+
+        // থ্রেড লিস্টে "সাপোর্ট" অপশনটা সবসময় দেখানো হয় (আসল থ্রেড তৈরি না হলেও) — যাতে কাস্টমার
+        // যেকোনো সময় নতুন চ্যাট শুরু করতে পারে। ভবিষ্যতে নতুন ভেন্ডর/সেলার যোগ হলে তাদের সাথে
+        // কথোপকথন হওয়া মাত্র সেই থ্রেডও এখানে একটা আলাদা আইটেম হিসেবে স্বয়ংক্রিয়ভাবে যোগ হয়ে যাবে।
+        function displayList() {
+            const hasPlatform = threads.some(t => t.type === 'platform');
+            const list = threads.slice();
+            if (!hasPlatform) {
+                list.unshift({
+                    _id: PLATFORM_PLACEHOLDER_ID, type: 'platform', isPlaceholder: true,
+                    lastMessageSnippet: 'এখানে ক্লিক করে আমাদের সাথে চ্যাট শুরু করুন', unreadByCustomer: false
+                });
+            }
+            return list;
+        }
+
+        function renderThreadList() {
+            const wrap = document.getElementById('msgcThreadList');
+            const list = displayList();
+            if (!list.length) {
+                wrap.innerHTML = '<div class="msgc-thread-empty">কোনো কথোপকথন নেই।</div>';
+                return;
+            }
+            wrap.innerHTML = list.map(t => `
+                <button class="msgc-thread-item ${t._id === activeThreadId ? 'active' : ''}" onclick="msgcSelectThread('${t._id}')">
+                    <div class="msgc-thread-top">
+                        <div class="msgc-thread-avatar">${t.type === 'vendor' ? 'V' : 'S'}</div>
+                        <div class="msgc-thread-info">
+                            <div class="msgc-thread-name-row">
+                                <span class="msgc-thread-name">${threadDisplayName(t)}</span>
+                                ${t.lastMessageAt ? `<span class="msgc-thread-time">${timeLabel(t.lastMessageAt)}</span>` : ''}
+                            </div>
+                            <div class="msgc-thread-snippet">${t.lastMessageBy === 'admin' ? 'তারা: ' : (t.lastMessageBy === 'customer' ? 'আপনি: ' : '')}${escapeHtml(t.lastMessageSnippet || '')}</div>
+                        </div>
+                        ${t.unreadByCustomer ? '<span class="msgc-thread-unread-badge"></span>' : ''}
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function renderMessages(messages) {
+            const wrap = document.getElementById('msgcConvMessages');
+            if (!messages || !messages.length) {
+                wrap.innerHTML = '<div class="msgc-conv-empty">এখনো কোনো মেসেজ নেই — নিচে লিখে শুরু করুন।</div>';
+                return;
+            }
+            wrap.innerHTML = messages.map(m => `
+                <div class="msgc-bubble ${m.senderType}">
+                    <div>${escapeHtml(m.text)}</div>
+                    <div class="msgc-bubble-time">${timeLabel(m.createdAt)}</div>
+                </div>
+            `).join('');
+            wrap.scrollTop = wrap.scrollHeight;
+        }
+
+        function appendMessage(m) {
+            const wrap = document.getElementById('msgcConvMessages');
+            const empty = wrap.querySelector('.msgc-conv-empty');
+            if (empty) empty.remove();
+            const div = document.createElement('div');
+            div.className = `msgc-bubble ${m.senderType}`;
+            div.innerHTML = `<div>${escapeHtml(m.text)}</div><div class="msgc-bubble-time">${timeLabel(m.createdAt)}</div>`;
+            wrap.appendChild(div);
+            wrap.scrollTop = wrap.scrollHeight;
+        }
+
+        window.msgcSelectThread = async function (id) {
+            activeThreadId = id;
+            activeIsPlaceholder = (id === PLATFORM_PLACEHOLDER_ID);
+            renderThreadList();
+
+            document.getElementById('msgcConvHeader').style.display = 'flex';
+            document.getElementById('msgcInputRow').style.display = 'flex';
+            document.getElementById('msgcConvAvatar').textContent = 'S';
+            document.getElementById('msgcConvName').textContent = 'Smart Tech Zone সাপোর্ট';
+            document.getElementById('msgcConvSub').textContent = 'প্ল্যাটফর্ম সাপোর্ট';
+            document.getElementById('msgcConvMessages').innerHTML = '<div class="msgc-conv-empty">লোড হচ্ছে...</div>';
+
+            try {
+                let thread;
+                if (activeIsPlaceholder) {
+                    // এখনো কোনো থ্রেড নেই — নতুন প্ল্যাটফর্ম থ্রেড খুলে দেওয়া হচ্ছে
+                    const res = await customerAuthFetch(`${API_BASE}/api/chat/threads`, {
+                        method: 'POST', body: JSON.stringify({ type: 'platform' })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'থ্রেড খোলা যায়নি।');
+                    thread = data.thread;
+                    activeThreadId = thread._id;
+                    activeIsPlaceholder = false;
+                    threads.unshift(thread);
+                } else {
+                    thread = threads.find(t => t._id === id);
+                    if (!thread) throw new Error('থ্রেড খুঁজে পাওয়া যায়নি।');
+                }
+
+                document.getElementById('msgcConvAvatar').textContent = thread.type === 'vendor' ? 'V' : 'S';
+                document.getElementById('msgcConvName').textContent = threadDisplayName(thread);
+                document.getElementById('msgcConvSub').textContent = threadSub(thread);
+
+                const res2 = await customerAuthFetch(`${API_BASE}/api/chat/threads/${thread._id}/messages`);
+                const messages = await res2.json();
+                if (!res2.ok) throw new Error((messages && messages.error) || 'মেসেজ লোড করা যায়নি।');
+                renderMessages(messages);
+
+                if (thread.unreadByCustomer) thread.unreadByCustomer = false;
+                renderThreadList();
+                customerAuthFetch(`${API_BASE}/api/chat/threads/${thread._id}/read`, { method: 'POST' }).catch(() => {});
+            } catch (err) {
+                document.getElementById('msgcConvMessages').innerHTML = `<div class="msgc-conv-empty">❌ ${escapeHtml(err.message)}</div>`;
+            }
+        };
+
+        async function msgcSendMessage() {
+            const input = document.getElementById('msgcInput');
+            const text = input.value.trim();
+            if (!text || !activeThreadId || activeIsPlaceholder) return;
+            const btn = document.getElementById('msgcSendBtn');
+            btn.disabled = true;
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/chat/threads/${activeThreadId}/messages`, {
+                    method: 'POST', body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'মেসেজ পাঠানো যায়নি।');
+                appendMessage(data.message);
+                input.value = '';
+                const t = threads.find(x => x._id === activeThreadId);
+                if (t) {
+                    t.lastMessageSnippet = text.length > 120 ? text.slice(0, 120) + '…' : text;
+                    t.lastMessageAt = data.message.createdAt;
+                    t.lastMessageBy = 'customer';
+                    threads.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
+                    renderThreadList();
+                }
+            } catch (err) {
+                alert('❌ ' + err.message);
+            }
+            btn.disabled = false;
+            input.focus();
+        }
+        document.getElementById('msgcSendBtn').onclick = msgcSendMessage;
+        document.getElementById('msgcInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') msgcSendMessage(); });
+
+        // রিয়েল-টাইম — অ্যাডমিন রিপ্লাই দিলে সাথে সাথে দেখানো হয়
+        function connectMsgcSocket() {
+            if (typeof io === 'undefined') return;
+            socket = io(BACKEND_URL, { auth: { token: getCustomerToken() } });
+            socket.on('chat:new', function (payload) {
+                const thread = payload && payload.thread;
+                const message = payload && payload.message;
+                if (!thread || !message) return;
+
+                const idx = threads.findIndex(t => t._id === thread._id);
+                if (idx === -1) {
+                    threads.unshift(thread);
+                } else {
+                    threads[idx] = Object.assign({}, threads[idx], thread);
+                    if (idx !== 0) { const [t] = threads.splice(idx, 1); threads.unshift(t); }
+                }
+
+                if (String(thread._id) === String(activeThreadId) && message.senderType === 'admin') {
+                    appendMessage(message);
+                    threads[0].unreadByCustomer = false;
+                    customerAuthFetch(`${API_BASE}/api/chat/threads/${thread._id}/read`, { method: 'POST' }).catch(() => {});
+                }
+                renderThreadList();
+            });
+        }
+
+        async function loadThreads() {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/chat/threads`);
+                if (res.status === 401 || res.status === 403) { customerLogout(); return; }
+                threads = await res.json();
+                renderThreadList();
+                const first = displayList()[0];
+                if (first) msgcSelectThread(first._id);
+            } catch (err) {
+                document.getElementById('msgcThreadList').innerHTML = '<div class="msgc-thread-empty">লোড করতে সমস্যা হয়েছে।</div>';
+            }
+        }
+
+        loadThreads();
+        connectMsgcSocket();
+    </script>
+</body>
+</html>

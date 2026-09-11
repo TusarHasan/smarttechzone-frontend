@@ -41,6 +41,24 @@
         .no-orders { text-align: center; color: #999; padding: 30px 0; font-size: 14px; }
         .no-orders a { color: #e74c3c; font-weight: bold; text-decoration: none; }
         .loading-hint { text-align: center; color: #999; padding: 20px 0; font-size: 13.5px; }
+
+        .pm-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f5f5f5; font-size: 13.5px; }
+        .pm-item:last-child { border-bottom: none; }
+        .pm-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; color: #fff; margin-right: 10px; }
+        .pm-bkash { background: #e2136e; }
+        .pm-nagad { background: #f6921e; }
+        .pm-rocket { background: #8a2be2; }
+        .pm-other { background: #555; }
+        .pm-remove-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 13px; padding: 4px; }
+        .pm-remove-btn:hover { text-decoration: underline; }
+        .no-payment-methods { color: #999; font-size: 13.5px; padding: 10px 0; }
+        .pm-add-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; align-items: flex-start; }
+        .pm-add-row select, .pm-add-row input {
+            flex: 1 1 130px; width: auto; margin-top: 0; padding: 10px; border: 1px solid #ccc;
+            border-radius: 4px; font-size: 13.5px; box-sizing: border-box; font-family: Arial, sans-serif;
+        }
+        .pm-add-row button { flex-shrink: 0; margin-top: 0; }
+        #paymentMsg { margin-top: 10px; font-size: 13.5px; }
     </style>
     <script src="config.js"></script>
     <script src="customer-auth.js"></script>
@@ -94,6 +112,25 @@
             </form>
             <button class="save-btn" id="saveAddressBtn" onclick="saveAddress()">ঠিকানা সেভ করুন</button>
             <div id="addressMsg"></div>
+        </div>
+
+        <div class="account-card" id="paymentSection">
+            <h3>সেভড পেমেন্ট মেথড</h3>
+            <p style="font-size:12.5px; color:#999; margin:0 0 4px;">bKash, Nagad, Rocket বা অন্য যেকোনো পেমেন্ট নাম্বার এখানে সেভ করে রাখতে পারেন — এটা শুধু আপনার নিজের রেফারেন্সের জন্য, সরাসরি পেমেন্ট প্রসেস করে না।</p>
+            <div id="paymentMethodsList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+
+            <div class="pm-add-row">
+                <select id="pmType">
+                    <option value="bkash">bKash</option>
+                    <option value="nagad">Nagad</option>
+                    <option value="rocket">Rocket</option>
+                    <option value="other">অন্যান্য</option>
+                </select>
+                <input type="text" id="pmLabel" placeholder="নাম (যেমন: Bank Card)" style="display:none;">
+                <input type="tel" id="pmNumber" placeholder="01XXXXXXXXX">
+                <button class="save-btn" id="addPaymentBtn" onclick="addPaymentMethod()">যোগ করুন</button>
+            </div>
+            <div id="paymentMsg"></div>
         </div>
 
         <div class="account-card">
@@ -257,6 +294,101 @@
             }
         }
 
+        // ===== সেভড পেমেন্ট মেথড (bKash/Nagad/Rocket/অন্যান্য) =====
+        const paymentTypeLabels = { bkash: 'bKash', nagad: 'Nagad', rocket: 'Rocket', other: 'অন্যান্য' };
+        const paymentBadgeClass = { bkash: 'pm-bkash', nagad: 'pm-nagad', rocket: 'pm-rocket', other: 'pm-other' };
+
+        function escapeHtmlPm(s) {
+            return (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        document.getElementById('pmType').addEventListener('change', function () {
+            const isOther = this.value === 'other';
+            document.getElementById('pmLabel').style.display = isOther ? 'block' : 'none';
+            document.getElementById('pmNumber').placeholder = isOther ? 'নাম্বার/তথ্য' : '01XXXXXXXXX';
+        });
+
+        function renderPaymentMethods(methods) {
+            const box = document.getElementById('paymentMethodsList');
+            if (!methods || !methods.length) {
+                box.innerHTML = '<div class="no-payment-methods">এখনো কোনো পেমেন্ট মেথড সেভ করা হয়নি।</div>';
+                return;
+            }
+            box.innerHTML = methods.map(pm => `
+                <div class="pm-item">
+                    <div>
+                        <span class="pm-badge ${paymentBadgeClass[pm.type] || 'pm-other'}">${paymentTypeLabels[pm.type] || pm.type}</span>
+                        ${pm.type === 'other' && pm.label ? escapeHtmlPm(pm.label) + ' — ' : ''}${escapeHtmlPm(pm.number)}
+                    </div>
+                    <button class="pm-remove-btn" onclick="removePaymentMethod('${pm.id}')">সরান</button>
+                </div>
+            `).join('');
+        }
+
+        async function loadPaymentMethods() {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/payment-methods`);
+                if (!res.ok) { renderPaymentMethods([]); return; }
+                const data = await res.json();
+                renderPaymentMethods(data);
+            } catch (err) {
+                renderPaymentMethods([]);
+            }
+        }
+
+        async function addPaymentMethod() {
+            const type = document.getElementById('pmType').value;
+            const label = document.getElementById('pmLabel').value.trim();
+            const number = document.getElementById('pmNumber').value.trim();
+            const msg = document.getElementById('paymentMsg');
+            const btn = document.getElementById('addPaymentBtn');
+
+            msg.textContent = '';
+            if (!number) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = 'নাম্বার দিন।';
+                return;
+            }
+            if (type === 'other' && !label) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = 'এই পেমেন্ট মেথডের একটা নাম দিন (যেমন: Bank Card)।';
+                return;
+            }
+
+            btn.disabled = true;
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/payment-methods`, {
+                    method: 'POST',
+                    body: JSON.stringify({ type, number, label })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'যোগ করা যায়নি।');
+
+                renderPaymentMethods(data);
+                document.getElementById('pmNumber').value = '';
+                document.getElementById('pmLabel').value = '';
+                msg.style.color = '#16a34a';
+                msg.textContent = '✅ পেমেন্ট মেথড যোগ হয়েছে।';
+            } catch (err) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = '❌ ' + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function removePaymentMethod(id) {
+            if (!confirm('এই পেমেন্ট মেথডটি মুছে ফেলতে চান?')) return;
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/payment-methods/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'মুছে ফেলা যায়নি।');
+                renderPaymentMethods(data);
+            } catch (err) {
+                alert('❌ ' + err.message);
+            }
+        }
+
         // ===== অর্ডার হিস্টরি =====
         function renderOrders(orders) {
             const box = document.getElementById('ordersList');
@@ -300,6 +432,7 @@
         }
 
         loadProfile();
+        loadPaymentMethods();
         loadOrders();
     </script>
 </body>

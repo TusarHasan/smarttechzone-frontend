@@ -42,16 +42,10 @@ function getAuthBasePath() {
     return '';
 }
 
-// নেভবারের প্রোফাইল ড্রপডাউনের "Message Center" ক্লিক করলে চ্যাট উইজেট খুলে যায়
-// (chat-widget.js লোড না থাকলে চুপচাপ কিছু হবে না)
+// নেভবারের প্রোফাইল ড্রপডাউনের "Message Center" ক্লিক করলে পূর্ণাঙ্গ মেসেজ সেন্টার পেজে নিয়ে যায়
+// (আগে এখানে ছোট ফ্লোটিং চ্যাট উইজেট খুলতো — এখন থ্রেড-লিস্ট + কথোপকথন সহ আলাদা পেজ)
 function stzOpenMessageCenter() {
-    if (typeof openPlatformChat === 'function') openPlatformChat();
-}
-
-// "Payment" ফিচারটা এখনো তৈরি হয়নি — সাইটে এখনো সেভড পেমেন্ট মেথড/হিস্ট্রি পেজ নেই,
-// তাই আপাতত একটা "শীঘ্রই আসছে" বার্তা দেখানো হচ্ছে
-function stzPaymentComingSoon() {
-    alert('পেমেন্ট সেকশনটি শীঘ্রই যুক্ত হবে।');
+    window.location.href = getAuthBasePath() + 'messages.html';
 }
 
 // নেভবারের প্রোফাইল ড্রপডাউনে থাকা "Message Center"-এর পাশে আনরিড থ্রেডের সংখ্যা দেখানো হয়
@@ -98,7 +92,7 @@ function renderNavAuth() {
                     <div class="stz-dropdown-divider"></div>
                     <a href="${base}account.html" class="stz-dropdown-item">📦 My Orders</a>
                     <a href="javascript:void(0)" onclick="stzOpenMessageCenter()" class="stz-dropdown-item">💬 Message Center <span id="stzNavUnreadBadge" class="stz-unread-badge" style="display:none;"></span></a>
-                    <a href="javascript:void(0)" onclick="stzPaymentComingSoon()" class="stz-dropdown-item">💳 Payment</a>
+                    <a href="${base}account.html#paymentSection" class="stz-dropdown-item">💳 Payment</a>
                 </div>
             </div>
         `;
