@@ -83,7 +83,7 @@
     <div class="account-container">
         <h2 style="color:#333;">আমার অ্যাকাউন্ট</h2>
 
-        <div class="account-card">
+        <div class="account-card" id="profileSection">
             <h3>প্রোফাইল <button class="logout-btn" onclick="customerLogout()">লগ আউট</button></h3>
             <form id="profileForm" autocomplete="on" onsubmit="return false;">
                 <label>নাম</label>
@@ -95,7 +95,7 @@
             <div id="profileMsg"></div>
         </div>
 
-        <div class="account-card">
+        <div class="account-card" id="addressSection">
             <h3>সেভড ডেলিভারি ঠিকানা</h3>
             <p style="font-size:12.5px; color:#999; margin:0;">এখানে ঠিকানা সেভ করলে পরের বার চেকআউট করার সময় এটা অটোমেটিক ভরে যাবে।</p>
             <form id="addressForm" autocomplete="on" onsubmit="return false;">
@@ -133,7 +133,7 @@
             <div id="paymentMsg"></div>
         </div>
 
-        <div class="account-card">
+        <div class="account-card" id="ordersSection">
             <h3>আমার অর্ডারসমূহ</h3>
             <div id="ordersList"><div class="loading-hint">লোড হচ্ছে...</div></div>
         </div>
@@ -149,6 +149,20 @@
         // লগইন করা না থাকলে সরাসরি লগইন পেজে পাঠিয়ে দেওয়া হচ্ছে
         if (!getCustomerToken() || !getCustomerData()) {
             window.location.href = 'login.html?redirect=account.html';
+        }
+
+        // নেভবারের "My Orders" থেকে এলে (#ordersSection) শুধু অর্ডার অংশটুকুই দেখানো হয় —
+        // প্রোফাইল/ঠিকানা/পেমেন্ট সেকশন লুকিয়ে রাখা হয়
+        if (window.location.hash === '#ordersSection') {
+            document.getElementById('profileSection').style.display = 'none';
+            document.getElementById('addressSection').style.display = 'none';
+            document.getElementById('paymentSection').style.display = 'none';
+            document.querySelector('.account-container h2').textContent = 'আমার অর্ডারসমূহ';
+        } else if (window.location.hash === '#profileSection') {
+            document.getElementById('addressSection').style.display = 'none';
+            document.getElementById('paymentSection').style.display = 'none';
+            document.getElementById('ordersSection').style.display = 'none';
+            document.querySelector('.account-container h2').textContent = 'প্রোফাইল';
         }
 
         function formatPrice(n) {

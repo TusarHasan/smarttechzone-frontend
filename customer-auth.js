@@ -82,15 +82,15 @@ function renderNavAuth() {
         const initial = firstName.charAt(0).toUpperCase();
         el.innerHTML = `
             <div class="stz-profile-wrap">
-                <a href="${base}account.html" class="stz-profile-trigger">${firstName} <span class="stz-caret">&#9662;</span></a>
+                <a href="${base}account.html#profileSection" class="stz-profile-trigger">${firstName} <span class="stz-caret">&#9662;</span></a>
                 <div class="stz-profile-dropdown">
-                    <div class="stz-profile-header">
+                    <a href="${base}account.html#profileSection" class="stz-profile-header">
                         <div class="stz-profile-avatar">${initial}</div>
                         <div class="stz-profile-welcome">স্বাগতম,<br><strong>${firstName}</strong></div>
-                    </div>
+                    </a>
                     <a href="javascript:void(0)" onclick="customerLogout()" class="stz-signout-link">Sign Out</a>
                     <div class="stz-dropdown-divider"></div>
-                    <a href="${base}account.html" class="stz-dropdown-item">📦 My Orders</a>
+                    <a href="${base}account.html#ordersSection" class="stz-dropdown-item">📦 My Orders</a>
                     <a href="javascript:void(0)" onclick="stzOpenMessageCenter()" class="stz-dropdown-item">💬 Message Center <span id="stzNavUnreadBadge" class="stz-unread-badge" style="display:none;"></span></a>
                     <a href="${base}account.html#paymentSection" class="stz-dropdown-item">💳 Payment</a>
                 </div>

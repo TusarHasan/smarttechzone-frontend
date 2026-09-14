@@ -137,7 +137,9 @@ body {
 }
 .stz-profile-header {
     display: flex; align-items: center; gap: 12px; padding: 0 18px 12px;
+    text-decoration: none; cursor: pointer;
 }
+.stz-profile-header:hover .stz-profile-welcome strong { color: #e74c3c; }
 .stz-profile-avatar {
     width: 42px; height: 42px; border-radius: 50%; background: #fdf1f0; color: #e74c3c;
     display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px;
