@@ -6,6 +6,14 @@
     <link rel="icon" type="image/png" href="../images/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">Brand Parts - Smart Tech Zone</title>
+    <meta id="metaDescription" name="description" content="সব ব্র্যান্ডের মোবাইল রিপ্লেসমেন্ট পার্টস — ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট ও আরও অনেক কিছু। Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।">
+    <link id="canonicalTag" rel="canonical" href="https://smarttechzone.com.bd/brands/brand.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Smart Tech Zone">
+    <meta id="ogTitleTag" property="og:title" content="Brand Parts - Smart Tech Zone">
+    <meta id="ogDescTag" property="og:description" content="সব ব্র্যান্ডের মোবাইল রিপ্লেসমেন্ট পার্টস, সারা বাংলাদেশে হোম ডেলিভারি।">
+    <meta id="ogUrlTag" property="og:url" content="https://smarttechzone.com.bd/brands/brand.html">
+    <meta id="ogImageTag" property="og:image" content="https://smarttechzone.com.bd/images/logo.png">
     <link rel="stylesheet" href="../style.css">
     <style>
         .load-more-wrapper { text-align: center; margin: 30px 0; }
@@ -77,10 +85,23 @@
         const TARGET_BRAND = (params.get('name') || '').trim();
 
         if (TARGET_BRAND) {
-            document.getElementById('pageTitle').textContent = `${TARGET_BRAND} Parts - Smart Tech Zone`;
             document.getElementById('breadcrumbBrand').textContent = TARGET_BRAND;
             document.getElementById('brandHeading').textContent = `${TARGET_BRAND} Replacement Parts`;
             document.getElementById('brandSub').textContent = `আপনার ${TARGET_BRAND} ফোনের জন্য উপযুক্ত পার্টস`;
+
+            // SEO: প্রতিটা ব্র্যান্ডের জন্য আলাদা title/meta description/canonical/OG ট্যাগ — product.html
+            // এর মতো একই প্যাটার্নে। আগে এই ট্যাগগুলো একদমই ছিল না (শুধু টাইটেল বদলাতো), ফলে Google
+            // প্রতিটা ব্র্যান্ড পেজকে আলাদা করে চিনতে/র‍্যাংক করতে পারছিল না।
+            const brandTitle = `${TARGET_BRAND} মোবাইল রিপ্লেসমেন্ট পার্টস - Smart Tech Zone`;
+            const brandDesc = `${TARGET_BRAND} ফোনের রিপ্লেসমেন্ট পার্টস — ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট, বডি হাউজিং ও আরও অনেক কিছু। Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`;
+            const brandUrl = `https://smarttechzone.com.bd/brands/brand.html?name=${encodeURIComponent(TARGET_BRAND)}`;
+
+            document.getElementById('pageTitle').textContent = brandTitle;
+            document.getElementById('metaDescription').setAttribute('content', brandDesc);
+            document.getElementById('canonicalTag').setAttribute('href', brandUrl);
+            document.getElementById('ogTitleTag').setAttribute('content', brandTitle);
+            document.getElementById('ogDescTag').setAttribute('content', brandDesc);
+            document.getElementById('ogUrlTag').setAttribute('content', brandUrl);
         }
 
         function resolveImg(url) {
