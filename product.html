@@ -484,10 +484,13 @@
             const showThumb = wantsThumb && !thumbAlreadyShown;
             if (showThumb) thumbAlreadyShown = true;
             const currentVal = selectedAttrs[name] || '';
+            // "Option"-জাতীয় জেনেরিক attribute নামের (যেমন "Option", "Option 2") লেবেল আর দেখানো হবে না,
+            // শুধু ভ্যারিয়েন্টের আসল মান (যেমন "3.2") দেখাবে — "Color"/"Model" এর মতো অর্থবহ নাম থাকলে সেটা থাকবে
+            const hideNameLabel = name.toLowerCase().includes('option');
 
             if (showThumb) {
-                // Daraz এর মতো: উপরে লেবেল + বর্তমান মান (টেক্সট), নিচে শুধু ছোট ছবির swatch (টেক্সট ছাড়া)
-                group.innerHTML = `<span class="attr-group-label">${name}</span> <span class="attr-selected-value" id="selectedValue-${name.replace(/\s+/g, '_')}">${currentVal}</span>
+                // Daraz এর মতো: উপরে লেবেল (যদি থাকে) + বর্তমান মান (টেক্সট), নিচে শুধু ছোট ছবির swatch (টেক্সট ছাড়া)
+                group.innerHTML = `${hideNameLabel ? '' : `<span class="attr-group-label">${name}</span> `}<span class="attr-selected-value" id="selectedValue-${name.replace(/\s+/g, '_')}">${currentVal}</span>
                     <div class="attr-swatch-row">` +
                     values.map(val => {
                         const matchingVariant = variants.find(v => (v.attributes || []).some(a => a.name === name && a.value === val));
@@ -500,7 +503,7 @@
                     }).join('') + `</div>`;
             } else {
                 // টেক্সট-ভিত্তিক attribute (যেমন Model) — শুধু টেক্সট বক্স, ছবি ছাড়া
-                group.innerHTML = `<div class="attr-group-label" style="margin-bottom:8px;">${name}</div><div class="attr-btn-grid">` +
+                group.innerHTML = `${hideNameLabel ? '' : `<div class="attr-group-label" style="margin-bottom:8px;">${name}</div>`}<div class="attr-btn-grid">` +
                     values.map(val => {
                         const safeId = `attr-${name.replace(/\s+/g, '_')}-${val.replace(/\s+/g, '_')}`;
                         return `<span class="attr-btn" onclick="selectAttribute('${name.replace(/'/g, "\\'")}', '${val.replace(/'/g, "\\'")}')" id="${safeId}">${val}</span>`;
@@ -555,12 +558,10 @@
     // করা যেত। এখন Daraz এর মতো স্টক শেষ হলে বাটনগুলো ধূসর/অচল হয়ে যায় এবং লাল করে "স্টকে নেই" দেখায়।
     function updateStockAndButtons(stock) {
         const stockNote = document.getElementById('stockNote');
-        if (typeof stock === 'number') {
-            stockNote.textContent = stock > 0 ? `স্টকে আছে (${stock} পিস)` : 'স্টক নেই';
-            stockNote.style.color = stock > 0 ? '#888' : '#e74c3c';
-        } else {
-            stockNote.textContent = '';
-        }
+        // কাস্টমারকে স্টকের সংখ্যা/স্ট্যাটাস টেক্সট (যেমন "স্টকে আছে (৫০ পিস)") আর দেখানো হচ্ছে না —
+        // স্টক ভিজিবিলিটি বন্ধ রাখার জন্য। স্টক শেষ হলে নিচের oosLabel ("❌ বর্তমানে স্টকে নেই") ব্যানার
+        // ও disabled বাটন দিয়েই বোঝানো হয়, কোনো সংখ্যা/স্ট্যাটাস টেক্সট প্রকাশ না করেই।
+        stockNote.textContent = '';
 
         isOutOfStock = typeof stock === 'number' && stock <= 0;
 
