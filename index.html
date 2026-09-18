@@ -55,9 +55,130 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .product-card { animation: fadeInUp 0.35s ease both; }
+
+        /* ===== Hero Carousel =====
+           দারাজের হোমপেজের মতো একটা অটো-রোটেটিং ব্যানার ক্যারোসেল — কিন্তু কোনো ছবি ছাড়াই,
+           শুধু CSS গ্রেডিয়েন্ট + টেক্সট দিয়ে বানানো (ব্যবহারকারীর অনুরোধ অনুযায়ী, এখনো প্রোডাক্ট
+           ফটোগ্রাফি রেডি হয়নি)। ডেস্কটপে টেক্সট বাম পাশে + ডান পাশে একটা ডেকোরেটিভ visual,
+           মোবাইলে Headline → Subtext → Button → visual — এই অর্ডারে স্ট্যাকড।
+           .hero-carousel-এ আগে শুধু min-height ছিল, ফলে প্রতিটা স্লাইডের কনটেন্ট-উচ্চতা আলাদা হওয়ায়
+           (কোনোটায় ২ লাইন সাবটেক্সট, কোনোটায় ১ লাইন) স্লাইড বদলানোর সময় পুরো বক্সটাই উচ্চতায় হঠাৎ
+           ছোট-বড় হয়ে যাচ্ছিল, আর তার ফলে নিচের ডট বাটনগুলোও (যেগুলো bottom:18px পজিশনে বসানো) সাথে
+           সাথে জায়গা বদলে যাচ্ছিল — অনেকটা "বাটন সরে/হারিয়ে যাওয়ার" মতো দেখাতে পারত। এখন ডেস্কটপে
+           height ফিক্সড করে দেওয়া হয়েছে (সব স্লাইড একই উচ্চতায়) যাতে এই জাম্প আর না হয়। */
+        .hero-carousel {
+            position: relative; overflow: hidden; height: 440px;
+        }
+        .hero-slide {
+            position: absolute; inset: 0; display: flex; align-items: center;
+            opacity: 0; transform: translateX(24px); transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+        }
+        .hero-slide.active { opacity: 1; transform: translateX(0); pointer-events: auto; z-index: 1; }
+        .hero-slide-inner {
+            max-width: 1200px; margin: 0 auto; width: 100%; padding: 40px 30px;
+            display: flex; align-items: center; justify-content: space-between; gap: 30px;
+        }
+        .hero-slide-text { color: #fff; max-width: 560px; position: relative; z-index: 1; }
+        .hero-slide-text h1 { font-size: 36px; font-weight: 800; margin-bottom: 14px; line-height: 1.28; }
+        .hero-slide-text p { font-size: 16px; font-weight: 400; margin-bottom: 26px; opacity: 0.9; line-height: 1.6; }
+        .hero-slide-visual {
+            width: 180px; height: 180px; border-radius: 50%; flex-shrink: 0;
+            background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center;
+            font-size: 74px; color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+        }
+        /* CTA বাটন — ডিজাইন নোট অনুযায়ী সাদা/হালকা background, rounded, হালকা shadow —
+           বাকি সাইটের লাল .hero-btn থেকে আলাদা রাখতে নতুন ক্লাস .hero-slide-btn ব্যবহার করা হলো */
+        .hero-slide-btn {
+            display: inline-block; background: #fff; padding: 13px 32px; border-radius: 50px;
+            text-decoration: none; font-size: 15px; font-weight: 600; position: relative; z-index: 1;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.22); transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .hero-slide-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,0.28); }
+        .hero-dots {
+            position: absolute; bottom: 16px; left: 0; right: 0; display: flex;
+            justify-content: center; gap: 6px; z-index: 2;
+        }
+        /* .hero-dot বাটনগুলো আগে ব্রাউজারের ডিফল্ট <button> appearance/outline এর উপর পুরোপুরি নির্ভর
+           করছিল না (appearance:none সেট করা ছিল না) — কিছু ব্রাউজার/ওয়েবভিউতে ক্লিক করার সময় নেটিভ
+           button স্টাইল সংক্ষিপ্তভাবে দেখা দিতে পারত, যা দেখতে "বাটন হারিয়ে যাওয়া/সরে যাওয়া" মনে হতে
+           পারে। এখন appearance:none + outline:none সরাসরি সেট করে দেওয়া হলো, সাথে টাচে সহজে চাপার
+           জন্য আসল ক্লিকযোগ্য এলাকা (30x30) দৃশ্যমান ডটের (9px) চেয়ে বড় রাখা হলো transparent padding দিয়ে। */
+        .hero-dot {
+            -webkit-appearance: none; appearance: none; outline: none;
+            width: 30px; height: 30px; padding: 0; margin: 0; border: none; background: transparent;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            -webkit-tap-highlight-color: transparent; user-select: none;
+        }
+        .hero-dot::before {
+            content: ''; width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.45);
+            transition: background 0.2s ease, width 0.2s ease, border-radius 0.2s ease;
+        }
+        .hero-dot.active::before { background: #fff; width: 22px; border-radius: 5px; }
+        @media (max-width: 760px) {
+            .hero-carousel { height: auto; }
+            .hero-slide { position: relative; display: none; opacity: 1; transform: none; }
+            .hero-slide.active { display: flex; }
+            .hero-slide-inner {
+                padding: 40px 20px 52px; flex-direction: column; text-align: center;
+            }
+            /* মোবাইলে অর্ডার: Headline → Subtext → Button → visual। DOM-এ .hero-slide-text
+               (headline+subtext+button) আগে লেখা, তারপর .hero-slide-visual — flex-direction:
+               column (ডিফল্ট row-এর বদলে) দিলে এই DOM অর্ডার অনুযায়ীই উপর-নিচ সাজবে, তাই
+               এখানে column-reverse না বরং প্লেইন column ব্যবহার করা ঠিক (আগে ভুলে column-reverse
+               দেওয়া ছিল, যেটা উল্টো visual-কে উপরে নিয়ে আসছিল)। */
+            .hero-slide-visual { width: 110px; height: 110px; font-size: 44px; margin-top: 8px; }
+            .hero-slide-text h1 { font-size: 24px; }
+            .hero-slide-text p { font-size: 14px; margin-bottom: 20px; }
+        }
+
+        /* ===== প্রোমো স্ট্রিপ: Follow Us বক্স + Flash Sale প্রোমো ব্যানার ===== */
+        .promo-strip { padding: 24px 0 0; background: #f5f5f5; }
+        .promo-strip .container { display: flex; gap: 16px; flex-wrap: wrap; }
+        .promo-card {
+            flex: 1; min-width: 260px; border-radius: 10px; padding: 22px 24px;
+            display: flex; align-items: center; gap: 16px; color: #fff;
+        }
+        .promo-banner { background: linear-gradient(120deg, #f85606 0%, #e74c3c 100%); flex: 2; }
+        .promo-banner h3 { font-size: 19px; margin-bottom: 4px; }
+        .promo-banner p { font-size: 13px; opacity: 0.92; }
+        .follow-us-card { background: #1a2634; }
+        .follow-us-card h4 { font-size: 15px; margin-bottom: 10px; }
+        .follow-us-icons { display: flex; gap: 10px; }
+        .follow-us-icons a {
+            width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none;
+            font-size: 15px; transition: background 0.15s;
+        }
+        .follow-us-icons a:hover { background: rgba(255,255,255,0.28); }
+
+        /* ===== Flash Sale সেকশন ===== */
+        .flash-sale-section { padding: 30px 0 10px; background: #f5f5f5; }
+        .flash-sale-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .flash-sale-title-row i { color: #f85606; font-size: 22px; }
+        .flash-sale-note { font-size: 13px; color: #888; margin-bottom: 16px; }
+        .flash-sale-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px;
+        }
+        .flash-card {
+            background: #fff; border-radius: 8px; padding: 10px; cursor: pointer; position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.2s ease;
+        }
+        .flash-card:hover { transform: translateY(-4px); }
+        .flash-badge {
+            position: absolute; top: 8px; left: 8px; background: #f85606; color: #fff;
+            font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; z-index: 1;
+        }
+        .flash-card img { width: 100%; height: 130px; object-fit: contain; }
+        .flash-card h4 { font-size: 13px; margin: 8px 0 4px; color: #333; line-height: 1.3; }
+        .flash-price-row { display: flex; align-items: baseline; gap: 8px; }
+        .flash-price-now { color: #f85606; font-weight: 700; font-size: 15px; }
+        .flash-price-old { color: #999; font-size: 12px; text-decoration: line-through; }
+        .flash-sale-empty { color: #999; font-size: 13px; padding: 10px 0; }
     </style>
     <script src="config.js"></script>
     <script src="customer-auth.js"></script>
+    <script src="discount-rules.js"></script>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script src="chat-widget.js"></script>
 </head>
@@ -74,11 +195,114 @@
             <a href="#">Cart (0)</a>
         </div>
     </nav>
-<div class="hero">
-        <h1>বাংলাদেশের সর্ববৃহৎ মোবাইল রিপ্লেসমেন্ট পার্টস স্টোর</h1>
-        <p>Find parts for any phone — fast delivery across Bangladesh</p>
-        <a href="#" class="hero-btn">Shop Now</a>
-    </div>
+<!-- ================================================================================
+         Hero Carousel — ব্যবহারকারীর দেওয়া ৫টা স্লাইডের কনটেন্ট (headline/subtext বাংলায় লিখে
+         পাঠিয়েছিলেন, কিন্তু শেষে বলেছেন "স্লাইড ৫ টার সবগুলো লিখাই ইংরেজিতে হবে" — তাই অর্থ ঠিক
+         রেখে ইংরেজিতে অনুবাদ করা হয়েছে, বাটন টেক্সট যেভাবে দিয়েছিলেন হুবহু সেভাবেই)।
+
+         Slide 1-এর সাবটেক্সটে ব্যবহারকারী নিজে "Original" শব্দটা লিখেছিলেন, কিন্তু তার নিজেরই আগে
+         সেভ করা নিয়ম আছে যে প্রোডাক্ট বিবরণে "Original" শব্দ ব্যবহার না করতে (Daraz-এ unauthorized
+         seller-দের জন্য এটা নিষিদ্ধ) — তাই এখানে "Original" বাদ দিয়ে শুধু "Quality-Checked" রাখা
+         হয়েছে। ব্যবহারকারী চাইলে ফিরিয়ে আনতে বলতে পারেন। ================================== -->
+    <section class="hero-carousel" id="heroCarousel">
+        <div class="hero-slides" id="heroSlides">
+            <div class="hero-slide active" style="background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #38bdf8 100%);">
+                <div class="hero-slide-inner">
+                    <div class="hero-slide-text">
+                        <h1>Trusted Parts &amp; Accessories for Your Smartphone</h1>
+                        <p>Quality-checked mobile replacement parts and essential accessories, now at Smart Tech Zone.</p>
+                        <a href="#product-list" class="hero-slide-btn" style="color:#1d4ed8;">Shop Now →</a>
+                    </div>
+                    <div class="hero-slide-visual"><i class="fa-solid fa-shield-halved"></i></div>
+                </div>
+            </div>
+            <div class="hero-slide" style="background: linear-gradient(135deg, #111827 0%, #4338ca 50%, #7c3aed 100%);">
+                <div class="hero-slide-inner">
+                    <div class="hero-slide-text">
+                        <h1>All the Phone Parts You Need, in One Place</h1>
+                        <p>Find Display, Battery, Charging Port and other mobile replacement parts for your exact model.</p>
+                        <a href="#product-list" class="hero-slide-btn" style="color:#4338ca;">Explore Parts →</a>
+                    </div>
+                    <div class="hero-slide-visual"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                </div>
+            </div>
+            <div class="hero-slide" style="background: linear-gradient(135deg, #064e3b 0%, #059669 50%, #34d399 100%);">
+                <div class="hero-slide-inner">
+                    <div class="hero-slide-text">
+                        <h1>Delivery from Dhaka to All of Bangladesh</h1>
+                        <p>Wherever you are, your mobile parts and accessories will reach your doorstep.</p>
+                        <a href="#product-list" class="hero-slide-btn" style="color:#059669;">View Products →</a>
+                    </div>
+                    <div class="hero-slide-visual"><i class="fa-solid fa-truck-fast"></i></div>
+                </div>
+            </div>
+            <!-- ব্যবহারকারীর নোট: "আপনার ব্যবসার জন্য এটি বিশেষভাবে গুরুত্বপূর্ণ, কারণ আপনি সারা
+                 বাংলাদেশে পাইকারি মূল্যে পার্টস দেওয়ার পরিকল্পনা করছেন" — এটা স্লাইডের ডিসপ্লে টেক্সট
+                 না, তাই এখানে দেখানো হয়নি, শুধু প্রেক্ষাপট হিসেবে রাখা হলো। Wholesale Inquiry বাটন
+                 আগের মতোই সরাসরি WhatsApp-এ পূর্ব-লেখা মেসেজসহ নিয়ে যায়। -->
+            <div class="hero-slide" style="background: linear-gradient(135deg, #451a03 0%, #c2410c 55%, #f97316 100%);">
+                <div class="hero-slide-inner">
+                    <div class="hero-slide-text">
+                        <h1>Need Parts for Your Business? Get Wholesale Pricing</h1>
+                        <p>Replacement parts and accessories for mobile repair shops and businesses.</p>
+                        <a href="https://wa.me/8801718381066?text=%E0%A6%86%E0%A6%AE%E0%A6%BF%20%E0%A6%B9%E0%A7%8B%E0%A6%B2%E0%A6%B8%E0%A7%87%E0%A6%B2%20%E0%A6%AA%E0%A7%8D%E0%A6%B0%E0%A6%BE%E0%A6%87%E0%A6%B8%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A6%A4%E0%A7%87%20%E0%A6%9A%E0%A6%BE%E0%A6%87%E0%A5%A4" target="_blank" class="hero-slide-btn" style="color:#c2410c;">Wholesale Inquiry →</a>
+                    </div>
+                    <div class="hero-slide-visual"><i class="fa-solid fa-boxes-stacked"></i></div>
+                </div>
+            </div>
+            <div class="hero-slide" style="background: linear-gradient(135deg, #172554 0%, #2563eb 50%, #60a5fa 100%);">
+                <div class="hero-slide-inner">
+                    <div class="hero-slide-text">
+                        <h1>Why Smart Tech Zone?</h1>
+                        <p>We focus on the right products, reliable service, and customer satisfaction — building long-term relationships.</p>
+                        <a href="why-choose-us.html" class="hero-slide-btn" style="color:#2563eb;">Why Choose Us →</a>
+                    </div>
+                    <div class="hero-slide-visual"><i class="fa-solid fa-star"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-dots" id="heroDots"></div>
+    </section>
+
+    <section class="promo-strip">
+        <div class="container">
+            <!-- দ্বিতীয় প্রোমো ব্যানার — আগের ড্রাফটে লেখা ছিল "সকল প্রোডাক্টে ৪০% ছাড়", কিন্তু
+                 ব্যবহারকারী পরে স্পষ্ট করেছেন এই ছাড় শুধু নির্দিষ্ট কিছু ক্যাটাগরিতে (Outside Key
+                 বাদে Pixel, Sim Tray, Power Volume Flex-এ ৪০%; Body Housing Backshell/Back Panel-এ
+                 ২০%) — তাই এখানে টেক্সট আপডেট করে ঠিক এই স্কোপ অনুযায়ী লেখা হয়েছে, যাতে ভুল দাবি
+                 না হয়ে যায়। -->
+            <div class="promo-card promo-banner">
+                <div>
+                    <h3>লঞ্চ অফার — নির্বাচিত ক্যাটাগরিতে ২০-৪০% ছাড়</h3>
+                    <p>Outside Key (Pixel বাদে), Sim Tray ও Power Volume Flex-এ ৪০% ছাড় • সকল Body Housing Backshell-এ ২০% ছাড়</p>
+                </div>
+            </div>
+            <div class="promo-card follow-us-card">
+                <div>
+                    <h4>Follow Us</h4>
+                    <div class="follow-us-icons">
+                        <a href="https://www.facebook.com/smarttechzonedhaka" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="https://wa.me/8801718381066" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="https://www.youtube.com/@SmartTechZoneDhaka" target="_blank" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                        <!-- Instagram/TikTok লিংক যোগ করা হয়নি — এখনো সেই প্রোফাইলগুলোর URL পাওয়া যায়নি -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="flash-sale-section" id="flashSale">
+        <div class="container">
+            <div class="flash-sale-title-row">
+                <i class="fa-solid fa-bolt"></i>
+                <h2 class="section-title" style="margin:0;">Flash Sale</h2>
+            </div>
+            <p class="flash-sale-note">নির্বাচিত ক্যাটাগরিতে বিশেষ ছাড়ে — Outside Key, Sim Tray, Power Volume Flex (৪০%) ও Body Housing Backshell (২০%)</p>
+            <div class="flash-sale-grid" id="flashSaleGrid">
+                <p class="flash-sale-empty">লোড হচ্ছে...</p>
+            </div>
+        </div>
+    </section>
 
     <section class="part-categories-section">
         <div class="container">
@@ -272,7 +496,106 @@
             loadProductsPage();
         }
 
+        // ============ Hero Carousel — প্রতি ৪.৫ সেকেন্ডে অটো-রোটেট, ডট ক্লিকেও যাওয়া যায়,
+        // হোভার করলে থেমে যায় (যাতে পড়ার সময় হুট করে পরের স্লাইডে চলে না যায়) ============
+        (function initHeroCarousel() {
+            const slidesWrap = document.getElementById('heroSlides');
+            const dotsWrap = document.getElementById('heroDots');
+            if (!slidesWrap || !dotsWrap) return;
+            const slides = Array.from(slidesWrap.querySelectorAll('.hero-slide'));
+            if (slides.length === 0) return;
+
+            // type="button" স্পষ্টভাবে সেট করা হলো — কোনো <button> এর type না দিলে ব্রাউজার
+            // ডিফল্টভাবে "submit" ধরে নেয়, আর সেটা কোনো <form>-এর ভেতরে পড়ে গেলে ক্লিকে পেজ
+            // reload/submit হয়ে যেতে পারে (সব স্টেট রিসেট, ডট "হারিয়ে যাওয়ার" মতো দেখাতে পারে)।
+            slides.forEach((_, i) => {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
+                dot.setAttribute('aria-label', `Slide ${i + 1}`);
+                dot.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    goToSlide(i);
+                });
+                dotsWrap.appendChild(dot);
+            });
+            const dots = Array.from(dotsWrap.querySelectorAll('.hero-dot'));
+
+            let current = 0;
+            let timer = null;
+
+            function goToSlide(i) {
+                if (i === current) return;
+                slides[current].classList.remove('active');
+                dots[current].classList.remove('active');
+                current = i;
+                slides[current].classList.add('active');
+                dots[current].classList.add('active');
+            }
+
+            function next() { goToSlide((current + 1) % slides.length); }
+
+            function startAuto() {
+                stopAuto();
+                timer = setInterval(next, 4500);
+            }
+            function stopAuto() { if (timer) clearInterval(timer); }
+
+            const carousel = document.getElementById('heroCarousel');
+            carousel.addEventListener('mouseenter', stopAuto);
+            carousel.addEventListener('mouseleave', startAuto);
+            startAuto();
+        })();
+
+        // ============ Flash Sale — নির্দিষ্ট ক্যাটাগরির প্রোডাক্ট এনে discount-rules.js এর
+        // নিয়ম দিয়ে ছাড়ের দাম হিসেব করে দেখায়। কোনো প্রোডাক্টের price/originalPrice ফিল্ড
+        // ডাটাবেজে বদলায় না, শুধু দেখানোর সময় হিসেব হয়। ============
+        async function loadFlashSale() {
+            const grid = document.getElementById('flashSaleGrid');
+            if (typeof FLASH_SALE_RULES === 'undefined') { grid.innerHTML = ''; return; }
+            try {
+                const categories = [...new Set(FLASH_SALE_RULES.map(r => r.category))];
+                const results = await Promise.all(categories.map(cat =>
+                    fetch(`${API_BASE}/api/products?status=published&fields=summary&category=${encodeURIComponent(cat)}&limit=8`)
+                        .then(r => r.json()).catch(() => ({ products: [] }))
+                ));
+                let items = [];
+                results.forEach(r => { if (r && r.products) items = items.concat(r.products); });
+
+                // যেসব প্রোডাক্টে rule সত্যিই প্রযোজ্য (যেমন Outside Key হলেও Pixel বাদ) শুধু সেগুলোই রাখা
+                const withDiscount = items
+                    .map(p => ({ product: p, rule: getFlashSaleRule(p) }))
+                    .filter(x => x.rule);
+
+                if (withDiscount.length === 0) {
+                    grid.innerHTML = '<p class="flash-sale-empty">এই মুহূর্তে ফ্ল্যাশ সেলে কোনো প্রোডাক্ট নেই।</p>';
+                    return;
+                }
+
+                grid.innerHTML = withDiscount.slice(0, 12).map(({ product: p, rule }) => {
+                    const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0]) : 'https://via.placeholder.com/200';
+                    const flashPrice = computeFlashPrice(p.price, rule.discountPct);
+                    return `
+                        <div class="flash-card" onclick="window.location.href='product.html?id=${p._id}'">
+                            <div class="flash-badge">-${rule.discountPct}%</div>
+                            <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'">
+                            <h4>${p.name}</h4>
+                            <div class="flash-price-row">
+                                <span class="flash-price-now">৳ ${flashPrice}</span>
+                                <span class="flash-price-old">৳ ${p.price}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error('Flash sale load error:', err);
+                grid.innerHTML = '';
+            }
+        }
+
         loadHomeProducts();
+        loadFlashSale();
     </script>
 </body>
 </html>

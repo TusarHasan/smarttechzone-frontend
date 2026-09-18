@@ -38,6 +38,10 @@
                 0%, 100% { transform: rotate(-7deg); }
                 50% { transform: rotate(7deg); }
             }
+            /* আগে Netlify হোস্টিং "Powered by Netlify" ব্যাজ bottom-right কোণায় বসিয়ে দিচ্ছিল
+               বলে চ্যাট বাটনের bottom অফসেট বাড়িয়ে (86px/74px) রাখা হয়েছিল, যাতে বাটনটা ব্যাজের
+               সাথে না মিলে যায়। এখন Netlify Project configuration থেকে সেই ব্যাজ বন্ধ করে দেওয়া
+               হয়েছে (আর দেখা যায় না), তাই বাটনটা আবার আগের জায়গায় (নিচে) ফিরিয়ে আনা হলো। */
             #stzChatFab {
                 position: fixed; bottom: 22px; right: 22px; z-index: 9998;
                 width: 64px; height: 64px; padding: 0;

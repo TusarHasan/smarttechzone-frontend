@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <script src="analytics.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Choose Us - Smart Tech Zone</title>
+    <meta name="description" content="কেন Smart Tech Zone থেকে মোবাইল রিপ্লেসমেন্ট পার্টস কিনবেন — ভিডিও প্রুফ ডেলিভারি, কোয়ালিটি-চেকড পার্টস, সারাদেশে ডেলিভারি এবং পাইকারি মূল্য।">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* এই পেজের নিচের সার্ভিস লিস্টটা DRAFT — ব্যবহারকারী বলেছিলেন "সকল সার্ভিস যুক্ত করা যেতে পারে"
+           কিন্তু নির্দিষ্ট করে কোন কোনগুলো বলেননি। এই সেশনে আগে থেকে জানা তথ্য (ভিডিও প্রুফ প্যাকেজিং,
+           কোয়ালিটি-চেকড পার্টস, সারাদেশে ডেলিভারি, হোলসেল প্রাইসিং, ভেরিফায়েড বিজনেস) থেকে যুক্তিসঙ্গত
+           একটা লিস্ট বানানো হয়েছে — ব্যবহারকারী কনফার্ম করলে বা আরও/কম আইটেম চাইলে সহজেই বদলানো যাবে। */
+        .wcu-hero {
+            background: linear-gradient(135deg, #161616 0%, #2b2b2b 60%, #3a3a3a 100%);
+            color: #fff; text-align: center; padding: 50px 20px;
+        }
+        .wcu-hero h1 { font-size: 30px; font-weight: 800; margin-bottom: 10px; }
+        .wcu-hero p { font-size: 15px; opacity: 0.85; max-width: 600px; margin: 0 auto; }
+        .wcu-container { max-width: 1100px; margin: 0 auto; padding: 40px 20px 60px; }
+        .wcu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .wcu-card {
+            background: #fff; border-radius: 10px; padding: 26px 22px; text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .wcu-icon {
+            width: 56px; height: 56px; border-radius: 50%; background: #fdf1f0; color: #e74c3c;
+            display: flex; align-items: center; justify-content: center; font-size: 22px;
+            margin: 0 auto 14px;
+        }
+        .wcu-card h3 { font-size: 15px; margin-bottom: 8px; color: #222; }
+        .wcu-card p { font-size: 13px; color: #777; line-height: 1.6; }
+        .wcu-verified {
+            margin-top: 34px; background: #f0faf4; border: 1px solid #d8f0e0; border-radius: 10px;
+            padding: 18px 22px; display: flex; align-items: center; gap: 12px; color: #2a7a4a; font-size: 13.5px;
+        }
+        .wcu-verified i { font-size: 20px; color: #2a9d5c; flex-shrink: 0; }
+        .wcu-cta { text-align: center; margin-top: 34px; }
+        .wcu-cta a {
+            display: inline-block; background: #e74c3c; color: #fff; padding: 13px 36px; border-radius: 6px;
+            text-decoration: none; font-weight: 700; font-size: 15px;
+        }
+    </style>
+    <script src="config.js"></script>
+    <script src="customer-auth.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
+            <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
+        </div>
+    </nav>
+
+    <div class="wcu-hero">
+        <h1>Why Choose Smart Tech Zone?</h1>
+        <p>বাংলাদেশে মোবাইল রিপ্লেসমেন্ট পার্টস কেনার সবচেয়ে নির্ভরযোগ্য জায়গা</p>
+    </div>
+
+    <div class="wcu-container">
+        <div class="wcu-grid">
+            <div class="wcu-card">
+                <div class="wcu-icon"><i class="fa-solid fa-video"></i></div>
+                <h3>ভিডিও প্রুফ সহ প্যাকেজিং</h3>
+                <p>প্রতিটা অর্ডার প্যাকেজিং করার সময় ভিডিও রেকর্ড করা হয়, যাতে আপনি নিশ্চিন্তে অর্ডার করতে পারেন।</p>
+            </div>
+            <div class="wcu-card">
+                <div class="wcu-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3>কোয়ালিটি-চেকড পার্টস</h3>
+                <p>পাঠানোর আগে প্রতিটা পার্টস পরীক্ষা করে নিশ্চিত করা হয় — ভুল বা ত্রুটিপূর্ণ পার্টস এড়াতে।</p>
+            </div>
+            <div class="wcu-card">
+                <div class="wcu-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                <h3>সারা বাংলাদেশে ডেলিভারি</h3>
+                <p>দেশের ৬৪ জেলাতেই দ্রুত ও নিরাপদে হোম ডেলিভারি সুবিধা।</p>
+            </div>
+            <div class="wcu-card">
+                <div class="wcu-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <h3>পাইকারি মূল্যে সুবিধা</h3>
+                <p>দোকানদার বা মেরামতকারীদের জন্য হোলসেল প্রাইসিং — হোয়াটসঅ্যাপে সরাসরি যোগাযোগ করুন।</p>
+            </div>
+            <div class="wcu-card">
+                <div class="wcu-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                <h3>সব ব্র্যান্ডের পার্টস</h3>
+                <p>Apple, Samsung, Xiaomi, Oppo, Vivo, Realme, Nokia, Symphony সহ সব জনপ্রিয় ব্র্যান্ডের রিপ্লেসমেন্ট পার্টস এক জায়গায়।</p>
+            </div>
+            <div class="wcu-card">
+                <div class="wcu-icon"><i class="fa-solid fa-headset"></i></div>
+                <h3>সরাসরি কাস্টমার সাপোর্ট</h3>
+                <p>যেকোনো প্রশ্ন বা সমস্যায় লাইভ চ্যাট বা হোয়াটসঅ্যাপে সরাসরি আমাদের সাথে যোগাযোগ করতে পারবেন।</p>
+            </div>
+        </div>
+
+        <div class="wcu-verified">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Verified Business — Smart Tech Zone, Trade License No. TRAD/DNCC/030240/2025, Approved by Dhaka North City Corporation</span>
+        </div>
+
+        <div class="wcu-cta">
+            <a href="index.html#product-list">Shop Now</a>
+        </div>
+    </div>
+
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+</body>
+</html>

@@ -33,6 +33,13 @@
         }
 
         .site-footer-bottom { text-align: center; padding: 16px 20px; font-size: 12px; color: #999; border-top: 1px solid #eee; }
+
+        .site-footer-verified { background: #f0faf4; border-top: 1px solid #d8f0e0; padding: 12px 20px; }
+        .site-footer-verified-inner {
+            max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 8px;
+            font-size: 12.5px; color: #2a7a4a; flex-wrap: wrap;
+        }
+        .site-footer-verified-inner i { color: #2a9d5c; font-size: 14px; flex-shrink: 0; }
     </style>
 
     <footer class="site-footer">
@@ -53,7 +60,7 @@
                     <ul>
                         <li><a href="/index.html">Home</a></li>
                         <li><a href="/index.html#brands">Shop by Brand</a></li>
-                        <li><a href="#">About Us</a></li>
+                        <li><a href="/why-choose-us.html">Why Choose Us</a></li>
                         <li><a href="#">Track Order</a></li>
                     </ul>
                 </div>
@@ -65,11 +72,20 @@
                 <div class="site-footer-col">
                     <h4>Follow Us</h4>
                     <div class="site-footer-social">
-                        <a href="https://www.facebook.com/smarttechzonedhaka" target="_blank" title="Facebook">f</a>
-                        <a href="https://wa.me/8801718381066" target="_blank" title="WhatsApp">w</a>
-                        <a href="https://www.youtube.com/@SmartTechZoneDhaka" target="_blank" title="YouTube">y</a>
+                        <a href="https://www.facebook.com/smarttechzonedhaka" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="https://wa.me/8801718381066" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="https://www.youtube.com/@SmartTechZoneDhaka" target="_blank" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                        <!-- Instagram/TikTok প্রোফাইলের URL এখনো পাওয়া যায়নি, তাই এখানে যোগ করা হয়নি —
+                             পেলে এখানে একইভাবে <a><i class="fa-brands fa-instagram/fa-tiktok"></i></a> যোগ করা যাবে -->
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="site-footer-verified">
+            <div class="site-footer-verified-inner">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Verified Business — Smart Tech Zone, Trade License No. TRAD/DNCC/030240/2025, Approved by Dhaka North City Corporation</span>
             </div>
         </div>
 
@@ -94,7 +110,20 @@
     </footer>
     `;
 
+    // পুরো সাইটের সব পেজেই footer.js এক জায়গা থেকে লোড হয়, কিন্তু Font Awesome আইকন CDN
+    // এখন পর্যন্ত শুধু index.html এ যোগ করা ছিল — footer.js নিজে থেকেই CDN লিংক ইনজেক্ট করে
+    // দেয় (যদি আগে থেকে না থাকে) যাতে সব পেজেই Follow Us আইকন ঠিকভাবে দেখা যায়
+    function ensureFontAwesome() {
+        if (document.querySelector('link[data-stz-fa]')) return;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
+        link.setAttribute('data-stz-fa', '1');
+        document.head.appendChild(link);
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        ensureFontAwesome();
         const target = document.getElementById('siteFooter');
         if (target) {
             target.innerHTML = footerHtml;

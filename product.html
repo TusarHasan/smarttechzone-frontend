@@ -21,10 +21,20 @@
     .product-layout { display: flex; gap: 30px; flex-wrap: wrap; }
     .image-section { flex: 1; min-width: 280px; }
     .main-image { width: 100%; border-radius: 8px; border: 1px solid #eee; }
+    /* Daraz-এর মতো — গ্যালারির প্রথম থাম্বনেইলে ভিডিও থাকলে ক্লিক করলে মেইন এরিয়াতে এমবেড হয়ে প্লে হয় */
+    .main-video-wrap { width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; border: 1px solid #eee; background: #000; }
+    .main-video-wrap iframe { width: 100%; height: 100%; display: block; }
+    .thumb-row .video-thumb { position: relative; cursor: pointer; }
+    .thumb-row .video-thumb::after {
+        content: "▶"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        color: #fff; background: rgba(0,0,0,.35); font-size: 18px; border-radius: 4px;
+    }
     .thumb-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
     .thumb-row img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; }
     .info-section { flex: 1; min-width: 280px; }
-    h1 { font-size: 22px; color: #333; margin-top: 0; }
+    h1 { font-size: 22px; color: #333; margin-top: 0; margin-bottom: 4px; }
+    /* প্রোডাক্ট নামের ঠিক নিচে AI-অনূদিত বাংলা নাম (Admin প্যানেলের "AI বাংলা" থেকে আসলে) — না থাকলে আড়াল থাকে */
+    .product-name-bn { font-size: 15px; color: #666; margin-bottom: 10px; line-height: 1.5; }
     .price-block { margin: 14px 0; }
     .price { font-size: 26px; color: #e74c3c; font-weight: bold; }
     .original-price { font-size: 14px; color: #999; text-decoration: line-through; font-weight: normal; }
@@ -74,7 +84,12 @@
 
     .lower-section { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
     .section-title { font-size: 17px; color: #333; margin: 0 0 14px; font-weight: bold; }
-    .description { line-height: 1.7; color: #444; white-space: pre-wrap; font-size: 14px; }
+    /* Add Products-এর রিচ-টেক্সট এডিটর থেকে আসা HTML (প্যারাগ্রাফ/লিস্ট/ছবি) রেন্ডার হয় বলে আর
+       white-space: pre-wrap লাগে না (আগে প্লেইন টেক্সটে লাইন-ব্রেক ধরে রাখার জন্য দরকার ছিল) */
+    .description { line-height: 1.7; color: #444; font-size: 14px; }
+    .description ul, .description ol { margin: 8px 0; padding-left: 24px; }
+    .description img { max-width: 100%; border-radius: 6px; margin: 8px 0; display: block; }
+    .description p { margin: 0 0 10px; }
     .description.collapsed { max-height: 260px; overflow: hidden; position: relative; }
     .description.collapsed::after {
         content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
@@ -183,10 +198,15 @@
         <div class="product-layout">
             <div class="image-section">
                 <img id="mainImage" class="main-image" src="" onerror="this.src='https://via.placeholder.com/400?text=No+Image'">
+                <div class="main-video-wrap" id="mainVideoWrap" style="display:none;">
+                    <iframe id="mainVideoFrame" src="" title="Product Video" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
                 <div class="thumb-row" id="thumbRow"></div>
             </div>
             <div class="info-section">
                 <h1 id="productName"></h1>
+                <div class="product-name-bn" id="productNameBn" style="display:none;"></div>
                 <div class="meta">Brand: <span id="productBrand"></span> | Model: <span id="productModel"></span></div>
                 <div class="meta">Part Type: <span id="productPartType"></span></div>
                 <div class="sold-by-row">
@@ -237,6 +257,15 @@
             <div class="box-content" id="boxContent"></div>
         </div>
 
+        <!-- Daraz-এর প্রোডাক্ট পেজের Warranty ইনফো-বক্সের মতো — অ্যাডমিন প্যানেলের Shipping & Warranty
+             কার্ডের Warranty Type/Warranty/Warranty Policy/Return Policy ফিল্ড থাকলেই এখানে দেখানো হয় -->
+        <div class="lower-section" id="warrantySection">
+            <div class="section-title">Warranty &amp; Return</div>
+            <table class="spec-table" id="warrantyTable"></table>
+            <div class="box-content" id="warrantyPolicyText" style="display:none; margin-top:4px;"></div>
+            <div class="box-content" id="returnPolicyText" style="display:none; margin-top:4px;"></div>
+        </div>
+
         <div class="lower-section">
             <div class="section-title">Ratings &amp; Reviews</div>
             <div class="review-summary">
@@ -283,6 +312,50 @@
     function resolveImageUrl(url) {
         if (!url) return 'https://via.placeholder.com/400?text=No+Image';
         return url.startsWith('http') ? url : `${API_BASE}${url}`;
+    }
+
+    // Add Products-এর রিচ-টেক্সট এডিটর থেকে আসা description-এ ছবি থাকলে সেগুলো রিলেটিভ পাথে সেভ
+    // থাকে (দেখুন backend/models/product.js) — এখানে দেখানোর আগে resolveImageUrl() দিয়ে অ্যাবসোলিউট
+    // করে নেওয়া হচ্ছে, ঠিক মূল প্রোডাক্ট গ্যালারির ছবির মতোই
+    function resolveDescriptionImages(html) {
+        if (!html) return html;
+        const wrap = document.createElement('div');
+        wrap.innerHTML = html;
+        wrap.querySelectorAll('img[src]').forEach(img => {
+            img.setAttribute('src', resolveImageUrl(img.getAttribute('src')));
+        });
+        return wrap.innerHTML;
+    }
+
+    // মেটা ডেসক্রিপশন/স্ট্রাকচার্ড ডেটার জন্য HTML ট্যাগ বাদ দিয়ে শুধু আসল লেখাটুকু বের করা
+    function stripHtml(html) {
+        if (!html) return '';
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        return (div.textContent || '').replace(/\s+/g, ' ').trim();
+    }
+
+    // ============ প্রোডাক্ট ভিডিও (Daraz-এর "YouTube Link" এর মতো) ============
+    function getYoutubeEmbedId(url) {
+        if (!url) return null;
+        const m = String(url).match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        return m ? m[1] : null;
+    }
+
+    function showProductVideo() {
+        if (!window.productVideoEmbedUrl) return;
+        document.getElementById('mainImage').style.display = 'none';
+        const wrap = document.getElementById('mainVideoWrap');
+        document.getElementById('mainVideoFrame').src = window.productVideoEmbedUrl + '?autoplay=1';
+        wrap.style.display = 'block';
+    }
+
+    function showProductImage(src) {
+        // ভিডিও চলতে থাকলে iframe src খালি করে বন্ধ করে দেওয়া হচ্ছে, নাহলে আড়ালেও অডিও চলতে থাকবে
+        document.getElementById('mainVideoFrame').src = '';
+        document.getElementById('mainVideoWrap').style.display = 'none';
+        document.getElementById('mainImage').style.display = 'block';
+        document.getElementById('mainImage').src = src;
     }
 
     function formatPrice(n) {
@@ -335,6 +408,13 @@
         document.getElementById('productContent').style.display = 'block';
 
         document.getElementById('productName').textContent = product.name;
+        const nameBnEl = document.getElementById('productNameBn');
+        if (product.nameBn && product.nameBn.trim()) {
+            nameBnEl.textContent = product.nameBn.trim();
+            nameBnEl.style.display = 'block';
+        } else {
+            nameBnEl.style.display = 'none';
+        }
         document.getElementById('productBrand').textContent = product.brand || '-';
         document.getElementById('productModel').textContent = product.model || '-';
         document.getElementById('productPartType').textContent = product.partType || '-';
@@ -343,8 +423,14 @@
 
         const descBox = document.getElementById('productDescription');
         const viewMoreBtn = document.getElementById('viewMoreBtn');
-        descBox.textContent = product.description || 'এই প্রোডাক্টের জন্য এখনো কোনো বিস্তারিত বিবরণ যোগ করা হয়নি।';
-        if ((product.description || '').length < 400) {
+        if (product.description) {
+            descBox.innerHTML = resolveDescriptionImages(product.description);
+        } else {
+            descBox.textContent = 'এই প্রোডাক্টের জন্য এখনো কোনো বিস্তারিত বিবরণ যোগ করা হয়নি।';
+        }
+        // HTML ট্যাগ বাদ দিয়ে আসল লেখার দৈর্ঘ্য দেখে VIEW MORE লাগবে কিনা ঠিক করা হচ্ছে (ট্যাগ ধরলে
+        // কম লেখাতেও দৈর্ঘ্য বেশি দেখাতো)
+        if (stripHtml(product.description).length < 400) {
             descBox.classList.remove('collapsed');
             viewMoreBtn.style.display = 'none';
         } else {
@@ -372,13 +458,44 @@
             document.getElementById('boxSection').style.display = 'none';
         }
 
+        // Warranty & Return — Warranty Type/Warranty/Warranty Policy/Return Policy-র যেকোনো একটা থাকলেই দেখানো হয়
+        const warrantyRows = [];
+        if (product.warrantyType) warrantyRows.push(['Warranty Type', product.warrantyType]);
+        if (product.warrantyDuration) warrantyRows.push(['Warranty', product.warrantyDuration]);
+        const warrantyPolicyEl = document.getElementById('warrantyPolicyText');
+        const returnPolicyEl = document.getElementById('returnPolicyText');
+        if (product.warrantyPolicy) {
+            warrantyPolicyEl.textContent = 'Warranty Policy: ' + product.warrantyPolicy;
+            warrantyPolicyEl.style.display = 'block';
+        } else {
+            warrantyPolicyEl.style.display = 'none';
+        }
+        if (product.returnPolicy) {
+            returnPolicyEl.textContent = 'Return Policy: ' + product.returnPolicy;
+            returnPolicyEl.style.display = 'block';
+        } else {
+            returnPolicyEl.style.display = 'none';
+        }
+        const warrantyTable = document.getElementById('warrantyTable');
+        warrantyTable.innerHTML = warrantyRows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+        const hasWarrantyInfo = warrantyRows.length || product.warrantyPolicy || product.returnPolicy;
+        document.getElementById('warrantySection').style.display = hasWarrantyInfo ? 'block' : 'none';
+
         const images = (product.images && product.images.length) ? product.images.map(resolveImageUrl) : [];
         const mainImg = document.getElementById('mainImage');
         mainImg.src = images.length ? images[0] : 'https://via.placeholder.com/400?text=No+Image';
 
+        // Daraz-এর মতো — YouTube ভিডিও থাকলে গ্যালারির প্রথম থাম্বনেইল হিসেবে দেখানো হয়, ক্লিক করলে
+        // মেইন এরিয়াতে এমবেড হয়ে প্লে হয়; কোনো ছবি থাম্বনেইলে ক্লিক করলে আবার ছবিতে ফিরে যায়
+        const youtubeId = getYoutubeEmbedId(product.videoUrl);
+        window.productVideoEmbedUrl = youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : null;
+        const videoThumbHtml = youtubeId
+            ? `<img class="video-thumb" src="https://img.youtube.com/vi/${youtubeId}/default.jpg" onclick="showProductVideo()">`
+            : '';
+
         const thumbRow = document.getElementById('thumbRow');
-        thumbRow.innerHTML = images.map((url, i) =>
-            `<img src="${url}" ${i > 0 ? 'loading="lazy" decoding="async"' : ''} onerror="this.src='https://via.placeholder.com/100?text=No+Image'" onclick="document.getElementById('mainImage').src=this.src">`
+        thumbRow.innerHTML = videoThumbHtml + images.map((url, i) =>
+            `<img src="${url}" ${i > 0 ? 'loading="lazy" decoding="async"' : ''} onerror="this.src='https://via.placeholder.com/100?text=No+Image'" onclick="showProductImage(this.src)">`
         ).join('');
 
         renderAttributeGroups(product);
@@ -391,7 +508,8 @@
     // টাইটেল, মেটা ডেসক্রিপশন ও Product structured data (JSON-LD) প্রোডাক্ট অনুযায়ী বসছে।
     function updateSeoTags(product, images) {
         const title = `${product.name} - Smart Tech Zone`;
-        const desc = (product.description || `${product.name} — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`).substring(0, 160);
+        // description এখন রিচ-টেক্সট এডিটরের HTML — মেটা ট্যাগ/স্ট্রাকচার্ড ডেটায় ট্যাগ বাদ দিয়ে শুধু লেখাটুকু লাগে
+        const desc = (stripHtml(product.description) || `${product.name} — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`).substring(0, 160);
         const mainImage = images.length ? images[0] : 'https://smarttechzone.com.bd/images/logo.png';
         const pageUrl = `https://smarttechzone.com.bd/product.html?id=${product._id}`;
 
