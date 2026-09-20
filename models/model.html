@@ -50,6 +50,25 @@
     <script>
         const API_BASE = BACKEND_URL + '/api';
 
+        // SEO: কিওয়ার্ডসহ পরিষ্কার URL — /product/<slug>-i<id>
+        // *** হুবহু কপি আছে: product.html, index.html, search.html, brands/brand.html,
+        // netlify/edge-functions/product-seo.js ও model-seo.js, backend/routes/sitemap.js ***
+        function slugifyProductName(name) {
+            let s = String(name || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            if (s.length > 70) {
+                const cut = s.slice(0, 70);
+                const lastDash = cut.lastIndexOf('-');
+                s = lastDash > 20 ? cut.slice(0, lastDash) : cut;
+            }
+            return s || 'product';
+        }
+        function buildProductPath(name, id) {
+            return `/product/${slugifyProductName(name)}-i${id}`;
+        }
+
         const params = new URLSearchParams(window.location.search);
         const brand = params.get('brand');
         const model = params.get('model');
@@ -107,8 +126,8 @@
 
                 grid.innerHTML = products.map(p => `
                     <div class="product-card">
-                        <img src="${p.images[0] || 'https://via.placeholder.com/100'}" alt="${p.name}" style="cursor:pointer" onclick="window.location.href='../product.html?id=${p._id}'">
-                        <h3 style="cursor:pointer" onclick="window.location.href='../product.html?id=${p._id}'">${p.name}</h3>
+                        <img src="${p.images[0] || 'https://via.placeholder.com/100'}" alt="${p.name}" style="cursor:pointer" onclick="window.location.href='${buildProductPath(p.name, p._id)}'">
+                        <h3 style="cursor:pointer" onclick="window.location.href='${buildProductPath(p.name, p._id)}'">${p.name}</h3>
                         <p class="price">৳ ${p.price || 0}</p>
                         <button class="add-cart-btn" onclick='quickAddToCart(${JSON.stringify({_id: p._id, name: p.name, price: p.price, images: p.images}).replace(/'/g, "&#39;")})'>Add to Cart</button>
                     </div>
@@ -146,7 +165,7 @@
                 itemListElement: products.slice(0, 30).map((p, i) => ({
                     '@type': 'ListItem',
                     position: i + 1,
-                    url: `https://smarttechzone.com.bd/product.html?id=${p._id}`,
+                    url: `https://smarttechzone.com.bd${buildProductPath(p.name, p._id)}`,
                     name: p.name
                 }))
             };

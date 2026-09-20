@@ -66,6 +66,8 @@ export default async (request, context) => {
     return new Response(newHtml, { status: response.status, headers: newHeaders });
 };
 
-export const config = { path: '/brands/brand.html' };
+// রাউটিং netlify.toml-এর [[edge_functions]] এন্ট্রি দিয়ে হয় — এখানে আলাদা export const config
+// দিলে ডুপ্লিকেট হয়ে পেজে ফাংশনটা দুইবার চলতে পারতো, তাই বাদ দেওয়া হলো (product-seo.js-এও
+// একই কারণে বাদ দেওয়া হয়েছে)
 
 export { injectBrandSeoIntoHtml, computeBrandSeoFields };

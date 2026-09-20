@@ -27,6 +27,30 @@ const BACKEND_URL = 'https://smarttechzone-backend.onrender.com';
 const SITE_URL = 'https://smarttechzone.com.bd';
 const FETCH_TIMEOUT_MS = 2500;
 
+// ============ SEO: কিওয়ার্ডসহ পরিষ্কার URL — /product/<slug>-i<id> ============
+// *** এই ফাংশনগুলো হুবহু (byte-for-byte) কপি আছে: product.html, index.html, search.html,
+// brands/brand.html, models/model.html, netlify/edge-functions/model-seo.js,
+// backend/routes/sitemap.js — এখানে বদলালে ওই সব জায়গাতেও বদলাতে হবে ***
+function slugifyProductName(name) {
+    let s = String(name || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    if (s.length > 70) {
+        const cut = s.slice(0, 70);
+        const lastDash = cut.lastIndexOf('-');
+        s = lastDash > 20 ? cut.slice(0, lastDash) : cut;
+    }
+    return s || 'product';
+}
+function buildProductPath(name, id) {
+    return `/product/${slugifyProductName(name)}-i${id}`;
+}
+function extractProductIdFromPath(pathname) {
+    const m = pathname.match(/-i([a-f0-9]{24})$/);
+    return m ? m[1] : null;
+}
+
 function escapeHtml(str) {
     return String(str)
         .replace(/&/g, '&amp;')
@@ -105,7 +129,9 @@ function computeSeoFields(product) {
     const mainImage = images.length ? images[0] : `${SITE_URL}/images/logo.png`;
     const title = `${product.name} - Smart Tech Zone`;
     const desc = (stripHtml(product.description) || `${product.name} — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`).substring(0, 160);
-    const pageUrl = `${SITE_URL}/product.html?id=${product._id}`;
+    // canonical সবসময় নতুন সুন্দর URL-টাই দেখাবে — যেভাবেই পেজটা রিকোয়েস্ট হোক না কেন (পুরোনো
+    // product.html?id= বা নতুন /product/<slug>-i<id>), যাতে Google একটাই URL-কে "আসল" ধরে
+    const pageUrl = `${SITE_URL}${buildProductPath(product.name, product._id)}`;
     const jsonLd = buildProductJsonLd(product, images, pageUrl, desc);
     return { images, mainImage, title, desc, pageUrl, jsonLd };
 }
@@ -131,10 +157,17 @@ function injectSeoIntoHtml(html, product) {
 }
 
 export default async (request, context) => {
-    const response = await context.next();
-
     const url = new URL(request.url);
-    const productId = url.searchParams.get('id');
+    // /product/<slug>-i<id> — নতুন সুন্দর URL, এর জন্য কোনো static ফাইল নেই, তাই product.html-এর
+    // কনটেন্টই ভেতরে ভেতরে সার্ভ করা হচ্ছে (context.rewrite) — ব্রাউজারের ঠিকানা বার-এ সুন্দর
+    // URL-টাই দেখা যাবে। /product.html?id= — পুরোনো URL, এটা নিজেই একটা real static ফাইল
+    // (context.next())।
+    const isPrettyPath = url.pathname !== '/product.html';
+    const productId = isPrettyPath
+        ? extractProductIdFromPath(url.pathname)
+        : url.searchParams.get('id');
+
+    const response = isPrettyPath ? await context.rewrite('/product.html') : await context.next();
     if (!productId) return response;
 
     let product;
@@ -161,7 +194,9 @@ export default async (request, context) => {
     return new Response(newHtml, { status: response.status, headers: newHeaders });
 };
 
-export const config = { path: '/product.html' };
+// রাউটিং এখন netlify.toml-এ দুইটা আলাদা [[edge_functions]] এন্ট্রি দিয়ে হয় (/product.html আর
+// /product/*, দুটোই এই একই ফাংশনে) — এখানে আলাদা করে export const config দিলে netlify.toml-এর
+// এন্ট্রির সাথে ডুপ্লিকেট হয়ে /product.html-এ ফাংশনটা দুইবার চলতে পারতো, তাই এটা বাদ দেওয়া হলো
 
 // টেস্টিং-এর জন্য (Node দিয়ে যাচাই করার সুবিধার্থে) — Netlify আসলে শুধু default export ও
 // config-ই ব্যবহার করে, বাকি এক্সপোর্টগুলো deploy-এর সময় নিরাপদে উপেক্ষা করা হবে

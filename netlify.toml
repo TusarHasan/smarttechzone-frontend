@@ -7,6 +7,13 @@
   path = "/product.html"
   function = "product-seo"
 
+# নতুন কিওয়ার্ডসহ পরিষ্কার প্রোডাক্ট URL — /product/<slug>-i<id> — এর জন্য কোনো static ফাইল
+# নেই, তাই একই product-seo.js ফাংশনই এটাও হ্যান্ডেল করে (context.rewrite দিয়ে ভেতরে ভেতরে
+# product.html-এর কনটেন্ট সার্ভ করে, ব্রাউজারের ঠিকানা বার-এ সুন্দর URL-টাই দেখা যায়)
+[[edge_functions]]
+  path = "/product/*"
+  function = "product-seo"
+
 [[edge_functions]]
   path = "/brands/brand.html"
   function = "brand-seo"

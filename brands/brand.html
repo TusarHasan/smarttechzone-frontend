@@ -78,6 +78,26 @@
 
     <script>
         const API_BASE = BACKEND_URL;
+
+        // SEO: কিওয়ার্ডসহ পরিষ্কার URL — /product/<slug>-i<id> (root থেকে absolute path বলে
+        // ../ লাগে না, যেকোনো সাবডিরেক্টরি থেকেই একইভাবে কাজ করে)
+        // *** হুবহু কপি আছে: product.html, index.html, search.html, models/model.html,
+        // netlify/edge-functions/product-seo.js ও model-seo.js, backend/routes/sitemap.js ***
+        function slugifyProductName(name) {
+            let s = String(name || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            if (s.length > 70) {
+                const cut = s.slice(0, 70);
+                const lastDash = cut.lastIndexOf('-');
+                s = lastDash > 20 ? cut.slice(0, lastDash) : cut;
+            }
+            return s || 'product';
+        }
+        function buildProductPath(name, id) {
+            return `/product/${slugifyProductName(name)}-i${id}`;
+        }
         const params = new URLSearchParams(window.location.search);
         // brand-counts থেকে যেই নামটা আসে (যেমন "Itel", "Samsung") ঠিক সেটাই এখানে ?name= এ পাস করা হয় —
         // তাই কোনো নতুন ব্র্যান্ড ডিটেক্ট হওয়ার সাথে সাথে এই একই টেমপ্লেট পেজ তার জন্যও কাজ করবে,
@@ -176,7 +196,7 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.style.cursor = 'pointer';
-                card.onclick = () => window.location.href = `../product.html?id=${p._id}`;
+                card.onclick = () => window.location.href = buildProductPath(p.name, p._id);
                 card.innerHTML = `
                     <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'">
                     <h3>${p.name}</h3>

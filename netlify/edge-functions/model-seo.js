@@ -19,6 +19,25 @@ const BACKEND_URL = 'https://smarttechzone-backend.onrender.com';
 const SITE_URL = 'https://smarttechzone.com.bd';
 const FETCH_TIMEOUT_MS = 2500;
 
+// SEO: প্রোডাক্ট লিংকগুলো এখন কিওয়ার্ডসহ পরিষ্কার URL ব্যবহার করে (/product/<slug>-i<id>) —
+// *** হুবহু কপি আছে: product.html, index.html, search.html, brands/brand.html,
+// models/model.html, netlify/edge-functions/product-seo.js, backend/routes/sitemap.js ***
+function slugifyProductName(name) {
+    let s = String(name || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    if (s.length > 70) {
+        const cut = s.slice(0, 70);
+        const lastDash = cut.lastIndexOf('-');
+        s = lastDash > 20 ? cut.slice(0, lastDash) : cut;
+    }
+    return s || 'product';
+}
+function buildProductPath(name, id) {
+    return `/product/${slugifyProductName(name)}-i${id}`;
+}
+
 function escapeHtml(str) {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -56,7 +75,7 @@ function buildModelJsonLd(brand, model, products, pageUrl) {
         itemListElement: products.slice(0, 30).map((p, i) => ({
             '@type': 'ListItem',
             position: i + 1,
-            url: `${SITE_URL}/product.html?id=${p._id}`,
+            url: `${SITE_URL}${buildProductPath(p.name, p._id)}`,
             name: p.name
         }))
     };
@@ -114,6 +133,8 @@ export default async (request, context) => {
     return new Response(newHtml, { status: response.status, headers: newHeaders });
 };
 
-export const config = { path: '/models/model.html' };
+// রাউটিং netlify.toml-এর [[edge_functions]] এন্ট্রি দিয়ে হয় — এখানে আলাদা export const config
+// দিলে ডুপ্লিকেট হয়ে পেজে ফাংশনটা দুইবার চলতে পারতো, তাই বাদ দেওয়া হলো (product-seo.js ও
+// brand-seo.js-এও একই কারণে বাদ দেওয়া হয়েছে)
 
 export { injectModelSeoIntoHtml, computeModelSeoFields, buildModelJsonLd };

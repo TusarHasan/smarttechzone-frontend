@@ -344,6 +344,26 @@
     <script>
         const API_BASE = BACKEND_URL;
 
+        // ============ SEO: কিওয়ার্ডসহ পরিষ্কার URL — /product/<slug>-i<id> ============
+        // *** এই ফাংশনটা হুবহু (byte-for-byte) কপি আছে: product.html, search.html,
+        // brands/brand.html, models/model.html, netlify/edge-functions/product-seo.js ও
+        // model-seo.js, backend/routes/sitemap.js — এখানে বদলালে ওই সব জায়গাতেও বদলাতে হবে ***
+        function slugifyProductName(name) {
+            let s = String(name || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            if (s.length > 70) {
+                const cut = s.slice(0, 70);
+                const lastDash = cut.lastIndexOf('-');
+                s = lastDash > 20 ? cut.slice(0, lastDash) : cut;
+            }
+            return s || 'product';
+        }
+        function buildProductPath(name, id) {
+            return `/product/${slugifyProductName(name)}-i${id}`;
+        }
+
         // ============ Category ও Brand গ্রিড — এখন backend aggregation endpoint থেকে সরাসরি কাউন্ট/ছবি
         // আসে (হাজার হাজার প্রোডাক্ট ব্রাউজারে ডাউনলোড করে হিসেব করতে হয় না, তাই অনেক দ্রুত) ============
         function resolveImg(url) {
@@ -501,7 +521,7 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.style.cursor = 'pointer';
-                card.onclick = () => window.location.href = `product.html?id=${p._id}`;
+                card.onclick = () => window.location.href = buildProductPath(p.name, p._id);
                 card.innerHTML = `
                     <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'">
                     <h3>${p.name}</h3>
@@ -597,7 +617,7 @@
                     const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0]) : 'https://via.placeholder.com/200';
                     const flashPrice = computeFlashPrice(p.price, rule.discountPct);
                     return `
-                        <div class="flash-card" onclick="window.location.href='product.html?id=${p._id}'">
+                        <div class="flash-card" onclick="window.location.href='${buildProductPath(p.name, p._id)}'">
                             <div class="flash-badge">-${rule.discountPct}%</div>
                             <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'">
                             <h4>${p.name}</h4>
