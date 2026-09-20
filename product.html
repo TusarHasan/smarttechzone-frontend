@@ -378,6 +378,7 @@
     const productId = params.get('id');
     let quantity = 1;
     let currentProduct = null;
+    let currentProductImages = []; // SEO: রিভিউ ডেটা এলে JSON-LD আবার বানানোর সময় ছবিগুলো লাগবে
     let selectedAttrs = {};
     let selectedStars = 0;
     let isOutOfStock = false; // বর্তমানে সিলেক্ট করা ভ্যারিয়েন্ট স্টকে নেই কিনা — Buy Now/Add to Cart গার্ড করতে ব্যবহৃত
@@ -507,6 +508,7 @@
     // তাই Google প্রতিটা পেজকে আলাদা করে ইনডেক্স/র‍্যাংক করতে পারছিল না। এখন প্রতিটা পেজের
     // টাইটেল, মেটা ডেসক্রিপশন ও Product structured data (JSON-LD) প্রোডাক্ট অনুযায়ী বসছে।
     function updateSeoTags(product, images) {
+        currentProductImages = images;
         const title = `${product.name} - Smart Tech Zone`;
         // description এখন রিচ-টেক্সট এডিটরের HTML — মেটা ট্যাগ/স্ট্রাকচার্ড ডেটায় ট্যাগ বাদ দিয়ে শুধু লেখাটুকু লাগে
         const desc = (stripHtml(product.description) || `${product.name} — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`).substring(0, 160);
@@ -519,6 +521,23 @@
         document.getElementById('ogDescTag').setAttribute('content', desc);
         document.getElementById('ogImageTag').setAttribute('content', mainImage);
         document.getElementById('canonicalTag').setAttribute('href', pageUrl);
+
+        // রিভিউ ডেটা তখনও আসেনি (loadReviews() আলাদাভাবে, পরে রান হয়) — তাই প্রথমে রেটিং ছাড়াই বসানো হচ্ছে,
+        // রিভিউ লোড হওয়ার পর renderReviews() আবার কল করে aggregateRating যোগ করে দেবে
+        renderProductJsonLd(product, images, null);
+    }
+
+    // ============ SEO: Product JSON-LD আলাদা ফাংশনে রাখা হলো যাতে রিভিউ লোড হওয়ার পর ============
+    // স্টার রেটিং (aggregateRating) যোগ করার জন্য আবার কল করা যায় — শুরুতে stock-ভিত্তিক
+    // availability সবসময় "InStock" হার্ডকোডেড ছিল, এখন ভ্যারিয়েন্টগুলোর আসল স্টক যোগফল দেখে ঠিক করা হচ্ছে।
+    function renderProductJsonLd(product, images, reviewData) {
+        const desc = (stripHtml(product.description) || `${product.name} — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`).substring(0, 160);
+        const mainImage = images.length ? images[0] : 'https://smarttechzone.com.bd/images/logo.png';
+        const pageUrl = `https://smarttechzone.com.bd/product.html?id=${product._id}`;
+
+        const variants = product.variants || [];
+        const totalStock = variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
+        const availability = totalStock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
 
         const jsonLd = {
             '@context': 'https://schema.org',
@@ -533,9 +552,20 @@
                 url: pageUrl,
                 priceCurrency: 'BDT',
                 price: product.price,
-                availability: 'https://schema.org/InStock'
+                availability
             }
         };
+
+        // Google-এর নিয়ম: রিভিউ না থাকলে aggregateRating বসানো যাবে না (নাহলে Search Console এ
+        // "স্ট্রাকচার্ড ডেটা ইস্যু" দেখাতে পারে) — তাই কমপক্ষে ১টা রিভিউ থাকলেই শুধু যোগ করা হচ্ছে
+        if (reviewData && reviewData.total > 0) {
+            jsonLd.aggregateRating = {
+                '@type': 'AggregateRating',
+                ratingValue: reviewData.average,
+                reviewCount: reviewData.total
+            };
+        }
+
         document.getElementById('productJsonLd').textContent = JSON.stringify(jsonLd);
     }
 
@@ -799,6 +829,9 @@
         document.getElementById('reviewAvg').textContent = data.average || 0;
         document.getElementById('reviewAvgStars').innerHTML = starsHtml(data.average || 0);
         document.getElementById('reviewCountText').textContent = `${data.total || 0} Ratings`;
+
+        // SEO: রিভিউ ডেটা এখন হাতে এসেছে — JSON-LD-তে স্টার রেটিং যোগ করে দেওয়া হচ্ছে (থাকলে)
+        if (currentProduct) renderProductJsonLd(currentProduct, currentProductImages, data);
 
         const breakdown = document.getElementById('reviewBreakdown');
         breakdown.innerHTML = [5, 4, 3, 2, 1].map(star => {

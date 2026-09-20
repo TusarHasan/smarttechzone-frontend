@@ -42,6 +42,13 @@
         .order-summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; color: #555; }
         .order-summary-row.total { font-size: 16px; font-weight: bold; color: #333; border-top: 1px solid #eee; margin-top: 8px; padding-top: 10px; }
         .track-address { font-size: 13px; color: #666; margin-top: 10px; line-height: 1.6; }
+        .order-packaging-proof { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f0f0f0; }
+        .pp-toggle-btn {
+            background: none; border: 1px solid #e74c3c; color: #e74c3c; padding: 7px 14px;
+            border-radius: 20px; font-size: 12.5px; font-weight: bold; cursor: pointer;
+        }
+        .pp-toggle-btn:hover { background: #fdf1f0; }
+        .order-packaging-proof video { width: 100%; margin-top: 10px; border-radius: 8px; background: #000; }
     </style>
     <script src="config.js"></script>
     <script src="customer-auth.js"></script>
@@ -93,6 +100,12 @@
             return Number(n).toLocaleString('en-IN');
         }
 
+        function togglePackagingProof(orderId) {
+            const video = document.getElementById(`pp-video-${orderId}`);
+            if (!video) return;
+            video.style.display = video.style.display === 'none' ? 'block' : 'none';
+        }
+
         const statusLabels = {
             pending: 'পেন্ডিং', processing: 'প্রসেসিং হচ্ছে', shipped: 'শিপড',
             delivered: 'ডেলিভারড', cancelled: 'বাতিল'
@@ -133,6 +146,15 @@
                         ${order.customer.name} — ${order.customer.phone}<br>
                         ${order.customer.address}${order.customer.city ? ', ' + order.customer.city : ''}
                     </div>
+
+                    ${order.packagingProofVideoUrl ? `
+                        <div class="order-packaging-proof">
+                            <button class="pp-toggle-btn" onclick="togglePackagingProof('${order._id}')">🎥 Packaging Proof ভিডিও দেখুন</button>
+                            <video id="pp-video-${order._id}" controls style="display:none;">
+                                <source src="${resolveImg(order.packagingProofVideoUrl)}">
+                            </video>
+                        </div>
+                    ` : ''}
                 </div>
             `;
         }

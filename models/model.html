@@ -4,7 +4,15 @@
     <script src="../analytics.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parts - Smart Tech Zone</title>
+    <title id="pageTitleTag">Parts - Smart Tech Zone</title>
+    <meta id="metaDescription" name="description" content="মোবাইল রিপ্লেসমেন্ট পার্টস — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।">
+    <link id="canonicalTag" rel="canonical" href="https://smarttechzone.com.bd/models/model.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Smart Tech Zone">
+    <meta id="ogTitleTag" property="og:title" content="Parts - Smart Tech Zone">
+    <meta id="ogDescTag" property="og:description" content="মোবাইল রিপ্লেসমেন্ট পার্টস, সারা বাংলাদেশে হোম ডেলিভারি।">
+    <meta id="ogImageTag" property="og:image" content="https://smarttechzone.com.bd/images/logo.png">
+    <script id="modelJsonLd" type="application/ld+json"></script>
     <link rel="stylesheet" href="../style.css">
     <script src="../config.js"></script>
     <script src="../cart.js"></script>
@@ -81,6 +89,13 @@
                 <span>${model}</span>
             `;
 
+            // SEO: এতদিন এই পেজে (মডেল অনুযায়ী পার্টসের লিস্ট) সবসময় একই জেনেরিক টাইটেল/মেটা
+            // থাকতো ("Parts - Smart Tech Zone"), তাই Google আলাদা মডেলের পেজগুলোকে আলাদা করে
+            // চিনতে/র‍্যাংক করতে পারতো না — অথচ ঠিক এই পেজগুলোই "Samsung A54 display price"
+            // ধরনের নির্দিষ্ট সার্চে সবচেয়ে বেশি সম্ভাবনাময়। এখন ব্র্যান্ড+মডেল অনুযায়ী আলাদা
+            // টাইটেল, মেটা ডেসক্রিপশন, canonical ও OG ট্যাগ বসছে (product.html-এর প্যাটার্ন অনুসরণ করে)।
+            updateModelSeoTags(brand, model);
+
             try {
                 const res = await fetch(`${API_BASE}/products/model/${encodeURIComponent(model)}?brand=${encodeURIComponent(brand)}`);
                 const products = await res.json();
@@ -99,9 +114,43 @@
                     </div>
                 `).join('');
 
+                updateModelJsonLd(brand, model, products);
+
             } catch (err) {
                 grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999;">Parts লোড করতে সমস্যা হয়েছে।</p>';
             }
+        }
+
+        function updateModelSeoTags(brand, model) {
+            const title = `${brand} ${model} মোবাইলের রিপ্লেসমেন্ট পার্টস (ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট ও আরও) - Smart Tech Zone`;
+            const desc = `${brand} ${model} মোবাইলের জন্য ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট, ক্যামেরা সহ সব ধরনের রিপ্লেসমেন্ট পার্টস — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`.substring(0, 160);
+            const pageUrl = `https://smarttechzone.com.bd/models/model.html?brand=${encodeURIComponent(brand)}&model=${encodeURIComponent(model)}`;
+
+            document.getElementById('pageTitleTag').textContent = title;
+            document.getElementById('metaDescription').setAttribute('content', desc);
+            document.getElementById('ogTitleTag').setAttribute('content', title);
+            document.getElementById('ogDescTag').setAttribute('content', desc);
+            document.getElementById('canonicalTag').setAttribute('href', pageUrl);
+        }
+
+        function updateModelJsonLd(brand, model, products) {
+            const pageUrl = `https://smarttechzone.com.bd/models/model.html?brand=${encodeURIComponent(brand)}&model=${encodeURIComponent(model)}`;
+            const firstImg = products.find(p => p.images && p.images.length) ;
+            if (firstImg) document.getElementById('ogImageTag').setAttribute('content', resolveImg(firstImg.images[0]));
+
+            const jsonLd = {
+                '@context': 'https://schema.org',
+                '@type': 'ItemList',
+                name: `${brand} ${model} Replacement Parts`,
+                url: pageUrl,
+                itemListElement: products.slice(0, 30).map((p, i) => ({
+                    '@type': 'ListItem',
+                    position: i + 1,
+                    url: `https://smarttechzone.com.bd/product.html?id=${p._id}`,
+                    name: p.name
+                }))
+            };
+            document.getElementById('modelJsonLd').textContent = JSON.stringify(jsonLd);
         }
 
         loadParts();
