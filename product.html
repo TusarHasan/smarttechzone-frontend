@@ -81,8 +81,12 @@
     .qty-box button { padding: 6px 14px; background: #f5f5f5; border: none; cursor: pointer; font-size: 16px; }
     .qty-box span { padding: 0 15px; font-weight: bold; }
     .action-row { display: flex; gap: 15px; margin-top: 20px; }
-    .btn-buy { flex: 1; background: #2bbef9; color: #fff; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-    .btn-cart { flex: 1; background: #e74c3c; color: #fff; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+    /* Daraz-এর নিজের Buy Now (#2ABBE8) ও Add to Cart (#F57224) বাটনের হুবহু কালার/স্টাইল —
+       radius 2px, ফ্ল্যাট (কোনো shadow/icon নেই), font-weight 500 (readability-র জন্য Daraz-এর
+       400 থেকে সামান্য বাড়ানো হয়েছে) */
+    .btn-buy { flex: 1; background: #2ABBE8; color: #fff; border: none; padding: 13px; font-size: 16px; font-weight: 500; border-radius: 2px; cursor: pointer; transition: opacity 0.2s ease; }
+    .btn-cart { flex: 1; background: #F57224; color: #fff; border: none; padding: 13px; font-size: 16px; font-weight: 500; border-radius: 2px; cursor: pointer; transition: opacity 0.2s ease; }
+    .btn-buy:hover:not(:disabled), .btn-cart:hover:not(:disabled) { opacity: 0.9; }
     /* স্টকে না থাকলে বাটন দুটো এবং Quantity স্টেপার ধূসর/অচল দেখানোর জন্য */
     .btn-buy:disabled, .btn-cart:disabled { background: #ccc; color: #888; cursor: not-allowed; }
     .qty-box button:disabled { color: #bbb; cursor: not-allowed; background: #f5f5f5; }
@@ -243,7 +247,7 @@
 
                 <div class="action-row">
                     <button class="btn-buy" onclick="buyNow()">Buy Now</button>
-                    <button class="btn-cart" onclick="addCurrentToCart()"><img src="images/cart-add-icon.png" class="btn-cart-icon" alt="">Add to Cart</button>
+                    <button class="btn-cart" onclick="addCurrentToCart()">Add to Cart</button>
                 </div>
             </div>
         </div>

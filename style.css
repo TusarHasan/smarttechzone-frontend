@@ -113,10 +113,13 @@ body {
     .stz-login-icon { height: 30px; }
 }
 
-/* ===== "Add to Cart" বাটনের ভেতরের কার্ট আইকন — product.html, search.html, brands/brand.html ===== */
-.btn-cart-icon, .quick-add-icon {
-    height: 18px; width: auto; vertical-align: middle; margin-right: 6px; margin-top: -2px;
-}
+/* ===== আগে এখানে "Add to Cart" বাটনের ভেতরে একটা কার্ট-আইকন (<img>) থাকতো, কিন্তু সেই <img>
+   .product-card এর ভেতরে থাকায় .product-card img { width:100%; height:100px; ... } রুলটা
+   (বেশি specificity থাকায়) এই ছোট আইকন-সাইজের রুলকে override করে ফেলতো — ফলে মোবাইলে আইকনটা
+   বিশাল/বিদঘুটে দেখাতো। এখন Daraz-এর নিজের Buy Now/Add to Cart বাটনের হুবহু স্টাইল অনুসরণ করে
+   (কালার #2ABBE8/#F57224, border-radius 2px, কোনো আইকন ছাড়া ক্লিন ফ্ল্যাট বাটন) বাটন থেকে
+   আইকনটা সম্পূর্ণ বাদ দেওয়া হয়েছে (product.html, search.html, brands/brand.html) —
+   তাই এই রুলটারও আর প্রয়োজন নেই। ===== */
 
 /* ===== প্রোফাইল হোভার ড্রপডাউন — লগইন করা থাকলে নেভবারে নামের উপর মাউস নিলে দেখা যায়
    (customer-auth.js এর renderNavAuth()) ===== */
@@ -622,21 +625,29 @@ body {
     border-radius: 3px;
 }
 
+/* Daraz-এর নিজের "Add to Cart" বাটনের হুবহু কালার/স্টাইল (#F57224, radius 2px, ফ্ল্যাট) */
 .add-cart-btn {
     width: 100%;
-    background-color: #e74c3c;
+    background-color: #F57224;
     color: white;
     border: none;
     padding: 10px;
-    border-radius: 6px;
+    border-radius: 2px;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.25s ease;
+    transition: opacity 0.2s ease;
 }
 
 .add-cart-btn:hover {
-    background-color: #c0392b;
+    opacity: 0.9;
+}
+
+.add-cart-btn:disabled {
+    background-color: #ccc;
+    color: #888;
+    cursor: not-allowed;
+    opacity: 1;
 }
 
 @media (max-width: 992px) {

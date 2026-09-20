@@ -201,7 +201,7 @@
                     <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'">
                     <h3>${p.name}</h3>
                     ${priceBlockHtml(p)}
-                    <button class="quick-add-btn" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:13px; margin-top:6px;"><img src="../images/cart-add-icon.png" class="quick-add-icon" alt="">Add to Cart</button>
+                    <button class="quick-add-btn" style="width:100%; background:#F57224; color:#fff; border:none; padding:8px; border-radius:2px; cursor:pointer; font-size:13px; font-weight:500; margin-top:6px; transition:opacity .2s;" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">Add to Cart</button>
                 `;
                 // নাম/ছবির মধ্যে quote বা বিশেষ ক্যারেক্টার থাকলেও যাতে ভেঙে না যায়,
                 // তাই onclick অ্যাট্রিবিউটে স্ট্রিং বসিয়ে না দিয়ে সরাসরি JS ক্লোজার ব্যবহার করা হলো
