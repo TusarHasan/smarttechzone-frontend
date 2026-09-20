@@ -98,7 +98,11 @@ function renderNavAuth() {
         `;
         loadNavUnreadCount();
     } else {
-        el.innerHTML = `<a href="${base}login.html" class="stz-login-icon-link" title="লগইন করুন"><img src="${base}images/login-icon.png" alt="Login" class="stz-login-icon"></a>`;
+        // আগে এখানে একটা glossy/3D "LOGIN" স্টক আইকন ছবি (images/login-icon.png) দেখানো হতো,
+        // দেখতে দাগযুক্ত/পুরনো ধাঁচের লাগছিল। এখন একটা ক্লিন, মডার্ন pill-বাটন — ইউজার-আইকন +
+        // "Login" টেক্সট, সাইটের accent কালার (#e74c3c) অনুযায়ী — বসানো হলো (ইমেজ ফাইলের বদলে
+        // ইনলাইন SVG, তাই যেকোনো সাইজে ঝকঝকে দেখাবে)।
+        el.innerHTML = `<a href="${base}login.html" class="stz-login-btn" title="লগইন করুন"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-login-icon-svg" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Login</span></a>`;
     }
 }
 

@@ -136,17 +136,25 @@
     .review-item { padding: 16px 0; border-bottom: 1px solid #f0f0f0; }
     .review-item-header { display: flex; justify-content: space-between; align-items: center; }
     .review-customer { font-weight: bold; font-size: 14px; color: #333; }
+    /* ফেক রিভিউ ঠেকাতে এখন প্রতিটা রিভিউ আসল ডেলিভারি-সম্পন্ন অর্ডারের সাথে যাচাই করেই বসে —
+       তাই প্রতিটা রিভিউয়ের পাশে এই "Verified Purchase" ব্যাজ, কাস্টমারদের কাছে বিশ্বাসযোগ্যতা বাড়ায় */
+    .verified-badge {
+        display: inline-flex; align-items: center; gap: 3px; margin-left: 8px;
+        background: #eafaf1; color: #27ae60; font-size: 11px; font-weight: 700;
+        padding: 2px 8px; border-radius: 10px; vertical-align: middle;
+    }
     .review-date { font-size: 12px; color: #999; }
     .review-stars { color: #f5a623; font-size: 14px; margin: 4px 0; }
     .review-comment { font-size: 14px; color: #444; line-height: 1.6; }
     .no-reviews { color: #888; font-size: 14px; padding: 20px 0; }
 
     .write-review-box { margin-top: 24px; padding: 18px; background: #fafafa; border-radius: 8px; }
-    .write-review-box h4 { margin: 0 0 12px; font-size: 15px; color: #333; }
+    .write-review-box h4 { margin: 0 0 4px; font-size: 15px; color: #333; }
+    .write-review-note { font-size: 12.5px; color: #888; margin: 0 0 10px; }
     .star-input { font-size: 26px; cursor: pointer; }
     .star-input span { color: #ddd; margin-right: 4px; }
     .star-input span.selected { color: #f5a623; }
-    .write-review-box input[type=text], .write-review-box textarea {
+    .write-review-box input[type=text], .write-review-box input[type=tel], .write-review-box textarea {
         width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ddd; border-radius: 4px;
         font-family: Arial, sans-serif; font-size: 14px; box-sizing: border-box;
     }
@@ -156,6 +164,12 @@
         border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;
     }
     .review-status-msg { margin-top: 10px; font-size: 13px; }
+    /* কেউ এই প্রোডাক্টটি অর্ডার/ডেলিভারি না নিয়ে থাকলে, অথবা আগেই একবার রিভিউ দিয়ে থাকলে —
+       "Write a Review" ফর্মের বদলে এই মেসেজ বক্সটা দেখানো হয় */
+    .review-not-eligible-box {
+        margin-top: 24px; padding: 16px 18px; background: #fdf6ec; border: 1px solid #f5e3c4;
+        border-radius: 8px; font-size: 13.5px; color: #8a6d3b; line-height: 1.6;
+    }
 
     .qa-list { margin-top: 10px; }
     .qa-item { padding: 14px 0; border-bottom: 1px solid #f0f0f0; }
@@ -197,7 +211,7 @@
         </div>
         <div class="nav-icons">
             <span id="navAuthArea"><a href="login.html">Login</a></span>
-            <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
+            <a href="cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
         </div>
     </nav>
 
@@ -290,16 +304,20 @@
 
             <div class="review-list" id="reviewList"></div>
 
-            <div class="write-review-box">
+            <div class="write-review-box" id="writeReviewBox" style="display:none;">
                 <h4>Write a Review</h4>
+                <p class="write-review-note">শুধুমাত্র যারা এই প্রোডাক্টটি অর্ডার করে ডেলিভারি পেয়েছেন, তারাই রিভিউ দিতে পারবেন — ফেক রিভিউ ঠেকাতে এই ব্যবস্থা।</p>
                 <div class="star-input" id="starInput">
                     <span data-val="1">&#9733;</span><span data-val="2">&#9733;</span><span data-val="3">&#9733;</span><span data-val="4">&#9733;</span><span data-val="5">&#9733;</span>
                 </div>
-                <input type="text" id="reviewerName" placeholder="আপনার নাম">
+                <!-- লগইন করা কাস্টমারের জন্য এই ফিল্ডটা দেখানো হয় না (অ্যাকাউন্ট দিয়েই যাচাই হয়ে যায়),
+                     গেস্ট চেকআউটে অর্ডার করা থাকলে যাচাইয়ের জন্য সেই ফোন নম্বরটা লাগবে -->
+                <input type="tel" id="reviewerPhone" placeholder="অর্ডারের সময় ব্যবহৃত ফোন নম্বর (যাচাইয়ের জন্য)" style="display:none;">
                 <textarea id="reviewComment" placeholder="প্রোডাক্ট নিয়ে আপনার মতামত লিখুন (ঐচ্ছিক)"></textarea>
                 <button class="submit-review-btn" onclick="submitReview()">Submit Review</button>
                 <div class="review-status-msg" id="reviewStatusMsg"></div>
             </div>
+            <div class="review-not-eligible-box" id="reviewNotEligibleBox" style="display:none;"></div>
         </div>
 
         <div class="lower-section">
@@ -453,6 +471,7 @@
             renderProduct(product);
             loadReviews();
             loadQuestions();
+            initReviewForm();
         } catch (err) {
             showError();
         }
@@ -912,13 +931,63 @@
         list.innerHTML = data.reviews.map(r => `
             <div class="review-item">
                 <div class="review-item-header">
-                    <span class="review-customer">${escapeHtml(r.customerName)}</span>
+                    <span>
+                        <span class="review-customer">${escapeHtml(r.customerName)}</span>
+                        ${r.verifiedPurchase ? '<span class="verified-badge">✔ Verified Purchase</span>' : ''}
+                    </span>
                     <span class="review-date">${new Date(r.createdAt).toLocaleDateString('bn-BD')}</span>
                 </div>
                 <div class="review-stars">${starsHtml(r.rating)}</div>
                 ${r.comment ? `<div class="review-comment">${escapeHtml(r.comment)}</div>` : ''}
             </div>
         `).join('');
+    }
+
+    // এই ভিজিটর (লগইন করা কাস্টমার বা ফোন-ভেরিফাইড গেস্ট) এই প্রোডাক্টে রিভিউ দেওয়ার যোগ্য
+    // কিনা ব্যাকএন্ডে জিজ্ঞেস করে — যোগ্য না হলে ফর্মের বদলে কারণ দেখানো হয়
+    async function checkReviewEligibility(phone) {
+        const token = getCustomerToken();
+        const headers = {};
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+        const qs = phone ? ('?phone=' + encodeURIComponent(phone)) : '';
+        try {
+            const res = await fetch(`${API_BASE}/api/products/${productId}/review-eligibility${qs}`, { headers });
+            return await res.json();
+        } catch (err) {
+            return { eligible: false };
+        }
+    }
+
+    function showEligibilityState(result) {
+        const box = document.getElementById('writeReviewBox');
+        const notEligibleBox = document.getElementById('reviewNotEligibleBox');
+        if (result.eligible) {
+            box.style.display = '';
+            notEligibleBox.style.display = 'none';
+        } else {
+            box.style.display = 'none';
+            notEligibleBox.style.display = 'block';
+            notEligibleBox.textContent = result.reason === 'already-reviewed'
+                ? 'আপনি ইতিমধ্যে এই প্রোডাক্টের জন্য রিভিউ দিয়েছেন। ধন্যবাদ!'
+                : 'শুধুমাত্র যারা এই প্রোডাক্টটি অর্ডার করে ডেলিভারি পেয়েছেন, তারাই রিভিউ দিতে পারবেন — ফেক রিভিউ ঠেকাতে এই ব্যবস্থা নেওয়া হয়েছে। অর্ডার করে থাকলে এবং ডেলিভারি পাওয়ার পর আবার চেষ্টা করুন।';
+        }
+    }
+
+    // পেজ লোড হওয়ার সময় রিভিউ ফর্মটা ঠিক করে দেখানো হয়: লগইন করা থাকলে সাথে সাথে
+    // অ্যাকাউন্ট দিয়ে যাচাই করে ফেলা হয়; গেস্ট হলে আগে থেকে যাচাই করা সম্ভব না (ফোন নম্বর
+    // লাগবে), তাই ফোন-ইনপুটসহ ফর্মটা দেখানো হয় — আসল যাচাই সাবমিট করার সময় হবে।
+    async function initReviewForm() {
+        const phoneInput = document.getElementById('reviewerPhone');
+        const token = getCustomerToken();
+        if (token) {
+            phoneInput.style.display = 'none';
+            const result = await checkReviewEligibility();
+            showEligibilityState(result);
+        } else {
+            phoneInput.style.display = 'block';
+            document.getElementById('writeReviewBox').style.display = '';
+            document.getElementById('reviewNotEligibleBox').style.display = 'none';
+        }
     }
 
     function escapeHtml(str) {
@@ -935,33 +1004,45 @@
         });
     });
 
+    // নাম এখন আর ইউজার টাইপ করে না — ফেক রিভিউ ঠেকাতে ব্যাকএন্ড আসল অর্ডারের নাম বসায়।
+    // লগইন করা কাস্টমার হলে অ্যাকাউন্ট টোকেন দিয়েই যাচাই হয়; গেস্ট হলে অর্ডারের ফোন নম্বর লাগবে।
     async function submitReview() {
-        const name = document.getElementById('reviewerName').value.trim();
         const comment = document.getElementById('reviewComment').value.trim();
+        const phoneInput = document.getElementById('reviewerPhone');
+        const phone = phoneInput.value.trim();
         const statusMsg = document.getElementById('reviewStatusMsg');
+        const token = getCustomerToken();
 
-        if (!name || !selectedStars) {
-            statusMsg.textContent = 'দয়া করে নাম এবং রেটিং (স্টার) দিন।';
+        if (!selectedStars) {
+            statusMsg.textContent = 'দয়া করে রেটিং (স্টার) দিন।';
+            statusMsg.style.color = '#e74c3c';
+            return;
+        }
+        if (!token && !phone) {
+            statusMsg.textContent = 'দয়া করে অর্ডারের সময় ব্যবহৃত ফোন নম্বরটি দিন।';
             statusMsg.style.color = '#e74c3c';
             return;
         }
 
         try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
             const res = await fetch(`${API_BASE}/api/products/${productId}/reviews`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ customerName: name, rating: selectedStars, comment })
+                headers,
+                body: JSON.stringify({ rating: selectedStars, comment, phone })
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to submit review');
 
             statusMsg.textContent = '✅ ধন্যবাদ! আপনার রিভিউ যোগ হয়েছে।';
             statusMsg.style.color = '#27ae60';
-            document.getElementById('reviewerName').value = '';
             document.getElementById('reviewComment').value = '';
+            phoneInput.value = '';
             selectedStars = 0;
             document.querySelectorAll('#starInput span').forEach(s => s.classList.remove('selected'));
             loadReviews();
+            initReviewForm();
         } catch (err) {
             statusMsg.textContent = '❌ ' + err.message;
             statusMsg.style.color = '#e74c3c';

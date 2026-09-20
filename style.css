@@ -100,17 +100,62 @@ body {
     color: #e74c3c;
 }
 
-/* ===== লগইন আইকন — লগইন করা না থাকলে navAuthArea-তে টেক্সট লিংকের বদলে এই বাটন-স্টাইল
-   আইকনটা দেখানো হয় (customer-auth.js এর renderNavAuth()) ===== */
-.stz-login-icon-link {
-    display: inline-flex; align-items: center; margin-left: 18px;
-    transition: transform .15s ease;
+/* ===== লগইন বাটন — লগইন করা না থাকলে navAuthArea-তে এই pill-বাটনটা দেখা যায়
+   (customer-auth.js এর renderNavAuth())। আগে একটা glossy/3D স্টক "LOGIN" ছবি (images/login-icon.png)
+   ব্যবহার হতো যেটা দেখতে পুরনো/বেমানান লাগছিল — এখন ইউজার-আইকন (ইনলাইন SVG) + টেক্সট, সাইটের
+   accent কালারে (#e74c3c), হোভারে ফিল হয়ে যায় ===== */
+/* নোট: .nav-icons a { color: #333 } রুলটা (class+tag = specificity বেশি) প্লেইন .stz-login-btn
+   ক্লাসকে override করে টেক্সট ধূসর দেখাতো — .product-card img বনাম .quick-add-icon-এর মতো একই
+   ধরনের specificity সমস্যা। তাই এখানে .nav-icons .stz-login-btn (2 ক্লাস) ব্যবহার করা হলো,
+   যাতে সবসময় জিতে যায়। */
+.nav-icons .stz-login-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-left: 18px;
+    padding: 7px 16px;
+    border: 1.5px solid #e74c3c;
+    border-radius: 20px;
+    color: #e74c3c;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
-.stz-login-icon-link:hover { transform: scale(1.06); }
-.stz-login-icon { height: 36px; width: auto; display: block; }
+.nav-icons .stz-login-btn:hover { background-color: #e74c3c; color: #fff; transform: scale(1.04); }
+.stz-login-icon-svg { width: 17px; height: 17px; flex-shrink: 0; }
 @media (max-width: 768px) {
-    .stz-login-icon-link { margin-left: 12px; }
-    .stz-login-icon { height: 30px; }
+    .nav-icons .stz-login-btn { margin-left: 12px; padding: 6px 12px; font-size: 12.5px; gap: 5px; }
+    .stz-login-icon-svg { width: 15px; height: 15px; }
+}
+
+/* ===== নেভবারের Cart আইকন — আগে শুধু প্লেইন টেক্সট "Cart (0)" থাকতো, এখন Daraz-এর মতো
+   ব্যাগ-আইকন (ইনলাইন SVG) + লাল ব্যাজে আইটেম-সংখ্যা। cartCount id-টা অপরিবর্তিত রাখা হয়েছে
+   কারণ cart.js এখনো এই id ধরেই সংখ্যা আপডেট করে (document.getElementById('cartCount')) ===== */
+.nav-icons .stz-cart-link {
+    position: relative;
+    display: inline-flex; align-items: center;
+    margin-left: 18px;
+    color: #333;
+    transition: color 0.2s ease, transform 0.15s ease;
+}
+.nav-icons .stz-cart-link:hover { color: #e74c3c; transform: scale(1.06); }
+.stz-cart-icon-svg { width: 25px; height: 25px; display: block; flex-shrink: 0; }
+.stz-cart-badge {
+    position: absolute; top: -7px; right: -9px;
+    background-color: #e74c3c;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 18px; height: 18px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 4px;
+    line-height: 1;
+    border: 2px solid #fff;
+}
+@media (max-width: 768px) {
+    .stz-cart-link { margin-left: 12px; }
+    .stz-cart-icon-svg { width: 22px; height: 22px; }
+    .stz-cart-badge { top: -6px; right: -7px; min-width: 16px; height: 16px; font-size: 10px; }
 }
 
 /* ===== আগে এখানে "Add to Cart" বাটনের ভেতরে একটা কার্ট-আইকন (<img>) থাকতো, কিন্তু সেই <img>

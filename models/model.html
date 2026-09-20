@@ -16,6 +16,11 @@
     <link rel="stylesheet" href="../style.css">
     <script src="../config.js"></script>
     <script src="../cart.js"></script>
+    <!-- আগে এই পেজে customer-auth.js লোড হতো না, তাই নিচের Login লিংকটা href="#" দিয়ে
+         স্ট্যাটিক টেক্সট হয়েই থাকতো — ক্লিক করলে কোথাও যেত না। এখন অন্য পেজগুলোর মতোই
+         এই স্ক্রিপ্ট যোগ করে renderNavAuth() চালু করা হলো, যাতে নতুন Login বাটন এবং
+         লগইন করা থাকলে প্রোফাইল ড্রপডাউনও এখানে ঠিকমতো কাজ করে -->
+    <script src="../customer-auth.js"></script>
 </head>
 <body>
 
@@ -26,8 +31,8 @@
             <button>Search</button>
         </div>
         <div class="nav-icons">
-            <a href="#">Login</a>
-            <a href="../cart.html">Cart (<span id="cartCount">0</span>)</a>
+            <span id="navAuthArea"><a href="../login.html">Login</a></span>
+            <a href="../cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
         </div>
     </nav>
 
