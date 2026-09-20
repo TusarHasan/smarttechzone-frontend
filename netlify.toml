@@ -1,0 +1,16 @@
+# Netlify Edge Function কনফিগারেশন — শুধু এইটুকুই নতুন যোগ হলো (বিল্ড কমান্ড/পাবলিশ ডিরেক্টরি
+# এখানে সেট করা হয়নি, তাই Netlify ড্যাশবোর্ডে আগে থেকে যা সেট করা আছে সেটাই বহাল থাকবে —
+# এই ফাইলগুলো শুধু নিচের edge function গুলো চালু করার জন্য। তিনটাই একই সমস্যার সমাধান করে:
+# শেয়ার্ড টেমপ্লেট পেজ (product.html / brands/brand.html / models/model.html) গুলোর
+# raw HTML-এ (JavaScript রান করার আগে) সঠিক title/description/canonical বসানো।
+[[edge_functions]]
+  path = "/product.html"
+  function = "product-seo"
+
+[[edge_functions]]
+  path = "/brands/brand.html"
+  function = "brand-seo"
+
+[[edge_functions]]
+  path = "/models/model.html"
+  function = "model-seo"

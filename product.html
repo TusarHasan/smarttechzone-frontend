@@ -197,7 +197,7 @@
     <div id="productContent" style="display:none;">
         <div class="product-layout">
             <div class="image-section">
-                <img id="mainImage" class="main-image" src="" onerror="this.src='https://via.placeholder.com/400?text=No+Image'">
+                <img id="mainImage" class="main-image" src="" alt="" onerror="this.src='https://via.placeholder.com/400?text=No+Image'">
                 <div class="main-video-wrap" id="mainVideoWrap" style="display:none;">
                     <iframe id="mainVideoFrame" src="" title="Product Video" frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -333,6 +333,17 @@
         const div = document.createElement('div');
         div.innerHTML = html;
         return (div.textContent || '').replace(/\s+/g, ' ').trim();
+    }
+
+    // gallery/swatch থাম্বনেইলের alt="..." এর ভেতরে প্রোডাক্টের নাম বসানোর সময় ব্যবহারের জন্য —
+    // প্রোডাক্ট নামে ডাবল-কোট (") থাকলে যেন attribute ভেঙে না যায় (escapeHtml() শুধু টেক্সট
+    // কনটেন্টের জন্য নিরাপদ, কোট এস্কেপ করে না — attribute-এর ভেতরে এটাই ব্যবহার করতে হবে)
+    function escapeAttr(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
     }
 
     // ============ প্রোডাক্ট ভিডিও (Daraz-এর "YouTube Link" এর মতো) ============
@@ -485,18 +496,24 @@
         const images = (product.images && product.images.length) ? product.images.map(resolveImageUrl) : [];
         const mainImg = document.getElementById('mainImage');
         mainImg.src = images.length ? images[0] : 'https://via.placeholder.com/400?text=No+Image';
+        // SEO/অ্যাক্সেসিবিলিটি: মূল ছবিতে আগে কোনো alt টেক্সট বসতোই না (JS দিয়েও না) — Google Image
+        // Search-এ এই ছবি খুঁজে পাওয়ার জন্য আর স্ক্রিন-রিডারের জন্য এটা জরুরি
+        mainImg.alt = product.name;
 
         // Daraz-এর মতো — YouTube ভিডিও থাকলে গ্যালারির প্রথম থাম্বনেইল হিসেবে দেখানো হয়, ক্লিক করলে
         // মেইন এরিয়াতে এমবেড হয়ে প্লে হয়; কোনো ছবি থাম্বনেইলে ক্লিক করলে আবার ছবিতে ফিরে যায়
         const youtubeId = getYoutubeEmbedId(product.videoUrl);
         window.productVideoEmbedUrl = youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : null;
         const videoThumbHtml = youtubeId
-            ? `<img class="video-thumb" src="https://img.youtube.com/vi/${youtubeId}/default.jpg" onclick="showProductVideo()">`
+            ? `<img class="video-thumb" src="https://img.youtube.com/vi/${youtubeId}/default.jpg" alt="${escapeAttr(product.name)} - video" onclick="showProductVideo()">`
             : '';
 
         const thumbRow = document.getElementById('thumbRow');
+        // SEO: গ্যালারির থাম্বনেইলগুলোতে আগে কোনো alt টেক্সট ছিল না (এই এলিমেন্টগুলো সম্পূর্ণ JS দিয়ে
+        // তৈরি হয়, raw HTML-এ কখনোই থাকে না) — Google Image Search-এ ধরা পড়ার জন্য প্রতিটা ছবিতে
+        // প্রোডাক্টের নাম + নম্বর দেওয়া হলো
         thumbRow.innerHTML = videoThumbHtml + images.map((url, i) =>
-            `<img src="${url}" ${i > 0 ? 'loading="lazy" decoding="async"' : ''} onerror="this.src='https://via.placeholder.com/100?text=No+Image'" onclick="showProductImage(this.src)">`
+            `<img src="${url}" alt="${escapeAttr(product.name)} - ছবি ${i + 1}" ${i > 0 ? 'loading="lazy" decoding="async"' : ''} onerror="this.src='https://via.placeholder.com/100?text=No+Image'" onclick="showProductImage(this.src)">`
         ).join('');
 
         renderAttributeGroups(product);
@@ -583,7 +600,7 @@
                 group.innerHTML = `<div class="attr-group-label">Variant</div><div class="attr-btn-grid">` +
                     variants.map((v, i) => `
                         <span class="attr-btn" onclick="selectLegacyVariant(${i})" id="legacy-btn-${i}">
-                            <img src="${resolveImageUrl((v.images && v.images[0]) || product.images[0])}" onerror="this.style.display='none'">
+                            <img src="${resolveImageUrl((v.images && v.images[0]) || product.images[0])}" alt="${escapeAttr(product.name)} - ${escapeAttr(v.label)}" onerror="this.style.display='none'">
                             <span>${v.label}</span>
                         </span>
                     `).join('') + `</div>`;
@@ -646,7 +663,7 @@
                             ? resolveImageUrl(matchingVariant.images[0]) : resolveImageUrl(product.images[0]);
                         const safeId = `attr-${name.replace(/\s+/g, '_')}-${val.replace(/\s+/g, '_')}`;
                         return `<span class="attr-swatch" onclick="selectAttribute('${name.replace(/'/g, "\\'")}', '${val.replace(/'/g, "\\'")}')" id="${safeId}" title="${val}">
-                            <img src="${thumbUrl}" onerror="this.style.display='none'">
+                            <img src="${thumbUrl}" alt="${escapeAttr(product.name)} - ${escapeAttr(val)}" onerror="this.style.display='none'">
                         </span>`;
                     }).join('') + `</div>`;
             } else {
