@@ -12,6 +12,18 @@ body {
     color: #333;
 }
 
+/* ===== সাধারণ কনটেন্ট কনটেইনার — Daraz-এর মতো বড় স্ক্রিনে দুই পাশে ফাঁকা রেখে কনটেন্ট
+   মাঝখানে সীমাবদ্ধ রাখে। আগে এই ক্লাসের কোনো বেস রুল ছিল না — শুধু .category-section
+   .container / .model-section .container / .product-section .container-এর মতো নির্দিষ্ট
+   সেকশনের ভেতরে max-width কাজ করত। ফলে হোমপেজের promo-strip/flash-sale-section/
+   part-categories-section-এর মতো নতুন সেকশনের .container পুরো স্ক্রিন জুড়ে (edge-to-edge)
+   ছড়িয়ে যাচ্ছিল, বড় মনিটরে খুব বেশি "প্রসারিত" দেখাত। এখন এই বেস রুলটা সব জায়গায়
+   একইভাবে কাজ করবে (নির্দিষ্ট সেকশনের রুলগুলো এখনো আছে, একই মান হওয়ায় কনফ্লিক্ট নেই)। */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 /* ===== Navbar ===== */
 .navbar {
     background-color: #ffffff;
