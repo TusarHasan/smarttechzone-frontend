@@ -317,7 +317,7 @@
     <div class="container">
         <h2 class="section-title" id="productsSectionTitle">Latest Products</h2>
         <div id="categoryBanner"></div>
-        <div id="product-list"></div>
+        <div id="product-list" class="product-grid"></div>
         <div class="load-more-wrapper" id="loadMoreWrapper" style="display:none;">
             <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreProducts()">Load More</button>
         </div>
@@ -474,18 +474,38 @@
             }
         }
 
+        // Daraz-এর মতো — originalPrice (Special Price ব্যবহার করলে Add Products ফর্ম থেকে বেস দামটাই
+        // এখানে আসে) থাকলে সেটা কেটে/স্ট্রাইকথ্রু দেখিয়ে পাশে আসল বিক্রয় মূল্য (p.price) দেখানো হয়।
+        // p.price সবসময়ই কার্ট/চেকআউটে যেই দামে যোগ হয়, তাই ছাড় দেখানোর জন্য এখানে কোনো আলাদা হিসেব
+        // করতে হচ্ছে না — শুধু originalPrice থাকলে সেটা অতিরিক্ত দেখানো হচ্ছে।
+        function priceBlockHtml(p) {
+            if (p.originalPrice && p.originalPrice > p.price) {
+                const pct = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
+                return `<div class="price-block-row">
+                    <span class="price-old">৳ ${p.originalPrice}</span>
+                    <span class="price">৳ ${p.price}</span>
+                    <span class="discount-tag">-${pct}%</span>
+                </div>`;
+            }
+            return `<div class="price">৳ ${p.price}</div>`;
+        }
+
+        // আগে এই কার্ডগুলো fixed 200px width + display:inline-block দিয়ে বসতো (CSS গ্রিড ছাড়া) —
+        // ছোট স্ক্রিনে (যেমন ~৩৯০px চওড়া ফোন) এক লাইনে মাত্র ১টা কার্ড আঁটতো, Daraz-এর মতো ২টা
+        // পাশাপাশি দেখাতো না। brand.html/search.html-এর মতো একই ".product-grid" CSS ক্লাস
+        // ব্যবহার করে এখন এটাও রেসপন্সিভ গ্রিড হয়ে গেলো (≤992px এ ৩ কলাম, ≤576px এ ২ কলাম)।
         function renderProductCards(items) {
             const container = document.getElementById('product-list');
             items.forEach(p => {
                 const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0]) : 'https://via.placeholder.com/200';
                 const card = document.createElement('div');
                 card.className = 'product-card';
-                card.style.cssText = 'border: 1px solid #ddd; padding: 10px; border-radius: 5px; cursor: pointer; margin: 10px; display: inline-block; width: 200px; vertical-align: top;';
+                card.style.cursor = 'pointer';
                 card.onclick = () => window.location.href = `product.html?id=${p._id}`;
                 card.innerHTML = `
-                    <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'" style="width: 100%; height: 150px; object-fit: contain;">
-                    <h4>${p.name}</h4>
-                    <p>৳ ${p.price}</p>
+                    <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'">
+                    <h3>${p.name}</h3>
+                    ${priceBlockHtml(p)}
                 `;
                 container.appendChild(card);
             });

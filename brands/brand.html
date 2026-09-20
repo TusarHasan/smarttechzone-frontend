@@ -154,6 +154,21 @@
             }
         }
 
+        // Daraz-এর মতো — originalPrice থাকলে (Add Products ফর্মে Special Price ব্যবহার করলে) সেটা
+        // কেটে/স্ট্রাইকথ্রু দেখিয়ে পাশে আসল বিক্রয় মূল্য (p.price) দেখানো হয়। কার্টে/চেকআউটে সবসময়
+        // p.price-ই যোগ হয় (নিচের quickAddToCart কলে অপরিবর্তিত), তাই দাম মিসম্যাচের কোনো ঝুঁকি নেই।
+        function priceBlockHtml(p) {
+            if (p.originalPrice && p.originalPrice > p.price) {
+                const pct = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
+                return `<div class="price-block-row">
+                    <span class="price-old">৳ ${p.originalPrice}</span>
+                    <span class="price">৳ ${p.price}</span>
+                    <span class="discount-tag">-${pct}%</span>
+                </div>`;
+            }
+            return `<div class="price">৳ ${p.price}</div>`;
+        }
+
         function renderItems(items) {
             const grid = document.getElementById('brandProductGrid');
             items.forEach(p => {
@@ -165,7 +180,7 @@
                 card.innerHTML = `
                     <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'">
                     <h3>${p.name}</h3>
-                    <div class="price">৳ ${p.price}</div>
+                    ${priceBlockHtml(p)}
                     <button class="quick-add-btn" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:13px; margin-top:6px;"><img src="../images/cart-add-icon.png" class="quick-add-icon" alt="">Add to Cart</button>
                 `;
                 // নাম/ছবির মধ্যে quote বা বিশেষ ক্যারেক্টার থাকলেও যাতে ভেঙে না যায়,

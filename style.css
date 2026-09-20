@@ -560,6 +560,38 @@ body {
     margin-bottom: 12px;
 }
 
+/* Daraz-এর মতো — originalPrice থাকা প্রোডাক্টে কাটা দাম + আসল দাম + ছাড়ের ব্যাজ একসাথে দেখানোর জন্য
+   (index.html/brand.html/search.html-এর প্রোডাক্ট কার্ডে ব্যবহৃত)। */
+.product-card .price-block-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.product-card .price-block-row .price {
+    margin-bottom: 0;
+}
+
+.product-card .price-old {
+    color: #999;
+    font-size: 12px;
+    font-weight: 400;
+    text-decoration: line-through;
+}
+
+.product-card .discount-tag {
+    display: inline-block;
+    background: #fdf1f0;
+    color: #e74c3c;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+}
+
 .add-cart-btn {
     width: 100%;
     background-color: #e74c3c;
@@ -585,6 +617,21 @@ body {
 
 @media (max-width: 576px) {
     .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}
+
+/* .category-grid এর জন্য কোনো mobile breakpoint ছিলো না — ৪ কলাম ফিক্সড থাকায়
+   ছোট স্ক্রিনে পুরো পেজ পাশাপাশি স্ক্রল হয়ে যাচ্ছিল। .product-grid এর মতো একই প্যাটার্নে ঠিক করা হলো। */
+@media (max-width: 992px) {
+    .category-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .category-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
     }

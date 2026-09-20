@@ -21,8 +21,19 @@
         .cart-qty-box { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; }
         .cart-qty-box button { padding: 6px 12px; background: #f5f5f5; border: none; cursor: pointer; font-size: 15px; }
         .cart-qty-box span { padding: 0 12px; font-weight: bold; font-size: 14px; }
-        .cart-remove-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 13px; margin-left: 12px; }
+        .cart-remove-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 13px; }
         .cart-line-total { font-weight: bold; color: #333; min-width: 80px; text-align: right; }
+        /* qty/total/remove — একসাথে গ্রুপ করা হলো, যাতে মোবাইলে পুরো গ্রুপটা একবারে নিচের লাইনে যেতে পারে */
+        .cart-item-actions { display: flex; align-items: center; gap: 12px; }
+
+        /* ছোট স্ক্রিনে (৪৮০px এর নিচে) একটা লাইনে ছবি + নাম + কোয়ান্টিটি + দাম + রিমুভ বাটন — সব
+           একসাথে বসতে গিয়ে পেজ পাশাপাশি স্ক্রল হয়ে যাচ্ছিল এবং রিমুভ বাটন কেটে যাচ্ছিল। এখন ছবি+তথ্য
+           প্রথম লাইনে, আর কোয়ান্টিটি/দাম/রিমুভ — এই তিনটা মিলে দ্বিতীয় লাইনে (ডানে সাজানো) বসবে। */
+        @media (max-width: 480px) {
+            .cart-item { flex-wrap: wrap; }
+            .cart-item-info { flex: 1 1 calc(100% - 86px); }
+            .cart-item-actions { flex: 1 1 100%; justify-content: flex-end; margin-top: 8px; }
+        }
         .cart-summary {
             background: #fff; border-radius: 8px; padding: 20px; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
@@ -103,13 +114,15 @@
                         ${item.variantLabel ? `<div class="cart-item-variant">${item.variantLabel}</div>` : ''}
                         <div class="cart-item-price">৳ ${formatPrice(item.price)}</div>
                     </div>
-                    <div class="cart-qty-box">
-                        <button onclick="changeQty(${i}, -1)">-</button>
-                        <span>${item.quantity}</span>
-                        <button onclick="changeQty(${i}, 1)">+</button>
+                    <div class="cart-item-actions">
+                        <div class="cart-qty-box">
+                            <button onclick="changeQty(${i}, -1)">-</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="changeQty(${i}, 1)">+</button>
+                        </div>
+                        <div class="cart-line-total">৳ ${formatPrice(item.price * item.quantity)}</div>
+                        <button class="cart-remove-btn" onclick="removeItem(${i})">সরান</button>
                     </div>
-                    <div class="cart-line-total">৳ ${formatPrice(item.price * item.quantity)}</div>
-                    <button class="cart-remove-btn" onclick="removeItem(${i})">সরান</button>
                 </div>
             `).join('');
 
