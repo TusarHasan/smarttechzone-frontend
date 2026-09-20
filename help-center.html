@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <script src="analytics.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>হেল্প সেন্টার - Smart Tech Zone</title>
+    <meta name="description" content="Smart Tech Zone-এ কেনাকাটা সংক্রান্ত সাধারণ প্রশ্ন ও উত্তর — অর্ডার, পেমেন্ট, ডেলিভারি, রিটার্ন।">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .legal-container { max-width: 800px; margin: 30px auto; padding: 0 20px 40px; }
+        .legal-container h1 { color: #333; font-size: 24px; margin-bottom: 4px; }
+        .legal-updated { color: #999; font-size: 13px; margin-bottom: 24px; }
+        .legal-card { background: #fff; border-radius: 8px; padding: 26px 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .legal-card p, .legal-card li { font-size: 14px; line-height: 1.8; color: #444; }
+        .legal-card ul { padding-left: 22px; margin: 8px 0; }
+        .legal-card a { color: #e74c3c; font-weight: bold; text-decoration: none; }
+
+        .faq-item { border-bottom: 1px solid #f0f0f0; }
+        .faq-item:last-child { border-bottom: none; }
+        .faq-question {
+            width: 100%; text-align: left; background: none; border: none; cursor: pointer;
+            padding: 16px 0; font-size: 15px; font-weight: bold; color: #333;
+            display: flex; justify-content: space-between; align-items: center; gap: 10px;
+        }
+        .faq-question:hover { color: #e74c3c; }
+        .faq-icon { font-size: 18px; color: #e74c3c; flex-shrink: 0; transition: transform 0.2s ease; }
+        .faq-item.open .faq-icon { transform: rotate(45deg); }
+        .faq-answer {
+            max-height: 0; overflow: hidden; transition: max-height 0.25s ease;
+        }
+        .faq-answer-inner { padding: 0 0 16px; font-size: 14px; line-height: 1.8; color: #555; }
+        .faq-answer-inner a { color: #e74c3c; font-weight: bold; text-decoration: none; }
+
+        .help-contact-box {
+            background: #fdf1f0; border: 1px solid #f8d7d3; border-radius: 6px;
+            padding: 16px 18px; margin-top: 24px; font-size: 14px; color: #444; line-height: 1.8;
+        }
+        .help-contact-box strong { color: #e74c3c; }
+    </style>
+    <script src="config.js"></script>
+    <script src="customer-auth.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
+            <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
+        </div>
+    </nav>
+
+    <div class="legal-container">
+        <h1>হেল্প সেন্টার</h1>
+        <div class="legal-updated">সাধারণ জিজ্ঞাসা ও উত্তর</div>
+
+        <div class="legal-card">
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span>অর্ডার করতে কি অ্যাকাউন্ট থাকা লাগবে?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">না, অ্যাকাউন্ট ছাড়াই গেস্ট হিসেবে অর্ডার করা যায়। তবে অ্যাকাউন্ট থাকলে অর্ডার হিস্টরি ও সেভ করা ঠিকানা দেখা সুবিধাজনক হয়।</div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span>কোন কোন পেমেন্ট মেথড আছে?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">Cash on Delivery (COD), bKash, Nagad, Rocket এবং কার্ড পেমেন্ট — সবগুলোই সাপোর্ট করা হয়।</div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span>ডেলিভারি পেতে কত সময় লাগে?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">ডেলিভারি সময় এলাকাভেদে ভিন্ন হতে পারে এবং তৃতীয় পক্ষের ডেলিভারি পার্টনারের উপর নির্ভরশীল। অর্ডার করার পর <a href="/track.html">Track Order</a> পেজ থেকে সবসময় সর্বশেষ অবস্থা জানা যাবে।</div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span>পণ্য কি কোয়ালিটি-চেকড?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">হ্যাঁ, প্রতিটি পণ্য পাঠানোর আগে কোয়ালিটি-চেক করা হয়। এছাড়াও প্রতিটা অর্ডার প্যাকেজিং করার সময় ভিডিও রেকর্ড করা হয়, যাতে পণ্যের অবস্থা শুরু থেকেই স্বচ্ছভাবে প্রমাণিত থাকে — এটাকে আমরা বলি "100% Transparent Packaging"।</div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span>পণ্য পছন্দ না হলে বা ভুল পণ্য পেলে কী করব?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">ডেলিভারির ৩ দিনের মধ্যে জানালে, শুধুমাত্র ভুল পণ্য অথবা ত্রুটিপূর্ণ/ড্যামেজড পণ্যের ক্ষেত্রে রিটার্ন গ্রহণ করা হয়। বিস্তারিত জানতে দেখুন আমাদের <a href="/returns-refunds.html">রিটার্ন ও রিফান্ড নীতি</a> পেজ।</div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span>অর্ডার কীভাবে ট্র্যাক করব?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">ফোন নাম্বার ও অর্ডার নাম্বার দিয়ে <a href="/track.html">Track Order</a> পেজ থেকে যেকোনো সময় অর্ডারের সর্বশেষ অবস্থা দেখা যাবে।</div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span>অভিযোগ বা সমস্যার জন্য কীভাবে যোগাযোগ করব?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">সরাসরি WhatsApp-এ মেসেজ দিন <a href="https://wa.me/8801718381066" target="_blank">01718381066</a> নাম্বারে, অথবা কল করুন একই নাম্বারে, অথবা ইমেইল করুন <a href="mailto:mahmud88789@gmail.com">mahmud88789@gmail.com</a> ঠিকানায়।</div>
+                </div>
+            </div>
+
+            <div class="help-contact-box">
+                <strong>আপনার প্রশ্নের উত্তর খুঁজে পাননি?</strong><br>
+                সরাসরি যোগাযোগ করুন: <a href="tel:+8801718381066">01718381066</a> (কল/WhatsApp) অথবা <a href="mailto:mahmud88789@gmail.com">mahmud88789@gmail.com</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+
+    <script>
+        function toggleFaq(btn) {
+            const item = btn.closest('.faq-item');
+            const answer = item.querySelector('.faq-answer');
+            const isOpen = item.classList.contains('open');
+
+            document.querySelectorAll('.faq-item.open').forEach(openItem => {
+                if (openItem !== item) {
+                    openItem.classList.remove('open');
+                    openItem.querySelector('.faq-answer').style.maxHeight = null;
+                }
+            });
+
+            if (isOpen) {
+                item.classList.remove('open');
+                answer.style.maxHeight = null;
+            } else {
+                item.classList.add('open');
+                answer.style.maxHeight = answer.scrollHeight + 'px';
+            }
+        }
+    </script>
+</body>
+</html>

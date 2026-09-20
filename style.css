@@ -301,6 +301,7 @@ body {
     color: #333;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
+    min-width: 0; /* .product-card এর মতো একই কারণে — গ্রিড কলাম যাতে কনটেন্টের কারণে জোর করে চওড়া না হয় */
 }
 
 .category-card:hover {
@@ -330,6 +331,8 @@ body {
     font-weight: 700;
     margin: 0;
     color: #333;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 /* ===== Brand Header + Breadcrumb (Model list pages) ===== */
@@ -388,6 +391,7 @@ body {
     color: #333;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
+    min-width: 0; /* .product-card এর মতো একই কারণে — গ্রিড কলাম যাতে কনটেন্টের কারণে জোর করে চওড়া না হয় */
 }
 
 .model-card:hover {
@@ -407,6 +411,8 @@ body {
     font-size: 15px;
     font-weight: 700;
     margin-bottom: 10px;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 /* ===== Footer ===== */
@@ -531,6 +537,12 @@ body {
     text-align: center;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
+    /* CSS Grid-এর ডিফল্ট আচরণে "1fr" কলামের একটা অদৃশ্য min-width:auto থাকে, যেটা কার্ডের
+       ভেতরের কনটেন্টের (যেমন লম্বা প্রোডাক্ট নাম) সর্বনিম্ন প্রস্থ অনুযায়ী কলামকে জোর করে চওড়া
+       করে দেয় — ফলে ছোট স্ক্রিনে পুরো গ্রিড ভিউপোর্টের বাইরে চলে গিয়ে পুরো পেজটাই zoom-out হয়ে
+       দেখাতো (ডান পাশে ফাঁকা জায়গা)। min-width: 0 দিয়ে এই অটোমেটিক মিনিমাম বন্ধ করে দেওয়া হলো,
+       যাতে কার্ড সবসময় নিজের কলামের আসল প্রস্থেই থাকে এবং লেখা প্রয়োজনে wrap করে। */
+    min-width: 0;
 }
 
 .product-card:hover {
@@ -551,6 +563,12 @@ body {
     font-weight: 700;
     margin-bottom: 8px;
     min-height: 34px;
+    /* কিছু প্রোডাক্টের নাম অনেক লম্বা এবং মাঝে স্পেস ছাড়া অংশ থাকে (যেমন মডেল নাম্বার) —
+       আগের সেটিংসে ব্রাউজার এই অংশটা ভাঙতে না পেরে কার্ডের বাইরে উপচে পড়ে পুরো গ্রিডকে ছোট
+       স্ক্রিনে সামান্য বাইরে ঠেলে দিতো। overflow-wrap দিয়ে প্রয়োজনে সেই অংশও ভেঙে কার্ডের
+       ভেতরেই রাখা হচ্ছে এখন। */
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .product-card .price {

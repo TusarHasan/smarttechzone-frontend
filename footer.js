@@ -48,11 +48,11 @@
                 <div class="site-footer-col">
                     <h4>Customer Care</h4>
                     <ul>
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">How to Order</a></li>
-                        <li><a href="#">Returns &amp; Refunds</a></li>
+                        <li><a href="/help-center.html">Help Center</a></li>
+                        <li><a href="/how-to-order.html">How to Order</a></li>
+                        <li><a href="/returns-refunds.html">Returns &amp; Refunds</a></li>
                         <li><a href="tel:+8801718381066">Contact Us</a></li>
-                        <li><a href="#">Terms &amp; Conditions</a></li>
+                        <li><a href="/terms-of-service.html">Terms &amp; Conditions</a></li>
                     </ul>
                 </div>
                 <div class="site-footer-col">
@@ -61,7 +61,7 @@
                         <li><a href="/index.html">Home</a></li>
                         <li><a href="/index.html#brands">Shop by Brand</a></li>
                         <li><a href="/why-choose-us.html">Why Choose Us</a></li>
-                        <li><a href="#">Track Order</a></li>
+                        <li><a href="/track.html">Track Order</a></li>
                     </ul>
                 </div>
                 <div class="site-footer-col">
