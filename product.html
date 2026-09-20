@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
+<!-- /product/<slug>-i<id> পরিষ্কার URL-এ (নেটলিফাই edge function দিয়ে ভেতরে ভেতরে এই ফাইলটাই সার্ভ হয়)
+     নিচের সব relative স্ক্রিপ্ট/লিংক (config.js, cart.js, images/... ইত্যাদি) ব্রাউজার ভুলভাবে
+     "/product/" ফোল্ডারের ভেতরের ফাইল ধরে রিকোয়েস্ট করত (যেমন /product/config.js), যেটা আসলে
+     নেই — ফলে BACKEND_URL is not defined এরর দিয়ে পুরো পেজ "লোড হচ্ছে..." তে আটকে থাকতো।
+     <base href="/"> দিয়ে সব relative URL সবসময় ডোমেইনের রুট থেকেই resolve হবে, /product.html
+     ইউআরএল থেকে অ্যাক্সেস করলে আগের মতোই কাজ করবে। -->
+<base href="/">
 <script src="analytics.js"></script>
 <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="images/favicon.png">
