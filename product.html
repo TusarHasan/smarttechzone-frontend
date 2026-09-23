@@ -707,7 +707,19 @@
             // শুধু প্রথম যেই attribute কে "Option"/"Color" মনে হচ্ছে, সেটাতেই ছবি দেখানো হবে —
             // একই প্রোডাক্টে একাধিক attribute (যেমন Option 1, Option 2) একসাথে "option" শব্দ ধারণ করলেও
             // দ্বিতীয়টায় আর ছবি দেখানো হবে না (ডুপ্লিকেট ছবি এড়াতে)
-            const wantsThumb = name.toLowerCase().includes('option') || name.toLowerCase().includes('color');
+            //
+            // আগে শুধু নামের মধ্যে "option"/"color" শব্দ থাকলেই ছবি (swatch) দেখানো হতো — কিন্তু
+            // "Compatibility by Model"-এর মতো attribute নাম (add-products-form.js এর assignAttributeNames()
+            // ফোন-মডেল/পার্টের নামের ভ্যারিয়েন্টে অটো এই নাম বসায়) এই দুইটার কোনোটাই না হওয়ায়, প্রতিটা
+            // ভ্যারিয়েন্টে আলাদা আলাদা আসল ছবি আপলোড করা থাকা সত্ত্বেও কখনো swatch হিসেবে দেখানো হতো না,
+            // শুধু টেক্সট বাটন হিসেবে দেখাতো (রিপোর্ট করা বাগ — Oppo Reno2 Power Volume Flex Cable প্রোডাক্টে)।
+            // এখন থেকে নাম যাই হোক না কেন, যদি এই attribute এর অন্তত একটা ভ্যালুর জন্য ম্যাচিং ভ্যারিয়েন্টে
+            // নিজস্ব (আলাদা) ছবি আপলোড করা থাকে, তাহলে সেটাকে swatch হিসেবেই দেখানো হবে।
+            const hasOwnImages = values.some(val => {
+                const mv = variants.find(v => (v.attributes || []).some(a => a.name === name && a.value === val));
+                return mv && mv.images && mv.images.length;
+            });
+            const wantsThumb = hasOwnImages || name.toLowerCase().includes('option') || name.toLowerCase().includes('color');
             const showThumb = wantsThumb && !thumbAlreadyShown;
             if (showThumb) thumbAlreadyShown = true;
             const currentVal = selectedAttrs[name] || '';
