@@ -30,7 +30,18 @@ function addToCart(item) {
         cart.push(item);
     }
     saveCart(cart);
+    trackCartAdd(item.productId);
     return cart;
+}
+
+// "কতজন Cart-এ যোগ করেছে" ট্র্যাকিং (Manage Products-এ ভবিষ্যতে দেখানোর জন্য) — silent fire-and-forget,
+// ব্যর্থ হলেও কার্টের আসল কাজে কোনো প্রভাব পড়বে না। BACKEND_URL config.js থেকে আসে — এই ফাইলের সব
+// ব্যবহারের জায়গাতেই cart.js-এর আগে config.js লোড করা আছে (এই ফাইলের শীর্ষের নোট দ্রষ্টব্য)
+function trackCartAdd(productId) {
+    try {
+        if (typeof BACKEND_URL === 'undefined' || !productId) return;
+        fetch(`${BACKEND_URL}/api/products/${productId}/track-cart-add`, { method: 'POST' }).catch(() => {});
+    } catch (e) { /* সাইলেন্ট — ট্র্যাকিং ব্যর্থ হলেও কার্ট ঠিকই কাজ করবে */ }
 }
 
 function removeFromCart(productId, variantLabel) {

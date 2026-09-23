@@ -472,9 +472,16 @@
             loadReviews();
             loadQuestions();
             initReviewForm();
+            trackProductView(productId);
         } catch (err) {
             showError();
         }
+    }
+
+    // প্রোডাক্ট পেজ ভিউ ট্র্যাকিং (Manage Products-এ ভবিষ্যতে "কতজন দেখেছে" দেখানোর জন্য) — silent
+    // fire-and-forget, ব্যর্থ হলেও কাস্টমারের পেজ লোডে কোনো প্রভাব পড়বে না
+    function trackProductView(id) {
+        fetch(`${API_BASE}/api/products/${id}/track-view`, { method: 'POST' }).catch(() => {});
     }
 
     function renderProduct(product) {
