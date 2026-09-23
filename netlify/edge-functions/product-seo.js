@@ -167,31 +167,53 @@ export default async (request, context) => {
         ? extractProductIdFromPath(url.pathname)
         : url.searchParams.get('id');
 
-    const response = isPrettyPath ? await context.rewrite('/product.html') : await context.next();
-    if (!productId) return response;
-
-    let product;
+    // আগে এখানে থেকে নিচ পর্যন্ত কোনো try/catch ছিল না — মাঝে (context.rewrite/next,
+    // response.text(), ইত্যাদি) কোথাও কোনো অপ্রত্যাশিত/transient এরর হলে (Netlify/Deno এজ
+    // রানটাইমের কোনো ক্ষণস্থায়ী সমস্যা, ব্যাকএন্ড থেকে অদ্ভুত রেসপন্স, ইত্যাদি) পুরো রিকোয়েস্টটাই
+    // ভিজিটরের সামনে "This edge function has crashed" এরর পেজ হয়ে যেতো — প্রথমবার প্রোডাক্ট
+    // পেজে ঢুকতে গেলে এই এরর দেখা যেতো, রিলোড দিলে ঠিক হয়ে যেতো (কারণ ততক্ষণে ক্ষণস্থায়ী
+    // সমস্যাটা কেটে যেতো)। এখন পুরো লজিকটা try/catch দিয়ে মোড়ানো হলো — SEO ট্যাগ বসানো ব্যর্থ
+    // হলেও ভিজিটর সবসময় আসল (অপরিবর্তিত) প্রোডাক্ট পেজটাই দেখবে, কখনো crash পেজ দেখবে না।
     try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-        const apiRes = await fetch(`${BACKEND_URL}/api/products/${productId}`, { signal: controller.signal });
-        clearTimeout(timer);
-        if (!apiRes.ok) return response;
-        product = await apiRes.json();
+        const response = isPrettyPath ? await context.rewrite('/product.html') : await context.next();
+        if (!productId) return response;
+
+        let product;
+        try {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+            const apiRes = await fetch(`${BACKEND_URL}/api/products/${productId}`, { signal: controller.signal });
+            clearTimeout(timer);
+            if (!apiRes.ok) return response;
+            product = await apiRes.json();
+        } catch (err) {
+            // ব্যাকএন্ড স্লো/ডাউন/টাইমআউট — মূল পেজটাই অপরিবর্তিতভাবে পাঠিয়ে দাও, কাউকে বসিয়ে রাখা যাবে না
+            return response;
+        }
+        if (!product || !product._id || !product.name) return response;
+
+        const html = await response.text();
+        const newHtml = injectSeoIntoHtml(html, product);
+
+        const newHeaders = new Headers(response.headers);
+        newHeaders.delete('content-length');
+        newHeaders.set('content-type', 'text/html; charset=UTF-8');
+
+        return new Response(newHtml, { status: response.status, headers: newHeaders });
     } catch (err) {
-        // ব্যাকএন্ড স্লো/ডাউন/টাইমআউট — মূল পেজটাই অপরিবর্তিতভাবে পাঠিয়ে দাও, কাউকে বসিয়ে রাখা যাবে না
-        return response;
+        // শেষ ভরসা: উপরের যেকোনো ধাপে অপ্রত্যাশিত এরর হলে সরাসরি আসল, অপরিবর্তিত পেজটাই ফেরত
+        // দেওয়া হচ্ছে — ভিজিটর কখনো crash পেজ দেখবে না, বড়জোর SEO ট্যাগগুলো (title/description
+        // ইত্যাদি) generic থেকে যাবে এই একটা রিকোয়েস্টের জন্য
+        console.error('product-seo edge function এ অপ্রত্যাশিত এরর, আসল পেজ পাঠানো হচ্ছে:', err);
+        try {
+            return isPrettyPath ? await context.rewrite('/product.html') : await context.next();
+        } catch (err2) {
+            return new Response('সাময়িক সমস্যা হয়েছে, পেজটি আবার লোড করুন।', {
+                status: 503,
+                headers: { 'content-type': 'text/plain; charset=UTF-8' }
+            });
+        }
     }
-    if (!product || !product._id || !product.name) return response;
-
-    const html = await response.text();
-    const newHtml = injectSeoIntoHtml(html, product);
-
-    const newHeaders = new Headers(response.headers);
-    newHeaders.delete('content-length');
-    newHeaders.set('content-type', 'text/html; charset=UTF-8');
-
-    return new Response(newHtml, { status: response.status, headers: newHeaders });
 };
 
 // রাউটিং এখন netlify.toml-এ দুইটা আলাদা [[edge_functions]] এন্ট্রি দিয়ে হয় (/product.html আর

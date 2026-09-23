@@ -51,19 +51,44 @@ function injectBrandSeoIntoHtml(html, brand) {
 }
 
 export default async (request, context) => {
-    const response = await context.next();
+    // context.next()/response.text()-এ কোনো transient এরর হলে আগে পুরো রিকোয়েস্টটাই ভিজিটরের
+    // সামনে "This edge function has crashed" পেজ হয়ে যেতো (product-seo.js-এ একই কারণে একই
+    // সমস্যা পাওয়া গেছে, বিস্তারিত মন্তব্য সেখানে) — এখানেও একইভাবে try/catch দিয়ে fail-open
+    // করা হলো, যাতে ভিজিটর কখনো crash পেজ না দেখেন
+    let response;
+    try {
+        response = await context.next();
+    } catch (err) {
+        console.error('brand-seo edge function: context.next() ব্যর্থ হয়েছে:', err);
+        return new Response('সাময়িক সমস্যা হয়েছে, পেজটি আবার লোড করুন।', {
+            status: 503,
+            headers: { 'content-type': 'text/plain; charset=UTF-8' }
+        });
+    }
 
     const url = new URL(request.url);
     const brand = (url.searchParams.get('name') || '').trim();
     if (!brand) return response; // brand.html-এর নিজের JS-ও এই অবস্থায় কিছু বদলায় না
 
-    const html = await response.text();
-    const newHtml = injectBrandSeoIntoHtml(html, brand);
+    try {
+        const html = await response.text();
+        const newHtml = injectBrandSeoIntoHtml(html, brand);
 
-    const newHeaders = new Headers(response.headers);
-    newHeaders.delete('content-length');
-    newHeaders.set('content-type', 'text/html; charset=UTF-8');
-    return new Response(newHtml, { status: response.status, headers: newHeaders });
+        const newHeaders = new Headers(response.headers);
+        newHeaders.delete('content-length');
+        newHeaders.set('content-type', 'text/html; charset=UTF-8');
+        return new Response(newHtml, { status: response.status, headers: newHeaders });
+    } catch (err) {
+        console.error('brand-seo edge function: HTML ইনজেকশন ব্যর্থ হয়েছে, আসল পেজ পাঠানো হচ্ছে:', err);
+        try {
+            return await context.next();
+        } catch (err2) {
+            return new Response('সাময়িক সমস্যা হয়েছে, পেজটি আবার লোড করুন।', {
+                status: 503,
+                headers: { 'content-type': 'text/plain; charset=UTF-8' }
+            });
+        }
+    }
 };
 
 // রাউটিং netlify.toml-এর [[edge_functions]] এন্ট্রি দিয়ে হয় — এখানে আলাদা export const config
