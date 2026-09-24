@@ -31,6 +31,7 @@ function addToCart(item) {
     }
     saveCart(cart);
     trackCartAdd(item.productId);
+    trackMetaAddToCart(item);
     return cart;
 }
 
@@ -42,6 +43,21 @@ function trackCartAdd(productId) {
         if (typeof BACKEND_URL === 'undefined' || !productId) return;
         fetch(`${BACKEND_URL}/api/products/${productId}/track-cart-add`, { method: 'POST' }).catch(() => {});
     } catch (e) { /* সাইলেন্ট — ট্র্যাকিং ব্যর্থ হলেও কার্ট ঠিকই কাজ করবে */ }
+}
+
+// Meta Pixel — AddToCart ইভেন্ট। ট্র্যাকিং ব্যর্থ হলেও (fbq না থাকলে, অ্যাড-ব্লকার ইত্যাদি) কার্টের
+// আসল কাজে কোনো প্রভাব পড়বে না — উপরের trackCartAdd()-এর মতোই silent fire-and-forget।
+function trackMetaAddToCart(item) {
+    try {
+        if (typeof window.fbq !== 'function' || !item) return;
+        window.fbq('track', 'AddToCart', {
+            content_ids: [item.productId],
+            content_name: item.name,
+            content_type: 'product',
+            value: (item.price || 0) * (item.quantity || 1),
+            currency: 'BDT'
+        });
+    } catch (e) { /* সাইলেন্ট */ }
 }
 
 function removeFromCart(productId, variantLabel) {

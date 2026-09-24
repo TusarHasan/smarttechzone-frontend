@@ -20,3 +20,21 @@
     t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
     y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
 })(window, document, "clarity", "script", "ykax67effp");
+
+// Meta (Facebook) Pixel — বেস কোড, সব পেজে PageView স্বয়ংক্রিয়ভাবে ট্র্যাক করে। Dataset/Pixel ID:
+// Events Manager-এ "Smart Tech Zone Event Data" (390654674084858)। ViewContent/AddToCart/
+// InitiateCheckout/Purchase-এর মতো নির্দিষ্ট ইভেন্টগুলো এখানে না, বরং প্রাসঙ্গিক পেজে (product.html,
+// cart.js, checkout.html, order-success.html) আলাদাভাবে fbq('track', ...) কল করে পাঠানো হয় — কারণ
+// সেগুলোর জন্য প্রোডাক্ট/অর্ডারের আসল ডাটা (দাম, আইডি) দরকার যা এই সাইটওয়াইড ফাইলে থাকে না।
+!function (f, b, e, v, n, t, s) {
+    if (f.fbq) return;
+    n = f.fbq = function () {
+        n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+    };
+    if (!f._fbq) f._fbq = n;
+    n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = [];
+    t = b.createElement(e); t.async = !0; t.src = v;
+    s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+}(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+window.fbq('init', '390654674084858');
+window.fbq('track', 'PageView');

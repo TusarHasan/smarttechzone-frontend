@@ -473,6 +473,7 @@
             loadQuestions();
             initReviewForm();
             trackProductView(productId);
+            trackMetaViewContent(product);
         } catch (err) {
             showError();
         }
@@ -482,6 +483,21 @@
     // fire-and-forget, ব্যর্থ হলেও কাস্টমারের পেজ লোডে কোনো প্রভাব পড়বে না
     function trackProductView(id) {
         fetch(`${API_BASE}/api/products/${id}/track-view`, { method: 'POST' }).catch(() => {});
+    }
+
+    // Meta Pixel — ViewContent ইভেন্ট (কেউ এই প্রোডাক্ট পেজ দেখলো)। analytics.js-এ বেস পিক্সেল কোড
+    // আর PageView আগেই পাঠানো হয়ে গেছে, এখানে শুধু প্রোডাক্টের নির্দিষ্ট ডাটা (দাম, আইডি) দিয়ে
+    // ViewContent পাঠানো হচ্ছে — এটা Meta-কে "এই ভিজিটর কোন প্রোডাক্টে আগ্রহী" বুঝতে সাহায্য করে,
+    // পরে Dynamic Product Ads/রিটার্গেটিং-এ কাজে লাগবে। fbq না থাকলে (অ্যাড-ব্লকার ইত্যাদি) silently স্কিপ হয়।
+    function trackMetaViewContent(product) {
+        if (typeof window.fbq !== 'function') return;
+        window.fbq('track', 'ViewContent', {
+            content_ids: [product._id],
+            content_name: product.name,
+            content_type: 'product',
+            value: product.price,
+            currency: 'BDT'
+        });
     }
 
     function renderProduct(product) {

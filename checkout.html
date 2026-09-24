@@ -286,6 +286,20 @@
             `).join('');
 
             updateSummaryTotals();
+            trackMetaInitiateCheckout(cart);
+        }
+
+        // Meta Pixel — InitiateCheckout ইভেন্ট (কেউ কার্ট থেকে চেকআউট পেজে পৌঁছালো, অর্ডার এখনো
+        // কনফার্ম হয়নি)। analytics.js-এ বেস পিক্সেল কোড আগেই লোড হয়ে গেছে।
+        function trackMetaInitiateCheckout(cart) {
+            if (typeof window.fbq !== 'function' || !cart.length) return;
+            window.fbq('track', 'InitiateCheckout', {
+                content_ids: cart.map(item => item.productId),
+                content_type: 'product',
+                num_items: cart.reduce((sum, item) => sum + item.quantity, 0),
+                value: getCartTotal(),
+                currency: 'BDT'
+            });
         }
 
         function updateSummaryTotals() {
@@ -404,7 +418,9 @@
                 clearCart();
 
                 if (data.cod) {
-                    window.location.href = `order-success.html?order=${encodeURIComponent(data.orderNumber)}`;
+                    // সার্ভার-যাচাইকৃত total-ও পাঠানো হচ্ছে (order-success.html এখান থেকে Meta Pixel
+                    // Purchase ইভেন্ট পাঠাবে) — ক্লায়েন্টের নিজের হিসাব করা দাম না
+                    window.location.href = `order-success.html?order=${encodeURIComponent(data.orderNumber)}&value=${encodeURIComponent(data.total)}`;
                 } else {
                     window.location.href = data.paymentUrl;
                 }

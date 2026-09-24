@@ -78,6 +78,26 @@
         document.getElementById('orderNumberBox').textContent = orderNumber
             ? `অর্ডার নাম্বার: ${orderNumber}`
             : 'অর্ডার সম্পন্ন হয়েছে';
+
+        // Meta Pixel — Purchase ইভেন্ট। value প্যারামিটারটা সার্ভার থেকে আসে (checkout.html-এর COD
+        // রেসপন্স, অথবা SSLCommerz পেমেন্ট ভ্যালিডেট হওয়ার পর ব্যাকএন্ডের redirect — routes/orders.js
+        // এর payment/success দেখো) — কখনো ক্লায়েন্ট-সাইডে দাম বানানো হয় না, param না থাকলে ইভেন্টই
+        // পাঠানো হয় না। localStorage গার্ড দিয়ে একই অর্ডারের জন্য পেজ রিফ্রেশ/আবার ভিজিট করলে Purchase
+        // বারবার পাঠানো ঠেকানো হচ্ছে (নইলে রিপোর্টে ভুলভাবে একই অর্ডার একাধিকবার গোনা হতে পারতো)।
+        (function trackMetaPurchase() {
+            const value = params.get('value');
+            if (typeof window.fbq !== 'function' || !orderNumber || !value) return;
+            const guardKey = 'stz_meta_purchase_fired_' + orderNumber;
+            try {
+                if (localStorage.getItem(guardKey)) return;
+                localStorage.setItem(guardKey, '1');
+            } catch (e) { /* localStorage না থাকলেও (প্রাইভেট মোড ইত্যাদি) ইভেন্ট পাঠানো বন্ধ করার দরকার নেই */ }
+            window.fbq('track', 'Purchase', {
+                value: parseFloat(value),
+                currency: 'BDT',
+                content_type: 'product'
+            });
+        })();
     </script>
 </body>
 </html>
