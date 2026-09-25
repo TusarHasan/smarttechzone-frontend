@@ -38,6 +38,7 @@
         .status-shipped { background: #2980b9; }
         .status-delivered { background: #27ae60; }
         .status-cancelled { background: #e74c3c; }
+        .status-delivery_failed { background: #7c3aed; }
         .pay-pending { color: #e67e22; }
         .pay-paid { color: #27ae60; }
         .pay-failed, .pay-cancelled { color: #e74c3c; }
@@ -112,7 +113,7 @@
 
         const statusLabels = {
             pending: 'পেন্ডিং', processing: 'প্রসেসিং হচ্ছে', shipped: 'শিপড',
-            delivered: 'ডেলিভারড', cancelled: 'বাতিল'
+            delivered: 'ডেলিভারড', cancelled: 'বাতিল', delivery_failed: 'ডেলিভারি ব্যর্থ'
         };
         const payLabels = {
             pending: 'পেমেন্ট বাকি', paid: 'পেমেন্ট সম্পন্ন', failed: 'পেমেন্ট ব্যর্থ', cancelled: 'পেমেন্ট বাতিল'

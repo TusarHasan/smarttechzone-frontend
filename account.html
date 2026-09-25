@@ -40,6 +40,7 @@
         .status-shipped { background: #2980b9; }
         .status-delivered { background: #27ae60; }
         .status-cancelled { background: #e74c3c; }
+        .status-delivery_failed { background: #7c3aed; }
         .order-mini-card { border: 1px solid #eee; border-radius: 6px; padding: 14px; margin-top: 14px; }
         .order-mini-total { font-size: 14px; font-weight: bold; color: #333; margin-top: 8px; text-align: right; }
         .order-packaging-proof { margin-top: 12px; padding-top: 12px; border-top: 1px solid #f5f5f5; }
@@ -195,7 +196,7 @@
 
         const statusLabels = {
             pending: 'পেন্ডিং', processing: 'প্রসেসিং হচ্ছে', shipped: 'শিপড',
-            delivered: 'ডেলিভারড', cancelled: 'বাতিল'
+            delivered: 'ডেলিভারড', cancelled: 'বাতিল', delivery_failed: 'ডেলিভারি ব্যর্থ'
         };
 
         // ===== জেলা/উপজেলা ড্রপডাউন (checkout.html এর মতোই) =====
