@@ -105,6 +105,20 @@
             .stz-msg.customer { background: #e74c3c; color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
             .stz-msg.admin { background: #fff; color: #333; border: 1px solid #ececec; margin-right: auto; border-bottom-left-radius: 4px; }
             .stz-msg-time { font-size: 10px; opacity: .7; margin-top: 3px; }
+
+            /* অ্যাডমিন Message Buyer থেকে দারাজ-স্টাইল অর্ডার-কার্ড পাঠালে — সাধারণ টেক্সটের বদলে
+               ছবি/নাম/দাম সহ একটা মিনি প্রোডাক্ট কার্ড, এই ফ্লোটিং উইজেটেই সবচেয়ে বেশি দেখা হয় */
+            .stz-msg.order-card-bubble { padding: 0; overflow: hidden; max-width: 88%; }
+            .stz-oc-body { display: flex; gap: 9px; padding: 10px 11px 7px; }
+            .stz-oc-body img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; flex-shrink: 0; background: #fafafa; }
+            .stz-oc-info { min-width: 0; flex: 1; }
+            .stz-oc-name { font-size: 12px; font-weight: 700; color: #222; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; }
+            .stz-oc-meta { font-size: 10.5px; color: #888; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .stz-oc-price { font-size: 12px; font-weight: 800; color: #e74c3c; margin-top: 3px; }
+            .stz-oc-footer { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 6px 11px; background: #fafafa; border-top: 1px solid #f0f0f0; }
+            .stz-oc-order-no { font-size: 10.5px; color: #777; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .stz-oc-track-link { font-size: 10.5px; color: #fff; background: #e74c3c; padding: 3px 9px; border-radius: 10px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+            .stz-msg.order-card-bubble .stz-msg-time { padding: 0 11px 7px; opacity: .55; }
             #stzChatEmpty { color: #999; font-size: 13px; text-align: center; margin-top: 30px; }
             #stzChatInputRow { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #eee; background: #fff; flex-shrink: 0; }
             #stzChatInput { flex: 1; border: 1px solid #e2e2e2; border-radius: 22px; padding: 10px 15px; font-size: 13.5px; font-family: Arial, sans-serif; background: #f6f7f9; }
@@ -173,6 +187,42 @@
         } catch (e) { return ''; }
     }
 
+    function fmtPrice(n) {
+        return Number(n || 0).toLocaleString('en-US');
+    }
+    function resolveImgSrc(url) {
+        if (!url) return '';
+        return url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
+    }
+
+    // সাধারণ টেক্সট বা অ্যাডমিনের পাঠানো রিচ অর্ডার-কার্ড — দুটোর জন্যই একই জায়গা থেকে HTML বানানো
+    // হয় (renderMessages আর appendMessage দুই জায়গাতেই ব্যবহার হয়)
+    function messageBubbleHtml(m) {
+        if (m.type === 'order_card' && m.orderCard) {
+            const c = m.orderCard;
+            const img = resolveImgSrc(c.itemImage);
+            return `
+                <div class="stz-oc-body">
+                    ${img ? `<img src="${img}" alt="" onerror="this.style.display='none'">` : ''}
+                    <div class="stz-oc-info">
+                        <div class="stz-oc-name">${escapeHtml(c.itemName)}</div>
+                        ${c.itemVariant ? `<div class="stz-oc-meta">Color Family: ${escapeHtml(c.itemVariant)}</div>` : ''}
+                        <div class="stz-oc-price">৳${fmtPrice(c.itemPrice)} × ${c.itemQuantity}${c.extraItemsCount > 0 ? ` <span style="color:#999;font-weight:400;">+${c.extraItemsCount} আরো</span>` : ''}</div>
+                    </div>
+                </div>
+                <div class="stz-oc-footer">
+                    <span class="stz-oc-order-no">অর্ডার #${escapeHtml(c.orderNumber)} · মোট ৳${fmtPrice(c.totalPrice)}</span>
+                    <a class="stz-oc-track-link" href="${BASE_PATH}track.html?order=${encodeURIComponent(c.orderNumber)}">ট্র্যাক করুন</a>
+                </div>
+                <div class="stz-msg-time">${timeLabel(m.createdAt)}</div>
+            `;
+        }
+        return `<div>${escapeHtml(m.text)}</div><div class="stz-msg-time">${timeLabel(m.createdAt)}</div>`;
+    }
+    function messageBubbleClass(m) {
+        return `stz-msg ${m.senderType}${m.type === 'order_card' ? ' order-card-bubble' : ''}`;
+    }
+
     function renderMessages(messages) {
         const wrap = document.getElementById('stzChatMessages');
         if (!messages || messages.length === 0) {
@@ -180,9 +230,8 @@
             return;
         }
         wrap.innerHTML = messages.map((m) => `
-            <div class="stz-msg ${m.senderType}">
-                <div>${escapeHtml(m.text)}</div>
-                <div class="stz-msg-time">${timeLabel(m.createdAt)}</div>
+            <div class="${messageBubbleClass(m)}">
+                ${messageBubbleHtml(m)}
             </div>
         `).join('');
         wrap.scrollTop = wrap.scrollHeight;
@@ -193,8 +242,8 @@
         const empty = document.getElementById('stzChatEmpty');
         if (empty) empty.remove();
         const div = document.createElement('div');
-        div.className = `stz-msg ${m.senderType}`;
-        div.innerHTML = `<div>${escapeHtml(m.text)}</div><div class="stz-msg-time">${timeLabel(m.createdAt)}</div>`;
+        div.className = messageBubbleClass(m);
+        div.innerHTML = messageBubbleHtml(m);
         wrap.appendChild(div);
         wrap.scrollTop = wrap.scrollHeight;
     }

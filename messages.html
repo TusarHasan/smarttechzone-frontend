@@ -43,6 +43,20 @@
         .msgc-bubble.admin { background: #fff; color: #333; border: 1px solid #ececec; margin-right: auto; border-bottom-left-radius: 4px; }
         .msgc-bubble-time { font-size: 10px; opacity: .7; margin-top: 3px; }
 
+        /* অ্যাডমিন Message Buyer থেকে দারাজ-স্টাইল অর্ডার-কার্ড পাঠালে সেটা এভাবে দেখানো হয় —
+           সাধারণ টেক্সট বাবলের বদলে ছবি/নাম/দাম সহ একটা মিনি প্রোডাক্ট কার্ড */
+        .msgc-bubble.order-card-bubble { padding: 0; overflow: hidden; max-width: 78%; }
+        .msgc-oc-body { display: flex; gap: 10px; padding: 11px 12px 8px; }
+        .msgc-oc-body img { width: 54px; height: 54px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; flex-shrink: 0; background: #fafafa; }
+        .msgc-oc-info { min-width: 0; flex: 1; }
+        .msgc-oc-name { font-size: 12.5px; font-weight: 700; color: #222; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; }
+        .msgc-oc-meta { font-size: 11px; color: #888; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .msgc-oc-price { font-size: 12.5px; font-weight: 800; color: #e74c3c; margin-top: 4px; }
+        .msgc-oc-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 12px; background: #fafafa; border-top: 1px solid #f0f0f0; }
+        .msgc-oc-order-no { font-size: 11px; color: #777; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .msgc-oc-track-link { font-size: 11px; color: #fff; background: #e74c3c; padding: 3px 10px; border-radius: 10px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+        .msgc-bubble.order-card-bubble .msgc-bubble-time { padding: 0 12px 8px; opacity: .55; }
+
         .msgc-input-row { display: flex; gap: 10px; padding: 12px; border-top: 1px solid #eee; background: #fff; }
         .msgc-input-row input { flex: 1; border: 1px solid #ddd; border-radius: 22px; padding: 10px 16px; font-size: 13.5px; font-family: Arial, sans-serif; background: #f6f7f9; }
         .msgc-input-row input:focus { outline: none; border-color: #e74c3c; background: #fff; }
@@ -123,6 +137,13 @@
             try { return new Date(iso).toLocaleString('bn-BD', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
             catch (e) { return ''; }
         }
+        function fmtPrice(n) {
+            return Number(n || 0).toLocaleString('en-US');
+        }
+        function resolveImgSrc(url) {
+            if (!url) return '';
+            return url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
+        }
         function threadDisplayName(t) {
             return t.type === 'vendor' ? 'Smart Tech Zone (ভেন্ডর)' : 'Smart Tech Zone সাপোর্ট';
         }
@@ -169,6 +190,34 @@
             `).join('');
         }
 
+        // সাধারণ টেক্সট বা অ্যাডমিনের পাঠানো রিচ অর্ডার-কার্ড — দুটোর জন্যই একই জায়গা থেকে HTML
+        // বানানো হয় (renderMessages আর appendMessage দুই জায়গাতেই ব্যবহার হয়)
+        function messageBubbleHtml(m) {
+            if (m.type === 'order_card' && m.orderCard) {
+                const c = m.orderCard;
+                const img = resolveImgSrc(c.itemImage);
+                return `
+                    <div class="msgc-oc-body">
+                        ${img ? `<img src="${img}" alt="" onerror="this.style.display='none'">` : ''}
+                        <div class="msgc-oc-info">
+                            <div class="msgc-oc-name">${escapeHtml(c.itemName)}</div>
+                            ${c.itemVariant ? `<div class="msgc-oc-meta">Color Family: ${escapeHtml(c.itemVariant)}</div>` : ''}
+                            <div class="msgc-oc-price">৳${fmtPrice(c.itemPrice)} × ${c.itemQuantity}${c.extraItemsCount > 0 ? ` <span style="color:#999;font-weight:400;">+${c.extraItemsCount} আরো</span>` : ''}</div>
+                        </div>
+                    </div>
+                    <div class="msgc-oc-footer">
+                        <span class="msgc-oc-order-no">অর্ডার #${escapeHtml(c.orderNumber)} · মোট ৳${fmtPrice(c.totalPrice)}</span>
+                        <a class="msgc-oc-track-link" href="track.html?order=${encodeURIComponent(c.orderNumber)}">ট্র্যাক করুন</a>
+                    </div>
+                    <div class="msgc-bubble-time">${timeLabel(m.createdAt)}</div>
+                `;
+            }
+            return `<div>${escapeHtml(m.text)}</div><div class="msgc-bubble-time">${timeLabel(m.createdAt)}</div>`;
+        }
+        function messageBubbleClass(m) {
+            return `msgc-bubble ${m.senderType}${m.type === 'order_card' ? ' order-card-bubble' : ''}`;
+        }
+
         function renderMessages(messages) {
             const wrap = document.getElementById('msgcConvMessages');
             if (!messages || !messages.length) {
@@ -176,9 +225,8 @@
                 return;
             }
             wrap.innerHTML = messages.map(m => `
-                <div class="msgc-bubble ${m.senderType}">
-                    <div>${escapeHtml(m.text)}</div>
-                    <div class="msgc-bubble-time">${timeLabel(m.createdAt)}</div>
+                <div class="${messageBubbleClass(m)}">
+                    ${messageBubbleHtml(m)}
                 </div>
             `).join('');
             wrap.scrollTop = wrap.scrollHeight;
@@ -189,8 +237,8 @@
             const empty = wrap.querySelector('.msgc-conv-empty');
             if (empty) empty.remove();
             const div = document.createElement('div');
-            div.className = `msgc-bubble ${m.senderType}`;
-            div.innerHTML = `<div>${escapeHtml(m.text)}</div><div class="msgc-bubble-time">${timeLabel(m.createdAt)}</div>`;
+            div.className = messageBubbleClass(m);
+            div.innerHTML = messageBubbleHtml(m);
             wrap.appendChild(div);
             wrap.scrollTop = wrap.scrollHeight;
         }
