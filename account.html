@@ -54,6 +54,55 @@
         .no-orders a { color: #e74c3c; font-weight: bold; text-decoration: none; }
         .loading-hint { text-align: center; color: #999; padding: 20px 0; font-size: 13.5px; }
 
+        /* ===== Return / Refund রিকোয়েস্ট ===== */
+        .return-btn {
+            background: none; border: 1px solid #e74c3c; color: #e74c3c; padding: 6px 14px;
+            border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 8px;
+        }
+        .return-btn:hover { background: #fdf1f0; }
+        .return-requested-tag { display: inline-block; margin-top: 8px; font-size: 12px; color: #999; }
+
+        /* এই পেজে আগে কোনো মোডাল/পপআপ ছিল না — অ্যাডমিন প্যানেলে (style.css) ব্যবহৃত
+           .modal / .modal.open / classList.add('open') কনভেনশনটাই এখানে অনুসরণ করা হলো */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; }
+        .modal.open { display: flex; }
+        .modal-content { background: #fff; border-radius: 8px; padding: 24px; width: 90%; max-width: 400px; box-sizing: border-box; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-actions button { flex: 1; padding: 11px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .btn-cancel { background: #eee; color: #555; }
+        .btn-cancel:hover { background: #e2e2e2; }
+
+        .return-modal-content { max-width: 460px; max-height: 88vh; overflow-y: auto; text-align: left; }
+        .return-modal-content h3 { margin: 0 0 4px; font-size: 16px; color: #333; }
+        .return-item-preview { display: flex; gap: 10px; align-items: center; padding: 10px; background: #fafafa; border-radius: 6px; margin: 12px 0; }
+        .return-item-preview img { width: 46px; height: 46px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; background: #fff; }
+        .return-item-preview .rip-name { font-size: 13px; color: #333; }
+        .return-item-preview .rip-meta { font-size: 11.5px; color: #999; margin-top: 2px; }
+
+        .return-field-label { display: block; margin-top: 14px; font-size: 13px; font-weight: bold; color: #333; }
+        .return-modal-content select, .return-modal-content textarea, .return-modal-content input[type="text"] {
+            width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ccc; border-radius: 4px;
+            box-sizing: border-box; font-family: Arial, sans-serif; font-size: 14px;
+        }
+        .return-modal-content textarea { min-height: 60px; resize: vertical; }
+        .resolution-options { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .resolution-options label { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: normal; cursor: pointer; }
+        .rimg-previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .rimg-previews img { width: 58px; height: 58px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; }
+        #returnModalMsg { margin-top: 10px; font-size: 13.5px; }
+
+        /* ===== Return Tracking সেকশন ===== */
+        .return-track-card { border: 1px solid #eee; border-radius: 6px; padding: 14px; margin-top: 14px; }
+        .return-status-badge { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: 11.5px; font-weight: bold; color: #fff; }
+        .rstatus-pending { background: #999; }
+        .rstatus-approved { background: #2980b9; }
+        .rstatus-picked_up { background: #f39c12; }
+        .rstatus-completed { background: #27ae60; }
+        .rstatus-rejected { background: #e74c3c; }
+        .return-track-timeline { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; font-size: 11px; color: #999; }
+        .return-track-timeline span.done { color: #27ae60; font-weight: bold; }
+        .no-returns { text-align: center; color: #999; padding: 20px 0; font-size: 13.5px; }
+
         .pm-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f5f5f5; font-size: 13.5px; }
         .pm-item:last-child { border-bottom: none; }
         .pm-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; color: #fff; margin-right: 10px; }
@@ -149,6 +198,64 @@
             <h3>আমার অর্ডারসমূহ</h3>
             <div id="ordersList"><div class="loading-hint">লোড হচ্ছে...</div></div>
         </div>
+
+        <div class="account-card" id="returnTrackingSection">
+            <h3>রিটার্ন ট্র্যাকিং</h3>
+            <p style="font-size:12.5px; color:#999; margin:0;">আপনার রিটার্ন/রিফান্ড রিকোয়েস্টের সর্বশেষ অবস্থা এখানে দেখা যাবে।</p>
+            <div id="returnTrackingList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+        </div>
+    </div>
+
+    <!-- ===== রিটার্ন রিকোয়েস্ট মোডাল ===== -->
+    <div class="modal" id="returnModal">
+        <div class="modal-content return-modal-content">
+            <h3>রিটার্ন রিকোয়েস্ট</h3>
+            <p style="font-size:12px; color:#999; margin:0;">ডেলিভারির ৭ দিনের মধ্যে রিটার্ন রিকোয়েস্ট করা যায়।</p>
+
+            <div class="return-item-preview" id="returnItemPreview"></div>
+
+            <label class="return-field-label">রিটার্নের কারণ</label>
+            <select id="returnReason">
+                <option value="defective">ত্রুটিপূর্ণ প্রোডাক্ট (Defective)</option>
+                <option value="wrong_item">ভুল প্রোডাক্ট এসেছে (Wrong item)</option>
+                <option value="quality_issue">কোয়ালিটি সমস্যা (Quality issue)</option>
+                <option value="missing_parts">বক্সে কিছু জিনিস কম ছিল (Missing parts)</option>
+                <option value="changed_mind">মন পরিবর্তন হয়েছে (Changed mind)</option>
+                <option value="other">অন্যান্য</option>
+            </select>
+
+            <label class="return-field-label">বিস্তারিত লিখুন</label>
+            <textarea id="returnComment" placeholder="সমস্যাটি বিস্তারিত লিখুন..."></textarea>
+
+            <label class="return-field-label">প্রমাণ হিসেবে ছবি (সর্বোচ্চ ৪টি)</label>
+            <input type="file" id="returnImages" accept="image/jpeg,image/png,image/webp" multiple>
+            <div class="rimg-previews" id="rimgPreviews"></div>
+
+            <label class="return-field-label">আপনি কী চান?</label>
+            <div class="resolution-options">
+                <label><input type="radio" name="returnResolution" value="refund" checked onchange="toggleRefundFields()"> রিফান্ড</label>
+                <label><input type="radio" name="returnResolution" value="replacement" onchange="toggleRefundFields()"> রিপ্লেসমেন্ট (একই প্রোডাক্ট বদলে দেওয়া)</label>
+            </div>
+
+            <div id="refundFields">
+                <label class="return-field-label">রিফান্ড মেথড</label>
+                <select id="returnRefundMethod">
+                    <option value="bkash">bKash</option>
+                    <option value="nagad">Nagad</option>
+                    <option value="rocket">Rocket</option>
+                    <option value="bank">ব্যাংক অ্যাকাউন্ট</option>
+                </select>
+                <label class="return-field-label">নাম্বার / অ্যাকাউন্ট</label>
+                <input type="text" id="returnRefundNumber" placeholder="01XXXXXXXXX বা অ্যাকাউন্ট নাম্বার">
+            </div>
+
+            <div id="returnModalMsg"></div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeReturnModal()">বাতিল</button>
+                <button class="save-btn" id="returnSubmitBtn" onclick="submitReturnRequest()">রিকোয়েস্ট পাঠান</button>
+            </div>
+        </div>
     </div>
 
     <div id="siteFooter"></div>
@@ -174,6 +281,7 @@
             document.getElementById('addressSection').style.display = 'none';
             document.getElementById('paymentSection').style.display = 'none';
             document.getElementById('ordersSection').style.display = 'none';
+            document.getElementById('returnTrackingSection').style.display = 'none';
             document.querySelector('.account-container h2').textContent = 'প্রোফাইল';
         }
 
@@ -198,6 +306,32 @@
             pending: 'পেন্ডিং', processing: 'প্রসেসিং হচ্ছে', shipped: 'শিপড',
             delivered: 'ডেলিভারড', cancelled: 'বাতিল', delivery_failed: 'ডেলিভারি ব্যর্থ'
         };
+
+        // ===== রিটার্ন/রিফান্ড রিকোয়েস্ট =====
+        const RETURN_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // backend/routes/returns.js এর RETURN_WINDOW_DAYS এর সাথে মিল রেখে
+        const reasonLabels = {
+            defective: 'ত্রুটিপূর্ণ প্রোডাক্ট', wrong_item: 'ভুল প্রোডাক্ট এসেছে',
+            quality_issue: 'কোয়ালিটি সমস্যা', missing_parts: 'বক্সে কিছু জিনিস কম ছিল',
+            changed_mind: 'মন পরিবর্তন হয়েছে', other: 'অন্যান্য'
+        };
+        const returnStatusLabels = {
+            pending: 'পেন্ডিং', approved: 'অনুমোদিত', picked_up: 'পিকআপ হয়েছে',
+            completed: 'সম্পন্ন', rejected: 'বাতিল'
+        };
+        let lastOrders = [];
+        let myReturns = [];
+        let activeReturnOrderId = null;
+        let activeReturnItemIndex = null;
+
+        function findActiveReturn(orderId, itemIndex) {
+            return myReturns.find(r => r.orderId === orderId && r.itemIndex === itemIndex && r.status !== 'rejected');
+        }
+
+        function isReturnEligible(order, itemIndex) {
+            if (order.orderStatus !== 'delivered' || !order.deliveredAt) return false;
+            if (Date.now() - new Date(order.deliveredAt).getTime() > RETURN_WINDOW_MS) return false;
+            return !findActiveReturn(order._id, itemIndex);
+        }
 
         // ===== জেলা/উপজেলা ড্রপডাউন (checkout.html এর মতোই) =====
         function populateDistricts() {
@@ -430,6 +564,7 @@
 
         // ===== অর্ডার হিস্টরি =====
         function renderOrders(orders) {
+            lastOrders = orders;
             const box = document.getElementById('ordersList');
             if (!orders.length) {
                 box.innerHTML = `<div class="no-orders">এখনো কোনো অর্ডার নেই।<br><br><a href="index.html">কেনাকাটা শুরু করুন →</a></div>`;
@@ -444,11 +579,21 @@
                         </div>
                         <span class="order-status-badge status-${order.orderStatus}">${statusLabels[order.orderStatus] || order.orderStatus}</span>
                     </div>
-                    ${order.items.map(item => `
+                    ${order.items.map((item, idx) => `
                         <div class="order-item-row">
                             <span>${item.name}${item.variantLabel ? ` (${item.variantLabel})` : ''} × ${item.quantity}</span>
                             <span>৳ ${formatPrice(item.price * item.quantity)}</span>
                         </div>
+                        ${(() => {
+                            const activeReturn = findActiveReturn(order._id, idx);
+                            if (activeReturn) {
+                                return `<div class="return-requested-tag">↩️ রিটার্ন রিকোয়েস্ট করা হয়েছে — স্ট্যাটাস: ${returnStatusLabels[activeReturn.status] || activeReturn.status}</div>`;
+                            }
+                            if (isReturnEligible(order, idx)) {
+                                return `<button class="return-btn" onclick="openReturnModal('${order._id}', ${idx})">↩️ রিটার্ন করুন</button>`;
+                            }
+                            return '';
+                        })()}
                     `).join('')}
                     <div class="order-mini-total">মোট: ৳ ${formatPrice(order.total)}</div>
                     ${order.packagingProofVideoUrl ? `
@@ -478,9 +623,201 @@
             }
         }
 
+        // ===== রিটার্ন মোডাল খোলা/বন্ধ করা =====
+        function openReturnModal(orderId, itemIndex) {
+            const order = lastOrders.find(o => o._id === orderId);
+            if (!order) return;
+            const item = order.items[itemIndex];
+            if (!item) return;
+
+            activeReturnOrderId = orderId;
+            activeReturnItemIndex = itemIndex;
+
+            document.getElementById('returnItemPreview').innerHTML = `
+                <img src="${resolveImg(item.image)}" alt="${item.name}">
+                <div>
+                    <div class="rip-name">${item.name}${item.variantLabel ? ` (${item.variantLabel})` : ''}</div>
+                    <div class="rip-meta">অর্ডার: ${order.orderNumber} · সংখ্যা: ${item.quantity}</div>
+                </div>
+            `;
+
+            document.getElementById('returnReason').value = 'defective';
+            document.getElementById('returnComment').value = '';
+            document.getElementById('returnImages').value = '';
+            document.getElementById('rimgPreviews').innerHTML = '';
+            document.querySelector('input[name="returnResolution"][value="refund"]').checked = true;
+            document.getElementById('returnRefundMethod').value = 'bkash';
+            document.getElementById('returnRefundNumber').value = '';
+            document.getElementById('returnModalMsg').textContent = '';
+            toggleRefundFields();
+
+            document.getElementById('returnModal').classList.add('open');
+        }
+
+        function closeReturnModal() {
+            document.getElementById('returnModal').classList.remove('open');
+        }
+
+        function toggleRefundFields() {
+            const resolution = document.querySelector('input[name="returnResolution"]:checked').value;
+            document.getElementById('refundFields').style.display = resolution === 'refund' ? 'block' : 'none';
+        }
+
+        // ছবি সিলেক্ট করলে টাইপ/সাইজ ভ্যালিডেট করে প্রিভিউ দেখানো হয় (আপলোড হয় সাবমিটের সময়)
+        document.getElementById('returnImages').addEventListener('change', function () {
+            const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+            const maxSize = 5 * 1024 * 1024; // 5MB প্রতি ছবি
+            const files = Array.from(this.files || []);
+            const preview = document.getElementById('rimgPreviews');
+            const msg = document.getElementById('returnModalMsg');
+            msg.textContent = '';
+            preview.innerHTML = '';
+
+            if (files.length > 4) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = 'সর্বোচ্চ ৪টি ছবি আপলোড করা যাবে।';
+                this.value = '';
+                return;
+            }
+            for (const f of files) {
+                if (!allowed.includes(f.type)) {
+                    msg.style.color = '#e74c3c';
+                    msg.textContent = 'শুধু jpg, png, webp ছবি আপলোড করা যাবে।';
+                    this.value = '';
+                    preview.innerHTML = '';
+                    return;
+                }
+                if (f.size > maxSize) {
+                    msg.style.color = '#e74c3c';
+                    msg.textContent = 'প্রতিটি ছবি সর্বোচ্চ ৫MB হতে পারবে।';
+                    this.value = '';
+                    preview.innerHTML = '';
+                    return;
+                }
+            }
+            files.forEach(f => {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(f);
+                preview.appendChild(img);
+            });
+        });
+
+        // customerAuthFetch() ডিফল্টভাবে Content-Type: application/json পাঠায়, যেটা multipart/FormData
+        // আপলোডের জন্য উপযুক্ত না (boundary ভেঙে যায়) — তাই এখানে শুধু Authorization হেডার দিয়ে raw fetch()
+        // ব্যবহার করা হলো, ব্রাউজার নিজেই সঠিক multipart Content-Type বসিয়ে দেবে
+        async function uploadReturnImages(files) {
+            if (!files || !files.length) return [];
+            const formData = new FormData();
+            files.forEach(f => formData.append('images', f));
+            const res = await fetch(`${API_BASE}/api/returns/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${getCustomerToken()}` },
+                body: formData
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'ছবি আপলোড করা যায়নি।');
+            return data.urls || [];
+        }
+
+        async function submitReturnRequest() {
+            const reason = document.getElementById('returnReason').value;
+            const comment = document.getElementById('returnComment').value.trim();
+            const resolution = document.querySelector('input[name="returnResolution"]:checked').value;
+            const refundMethod = document.getElementById('returnRefundMethod').value;
+            const refundNumber = document.getElementById('returnRefundNumber').value.trim();
+            const files = Array.from(document.getElementById('returnImages').files || []);
+            const msg = document.getElementById('returnModalMsg');
+            const btn = document.getElementById('returnSubmitBtn');
+
+            msg.textContent = '';
+            if (resolution === 'refund' && !refundNumber) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = 'রিফান্ডের জন্য নাম্বার/অ্যাকাউন্ট দিন।';
+                return;
+            }
+
+            btn.disabled = true;
+            try {
+                const images = await uploadReturnImages(files);
+                const res = await customerAuthFetch(`${API_BASE}/api/returns`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        orderId: activeReturnOrderId,
+                        itemIndex: activeReturnItemIndex,
+                        reason, comment, images, resolution,
+                        refundMethod: resolution === 'refund' ? refundMethod : '',
+                        refundNumber: resolution === 'refund' ? refundNumber : ''
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'রিকোয়েস্ট পাঠানো যায়নি।');
+
+                closeReturnModal();
+                await loadReturns();
+                renderOrders(lastOrders);
+                alert('✅ আপনার রিটার্ন রিকোয়েস্ট জমা হয়েছে — নিচে "রিটার্ন ট্র্যাকিং" সেকশনে অবস্থা দেখতে পারবেন।');
+            } catch (err) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = '❌ ' + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ===== রিটার্ন ট্র্যাকিং (Daraz-স্টাইল টাইমলাইন) =====
+        function renderReturnTracking(returns) {
+            const box = document.getElementById('returnTrackingList');
+            if (!returns.length) {
+                box.innerHTML = `<div class="no-returns">এখনো কোনো রিটার্ন রিকোয়েস্ট নেই।</div>`;
+                return;
+            }
+            const steps = ['pending', 'approved', 'picked_up', 'completed'];
+            box.innerHTML = returns.map(r => `
+                <div class="return-track-card">
+                    <div class="order-result-header">
+                        <div>
+                            <strong>${r.item?.name || 'প্রোডাক্ট'}${r.item?.variantLabel ? ` (${r.item.variantLabel})` : ''}</strong>
+                            <div style="font-size:12px; color:#999; margin-top:2px;">অর্ডার: ${r.orderNumber} · ${new Date(r.createdAt).toLocaleDateString('bn-BD')}</div>
+                        </div>
+                        <span class="return-status-badge rstatus-${r.status}">${returnStatusLabels[r.status] || r.status}</span>
+                    </div>
+                    <div style="font-size:12.5px; color:#666; margin-top:8px;">কারণ: ${reasonLabels[r.reason] || r.reason}</div>
+                    ${r.status === 'rejected'
+                        ? `<div style="font-size:12.5px; color:#e74c3c; margin-top:8px;">❌ রিকোয়েস্ট বাতিল করা হয়েছে${r.adminNote ? ' — ' + r.adminNote : ''}</div>`
+                        : `<div class="return-track-timeline">
+                            ${steps.map(s => `<span class="${steps.indexOf(s) <= steps.indexOf(r.status) ? 'done' : ''}">${returnStatusLabels[s]}${steps.indexOf(s) < steps.length - 1 ? ' →' : ''}</span>`).join('')}
+                        </div>`
+                    }
+                </div>
+            `).join('');
+        }
+
+        async function loadReturns() {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/returns/my`);
+                if (res.status === 401 || res.status === 403) {
+                    customerLogout();
+                    return;
+                }
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'রিটার্ন তথ্য লোড করা যায়নি।');
+                myReturns = data;
+                renderReturnTracking(data);
+            } catch (err) {
+                document.getElementById('returnTrackingList').innerHTML = `<div class="no-returns">❌ ${err.message}</div>`;
+            }
+        }
+
+        // অর্ডার রেন্ডার করার আগে myReturns লোড হয়ে থাকা দরকার, নাহলে প্রথমবার রেন্ডারে
+        // "রিটার্ন করুন" বাটন/স্ট্যাটাস ট্যাগ সঠিকভাবে দেখাবে না
+        async function loadOrdersAndReturns() {
+            await loadReturns();
+            await loadOrders();
+        }
+
         loadProfile();
         loadPaymentMethods();
-        loadOrders();
+        loadOrdersAndReturns();
     </script>
 </body>
 </html>
