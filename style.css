@@ -623,15 +623,16 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 20px;
     line-height: 1;
     padding: 0;
     z-index: 2;
+    color: #999;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     transition: transform 0.15s ease;
 }
 .wishlist-heart-btn:hover { transform: scale(1.12); }
-.wishlist-heart-btn.active { border-color: #e74c3c; }
+.wishlist-heart-btn.active { border-color: #e74c3c; color: #e74c3c; }
 
 /* প্রোডাক্ট ডিটেইল পেজের (product.html) বড়, লেবেলসহ উইশলিস্ট বাটন — Buy Now/Add to Cart এর
    পাশে বসে, কার্ড ওভারলে হার্ট বাটনের চেয়ে আলাদা স্টাইল দরকার */

@@ -1,10 +1,17 @@
-// ===== উইশলিস্ট (❤️/🤍 হার্ট বাটন) — শুধু লগইন করা কাস্টমারদের জন্য কাজ করে, গেস্ট উইশলিস্ট নেই।
+// ===== উইশলিস্ট (♡/♥ হার্ট বাটন) — শুধু লগইন করা কাস্টমারদের জন্য কাজ করে, গেস্ট উইশলিস্ট নেই।
 // প্রোডাক্ট কার্ড (index.html/search.html/brands/brand.html/models/model.html) ও প্রোডাক্ট
 // ডিটেইল পেজে (product.html) হার্ট বাটন বসানোর জন্য শেয়ার্ড ফাইল — customer-auth.js/footer.js
 // এর মতোই প্রতিটা পেজে <script src="wishlist.js"></script> দিয়ে যোগ করতে হবে, তবে অবশ্যই
 // config.js ও customer-auth.js এর পরে (BACKEND_URL/customerAuthFetch/getCustomerToken দরকার)।
 // account.html এর নিজস্ব "আমার উইশলিস্ট" সেকশন এই ফাইল ব্যবহার করে না — ওখানে শুধু তালিকা +
 // রিমুভ বাটন লাগে বলে সরাসরি account.html এর নিজের কোডেই লেখা হয়েছে।
+//
+// দ্রষ্টব্য: হার্ট আইকনের জন্য আগে 🤍 (U+1F90D WHITE HEART) ইমোজি ব্যবহার করা হতো, কিন্তু এটা
+// তুলনামূলক নতুন ইউনিকোড ক্যারেক্টার (২০১৯) — Windows/Chrome-এর অনেক ফন্টেই এটা রেন্ডার হয় না
+// (ফাঁকা/অদৃশ্য দেখায়), যার কারণে বাটনে হার্ট সাইনটাই দেখা যাচ্ছিল না। এখন ♡ (U+2661) ও ♥ (U+2665) —
+// অনেক পুরনো, সব ফন্টে সমর্থিত প্লেইন-টেক্সট হার্ট সিম্বল ব্যবহার করা হচ্ছে, যাতে সবসময় দেখা যায়।
+const HEART_OFF = '♡';
+const HEART_ON = '♥';
 
 const stzWishlistIds = new Set();
 
@@ -17,7 +24,7 @@ async function stzLoadWishlistIds() {
         stzWishlistIds.clear();
         (data || []).forEach(p => stzWishlistIds.add(String(p.id)));
         stzRefreshWishlistButtons();
-    } catch (e) { /* নন-ক্রিটিক্যাল — হার্ট আইকন ফাঁকা (🤍) অবস্থাতেই থেকে যাবে */ }
+    } catch (e) { /* নন-ক্রিটিক্যাল — হার্ট আইকন ফাঁকা (♡) অবস্থাতেই থেকে যাবে */ }
 }
 
 function stzIsWishlisted(productId) {
@@ -32,9 +39,9 @@ function stzApplyWishlistBtnState(btn, active) {
     const onLabel = btn.getAttribute('data-label-on');
     const offLabel = btn.getAttribute('data-label-off');
     if (onLabel || offLabel) {
-        btn.innerHTML = active ? (onLabel || '❤️') : (offLabel || '🤍');
+        btn.innerHTML = active ? (onLabel || HEART_ON) : (offLabel || HEART_OFF);
     } else {
-        btn.textContent = active ? '❤️' : '🤍';
+        btn.textContent = active ? HEART_ON : HEART_OFF;
     }
 }
 
@@ -53,7 +60,7 @@ function stzRefreshWishlistButtons() {
 // ফাংশনগুলোতে প্রোডাক্ট কার্ডের innerHTML এর ভেতরে সরাসরি বসানো যায়
 function stzWishlistHeartHtml(productId) {
     const active = stzIsWishlisted(productId);
-    return `<button type="button" class="wishlist-heart-btn${active ? ' active' : ''}" data-wishlist-id="${productId}" title="উইশলিস্টে যোগ/বাদ দিন" onclick="event.stopPropagation(); stzToggleWishlist('${productId}', this)">${active ? '❤️' : '🤍'}</button>`;
+    return `<button type="button" class="wishlist-heart-btn${active ? ' active' : ''}" data-wishlist-id="${productId}" title="Add to Wishlist" onclick="event.stopPropagation(); stzToggleWishlist('${productId}', this)">${active ? HEART_ON : HEART_OFF}</button>`;
 }
 
 // প্রকৃত API কল — শুধু সার্ভারে পাঠায় ও stzWishlistIds সেট আপডেট করে, DOM ছোঁয় না (সফল হলে true)

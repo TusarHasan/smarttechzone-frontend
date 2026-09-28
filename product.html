@@ -263,7 +263,7 @@
                 <div class="action-row">
                     <button class="btn-buy" onclick="buyNow()">Buy Now</button>
                     <button class="btn-cart" onclick="addCurrentToCart()">Add to Cart</button>
-                    <button type="button" id="wishlistBtn" class="btn-wishlist" style="display:none;" data-label-off="🤍 উইশলিস্টে যোগ করুন" data-label-on="❤️ উইশলিস্টে আছে" onclick="stzToggleWishlist(productId, this)">🤍 উইশলিস্টে যোগ করুন</button>
+                    <button type="button" id="wishlistBtn" class="btn-wishlist" style="display:none;" data-label-off="♡ Add to Wishlist" data-label-on="♥ Wishlisted" onclick="stzToggleWishlist(productId, this)">♡ Add to Wishlist</button>
                 </div>
             </div>
         </div>
@@ -453,7 +453,7 @@
 
     // উইশলিস্ট বাটনে data-wishlist-id বসিয়ে দেওয়া হচ্ছে যাতে wishlist.js এর
     // stzRefreshWishlistButtons() (উইশলিস্ট ডেটা লোড হওয়ার পর) এই বাটনটাও ঠিক অবস্থায়
-    // (❤️ উইশলিস্টে আছে / 🤍 উইশলিস্টে যোগ করুন) আপডেট করতে পারে
+    // (♥ Wishlisted / ♡ Add to Wishlist) আপডেট করতে পারে
     if (productId) {
         const wishlistBtnEl = document.getElementById('wishlistBtn');
         if (wishlistBtnEl) wishlistBtnEl.setAttribute('data-wishlist-id', productId);
@@ -861,7 +861,9 @@
                 oosLabel = document.createElement('div');
                 oosLabel.id = 'oosLabel';
                 oosLabel.className = 'oos-label';
-                oosLabel.textContent = '❌ বর্তমানে স্টকে নেই';
+                // Daraz-এর মতো ইংরেজিতেই "Out of Stock" দেখানো হচ্ছে — Buy Now/Add to Cart বাটনও
+                // ইংরেজিতে, তাই এটাও একই সাথে মিলিয়ে রাখা হলো (আগে বাংলায় ছিল)
+                oosLabel.textContent = 'Out of Stock';
                 const actionRow = document.querySelector('.action-row');
                 actionRow.parentNode.insertBefore(oosLabel, actionRow);
             }
