@@ -636,6 +636,7 @@ body {
 /* প্রোডাক্ট ডিটেইল পেজের (product.html) বড়, লেবেলসহ উইশলিস্ট বাটন — Buy Now/Add to Cart এর
    পাশে বসে, কার্ড ওভারলে হার্ট বাটনের চেয়ে আলাদা স্টাইল দরকার */
 .btn-wishlist {
+    flex: 1;
     background: #fff;
     border: 1.5px solid #e74c3c;
     color: #e74c3c;

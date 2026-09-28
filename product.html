@@ -263,7 +263,7 @@
                 <div class="action-row">
                     <button class="btn-buy" onclick="buyNow()">Buy Now</button>
                     <button class="btn-cart" onclick="addCurrentToCart()">Add to Cart</button>
-                    <button type="button" id="wishlistBtn" class="btn-wishlist" data-label-off="🤍 উইশলিস্টে যোগ করুন" data-label-on="❤️ উইশলিস্টে আছে" onclick="stzToggleWishlist(productId, this)">🤍 উইশলিস্টে যোগ করুন</button>
+                    <button type="button" id="wishlistBtn" class="btn-wishlist" style="display:none;" data-label-off="🤍 উইশলিস্টে যোগ করুন" data-label-on="❤️ উইশলিস্টে আছে" onclick="stzToggleWishlist(productId, this)">🤍 উইশলিস্টে যোগ করুন</button>
                 </div>
             </div>
         </div>
@@ -840,10 +840,20 @@
 
         const buyBtn = document.querySelector('.btn-buy');
         const cartBtn = document.querySelector('.btn-cart');
+        const wishlistBtn = document.getElementById('wishlistBtn');
         const qtyButtons = document.querySelectorAll('.qty-box button');
         if (buyBtn) buyBtn.disabled = isOutOfStock;
         if (cartBtn) cartBtn.disabled = isOutOfStock;
         qtyButtons.forEach(btn => { btn.disabled = isOutOfStock; });
+
+        // Daraz-এর মতো — স্টকে থাকা অবস্থায় Buy Now/Add to Cart এর পাশে উইশলিস্ট বাটন একসাথে
+        // দেখানোয় সারিটা বাজেভাবে গাদাগাদি দেখাচ্ছিল, তাই স্টকে থাকলে উইশলিস্ট বাটন লুকানো থাকে।
+        // স্টক শেষ হলে উল্টো — কেনার কোনো উপায় নেই বলে Buy Now/Add to Cart পুরোপুরি লুকিয়ে তার
+        // জায়গায় ফুল-উইথ "উইশলিস্টে যোগ করুন" বাটন দেখানো হয় (Daraz-এর আউট-অফ-স্টক প্রোডাক্ট
+        // পেজের মতোই — স্ক্রিনশট দেখুন)।
+        if (buyBtn) buyBtn.style.display = isOutOfStock ? 'none' : '';
+        if (cartBtn) cartBtn.style.display = isOutOfStock ? 'none' : '';
+        if (wishlistBtn) wishlistBtn.style.display = isOutOfStock ? '' : 'none';
 
         let oosLabel = document.getElementById('oosLabel');
         if (isOutOfStock) {
