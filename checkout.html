@@ -45,10 +45,23 @@
         #statusMsg { margin-top: 12px; font-size: 14px; text-align: center; }
         .empty-cart { text-align: center; padding: 60px 20px; color: #888; }
         .empty-cart a { color: #e74c3c; font-weight: bold; text-decoration: none; }
+        /* ===== ডেলিভারি এলাকা (ঢাকার ভেতরে/বাইরে) — আগে এখানে পূর্ণ জেলা/উপজেলা ড্রপডাউন ছিল,
+           কিন্তু Pathao ও Steadfast এখন বুকিংয়ের সময় ঠিকানা থেকে নিজেরাই এলাকা অটো-ডিটেক্ট করে
+           নেয়, তাই বিস্তারিত জেলা/উপজেলা নেওয়ার দরকার নেই — শুধু ডেলিভারি চার্জ হিসাবের জন্য এই
+           ছোট্ট ঢাকার ভেতরে/বাইরে বাছাইটুকু রাখা হয়েছে (cart.html-এও একই রকম ৭০/বাইরে রেট বলা আছে) */
+        .delivery-area-options { display: flex; gap: 10px; margin-top: 6px; }
+        .area-option {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            border: 1.5px solid #e2e2e2; border-radius: 4px; padding: 10px; margin-top: 0;
+            font-weight: normal; font-size: 14px; color: #333; cursor: pointer;
+            transition: border-color .15s, background .15s;
+        }
+        .area-option:hover { border-color: #f0a8a0; }
+        .area-option input { width: auto; margin: 0; padding: 0; }
+        .area-option.selected { border-color: #e74c3c; background: #fdf6f5; }
     </style>
     <script src="config.js"></script>
     <script src="cart.js"></script>
-    <script src="bd-locations.js"></script>
     <script src="customer-auth.js"></script>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script src="chat-widget.js"></script>
@@ -85,15 +98,17 @@
                 <label class="required">সম্পূর্ণ ঠিকানা</label>
                 <textarea id="custAddress" name="street-address" autocomplete="street-address" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
 
-                <label class="required">জেলা</label>
-                <select id="custDistrict" name="address-level2" autocomplete="address-level2">
-                    <option value="">জেলা নির্বাচন করুন</option>
-                </select>
-
-                <label class="required">উপজেলা / থানা</label>
-                <select id="custUpazila" name="address-level3" autocomplete="address-level3" disabled>
-                    <option value="">আগে জেলা নির্বাচন করুন</option>
-                </select>
+                <label class="required">ডেলিভারি এলাকা</label>
+                <div class="delivery-area-options">
+                    <label class="area-option" for="areaInside">
+                        <input type="radio" name="deliveryArea" id="areaInside" value="inside">
+                        <span>ঢাকার ভেতরে</span>
+                    </label>
+                    <label class="area-option" for="areaOutside">
+                        <input type="radio" name="deliveryArea" id="areaOutside" value="outside">
+                        <span>ঢাকার বাইরে</span>
+                    </label>
+                </div>
 
                 <label>অর্ডার নোট (ঐচ্ছিক)</label>
                 <textarea id="custNotes" placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন"></textarea>
@@ -163,51 +178,42 @@
             return Number(n).toLocaleString('en-IN');
         }
 
-        function estimateDelivery(city) {
-            if (!city) return 115;
+        // ===== ডেলিভারি এলাকা (ঢাকার ভেতরে/বাইরে) — cart.html তে আগে থেকেই বলা "ঢাকার ভেতরে ৳৭০"
+        // রেটের সাথে মিলিয়ে "ভেতরে" মানে ৳৭০, নাহলে (অথবা এখনো বাছাই না করা থাকলে) ডিফল্ট ৳১১৫ =====
+        const AREA_LABEL = { inside: 'ঢাকার ভেতরে', outside: 'ঢাকার বাইরে' };
+
+        function getSelectedArea() {
+            const checked = document.querySelector('input[name="deliveryArea"]:checked');
+            return checked ? checked.value : '';
+        }
+
+        function setSelectedArea(area) {
+            const input = document.getElementById(area === 'inside' ? 'areaInside' : 'areaOutside');
+            if (!input) return;
+            input.checked = true;
+            document.querySelectorAll('.area-option').forEach(el => el.classList.remove('selected'));
+            input.closest('.area-option').classList.add('selected');
+        }
+
+        // পুরনো (আগের জেলা/উপজেলা সিস্টেমের) সেভড ঠিকানার city ভ্যালু ('dhaka city'/'dhaka' ইত্যাদি)
+        // থাকলেও প্রোফাইল অটো-ফিলে যেন ভেঙে না পড়ে, সেজন্য legacy ভ্যালুগুলোকেও ম্যাপ করা হচ্ছে
+        function areaFromCityValue(city) {
+            if (!city) return '';
             const c = city.trim().toLowerCase();
-            if (c === 'dhaka city') return 70;   // ঢাকা সিটি (DMP থানা)
-            if (c === 'dhaka') return 80;        // ঢাকা জেলার সাব-এরিয়া (৫ উপজেলা)
-            return 115;                          // ঢাকার বাইরে
+            if (c === AREA_LABEL.inside || c === 'dhaka city' || c === 'dhaka') return 'inside';
+            if (c === AREA_LABEL.outside) return 'outside';
+            return '';
         }
 
-        // ===== জেলা/উপজেলা ড্রপডাউন =====
-        function populateDistricts() {
-            const districtSelect = document.getElementById('custDistrict');
-            const sorted = [...BD_LOCATIONS].sort((a, b) => a.bn.localeCompare(b.bn, 'bn'));
-            sorted.forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d.en;
-                opt.textContent = d.bn;
-                districtSelect.appendChild(opt);
+        function estimateDelivery(area) {
+            return area === 'inside' ? 70 : 115; // 'outside' বা এখনো বাছাই না করা — দুটোতেই ১১৫ (আগেও district খালি থাকলে এটাই ডিফল্ট ছিল)
+        }
+
+        document.querySelectorAll('input[name="deliveryArea"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                setSelectedArea(this.value);
+                updateSummaryTotals();
             });
-        }
-
-        function populateUpazilas(districtEnName) {
-            const upazilaSelect = document.getElementById('custUpazila');
-            upazilaSelect.innerHTML = '';
-            const district = BD_LOCATIONS.find(d => d.en === districtEnName);
-
-            if (!district) {
-                upazilaSelect.innerHTML = '<option value="">আগে জেলা নির্বাচন করুন</option>';
-                upazilaSelect.disabled = true;
-                return;
-            }
-
-            upazilaSelect.disabled = false;
-            upazilaSelect.innerHTML = '<option value="">উপজেলা/থানা নির্বাচন করুন</option>';
-            const sortedUpazilas = [...district.upazilas].sort((a, b) => a.bn.localeCompare(b.bn, 'bn'));
-            sortedUpazilas.forEach(u => {
-                const opt = document.createElement('option');
-                opt.value = u.bn;
-                opt.textContent = u.bn;
-                upazilaSelect.appendChild(opt);
-            });
-        }
-
-        document.getElementById('custDistrict').addEventListener('change', function () {
-            populateUpazilas(this.value);
-            updateSummaryTotals();
         });
 
         // ===== পেমেন্ট পদ্ধতি বাছাই =====
@@ -314,8 +320,7 @@
                 return;
             }
 
-            const district = document.getElementById('custDistrict').value;
-            const delivery = estimateDelivery(district);
+            const delivery = estimateDelivery(getSelectedArea());
             const total = subtotal + delivery;
 
             document.getElementById('orderSummary').innerHTML = `
@@ -324,8 +329,6 @@
                 <div class="order-summary-row total"><span>মোট</span><span>৳ ${formatPrice(total)}</span></div>
             `;
         }
-
-        populateDistricts();
 
         // ===== লগইন করা থাকলে সেভড প্রোফাইল/ঠিকানা দিয়ে ফর্ম অটো-ফিল করা হয় (তবে এডিট করা যায়,
         // এবং লগইন না থাকলেও guest হিসেবে চেকআউট আগের মতোই কাজ করে) =====
@@ -340,11 +343,8 @@
                 document.getElementById('custPhone').value = data.phone || '';
                 if (data.address) document.getElementById('custAddress').value = data.address;
 
-                if (data.city) {
-                    document.getElementById('custDistrict').value = data.city;
-                    populateUpazilas(data.city);
-                    if (data.thana) document.getElementById('custUpazila').value = data.thana;
-                }
+                const savedArea = areaFromCityValue(data.city);
+                if (savedArea) setSelectedArea(savedArea);
                 updateSummaryTotals();
             } catch (err) {
                 // নেটওয়ার্ক এরর হলেও guest checkout হিসেবে এগিয়ে যেতে দেওয়া হচ্ছে
@@ -357,11 +357,7 @@
             const phone = document.getElementById('custPhone').value.trim();
             const email = document.getElementById('custEmail').value.trim();
             const address = document.getElementById('custAddress').value.trim();
-            const districtSelect = document.getElementById('custDistrict');
-            const upazilaSelect = document.getElementById('custUpazila');
-            const districtEn = districtSelect.value;
-            const districtBn = districtEn ? districtSelect.options[districtSelect.selectedIndex].textContent : '';
-            const upazilaBn = upazilaSelect.value;
+            const area = getSelectedArea();
             const notes = document.getElementById('custNotes').value.trim();
             const statusMsg = document.getElementById('statusMsg');
             const btn = document.getElementById('placeOrderBtn');
@@ -371,14 +367,13 @@
                 statusMsg.textContent = 'দয়া করে নাম, ফোন নাম্বার এবং ঠিকানা দিন।';
                 return;
             }
-            if (!districtEn || !upazilaBn) {
+            if (!area) {
                 statusMsg.style.color = '#e74c3c';
-                statusMsg.textContent = 'দয়া করে জেলা এবং উপজেলা/থানা নির্বাচন করুন।';
+                statusMsg.textContent = 'দয়া করে ডেলিভারি এলাকা (ঢাকার ভেতরে/বাইরে) নির্বাচন করুন।';
                 return;
             }
 
-            // ঠিকানায় উপজেলা ও জেলা যুক্ত করা হচ্ছে যাতে ডেলিভারি তথ্যে কিছু বাদ না যায়
-            const fullAddress = `${address}, ${upazilaBn}, ${districtBn}`;
+            const fullAddress = address;
 
             const cart = getCart();
             if (!cart.length) {
@@ -400,7 +395,7 @@
                 const res = await customerAuthFetch(`${API_BASE}/api/orders/checkout`, {
                     method: 'POST',
                     body: JSON.stringify({
-                        customer: { name, phone, email, address: fullAddress, city: districtEn, district: districtBn, thana: upazilaBn, notes },
+                        customer: { name, phone, email, address: fullAddress, city: AREA_LABEL[area], district: '', thana: '', notes },
                         paymentMethod: isCod ? 'cod' : 'online',
                         deliveryType: sameDay ? 'sameday' : 'standard',
                         items: cart.map(item => ({

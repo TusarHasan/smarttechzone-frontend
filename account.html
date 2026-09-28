@@ -155,12 +155,24 @@
         .wishlist-remove-btn:hover { text-decoration: underline; }
         .no-wishlist { text-align: center; color: #999; padding: 30px 0; font-size: 14px; }
         .no-wishlist a { color: #e74c3c; font-weight: bold; text-decoration: none; }
+
+        /* ===== ডেলিভারি এলাকা (ঢাকার ভেতরে/বাইরে) — checkout.html এর মতোই, বিস্তারিত জেলা/উপজেলা
+           ড্রপডাউনের বদলে ===== */
+        .delivery-area-options { display: flex; gap: 10px; margin-top: 6px; }
+        .area-option {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            border: 1.5px solid #e2e2e2; border-radius: 4px; padding: 10px; margin-top: 0;
+            font-weight: normal; font-size: 14px; color: #333; cursor: pointer;
+            transition: border-color .15s, background .15s;
+        }
+        .area-option:hover { border-color: #f0a8a0; }
+        .area-option input { width: auto; margin: 0; padding: 0; }
+        .area-option.selected { border-color: #e74c3c; background: #fdf6f5; }
     </style>
     <script src="config.js"></script>
     <script src="customer-auth.js"></script>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script src="chat-widget.js"></script>
-    <script src="bd-locations.js"></script>
 </head>
 <body>
 
@@ -197,14 +209,17 @@
             <form id="addressForm" autocomplete="on" onsubmit="return false;">
                 <label>সম্পূর্ণ ঠিকানা</label>
                 <textarea id="acAddress" name="street-address" autocomplete="street-address" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
-                <label>জেলা</label>
-                <select id="acDistrict" name="address-level2" autocomplete="address-level2">
-                    <option value="">জেলা নির্বাচন করুন</option>
-                </select>
-                <label>উপজেলা / থানা</label>
-                <select id="acUpazila" name="address-level3" autocomplete="address-level3" disabled>
-                    <option value="">আগে জেলা নির্বাচন করুন</option>
-                </select>
+                <label>ডেলিভারি এলাকা</label>
+                <div class="delivery-area-options">
+                    <label class="area-option" for="acAreaInside">
+                        <input type="radio" name="acDeliveryArea" id="acAreaInside" value="inside">
+                        <span>ঢাকার ভেতরে</span>
+                    </label>
+                    <label class="area-option" for="acAreaOutside">
+                        <input type="radio" name="acDeliveryArea" id="acAreaOutside" value="outside">
+                        <span>ঢাকার বাইরে</span>
+                    </label>
+                </div>
             </form>
             <button class="save-btn" id="saveAddressBtn" onclick="saveAddress()">ঠিকানা সেভ করুন</button>
             <div id="addressMsg"></div>
@@ -449,46 +464,34 @@
             return !myReviewedProductIds.has(String(item.product));
         }
 
-        // ===== জেলা/উপজেলা ড্রপডাউন (checkout.html এর মতোই) =====
-        function populateDistricts() {
-            const districtSelect = document.getElementById('acDistrict');
-            const sorted = [...BD_LOCATIONS].sort((a, b) => a.bn.localeCompare(b.bn, 'bn'));
-            sorted.forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d.en;
-                opt.textContent = d.bn;
-                districtSelect.appendChild(opt);
-            });
+        // ===== ডেলিভারি এলাকা (ঢাকার ভেতরে/বাইরে) — checkout.html এর মতোই =====
+        const AREA_LABEL = { inside: 'ঢাকার ভেতরে', outside: 'ঢাকার বাইরে' };
+
+        function getSelectedArea() {
+            const checked = document.querySelector('input[name="acDeliveryArea"]:checked');
+            return checked ? checked.value : '';
         }
 
-        function populateUpazilas(districtEnName, selectedUpazilaBn) {
-            const upazilaSelect = document.getElementById('acUpazila');
-            upazilaSelect.innerHTML = '';
-            const district = BD_LOCATIONS.find(d => d.en === districtEnName);
-
-            if (!district) {
-                upazilaSelect.innerHTML = '<option value="">আগে জেলা নির্বাচন করুন</option>';
-                upazilaSelect.disabled = true;
-                return;
-            }
-
-            upazilaSelect.disabled = false;
-            upazilaSelect.innerHTML = '<option value="">উপজেলা/থানা নির্বাচন করুন</option>';
-            const sortedUpazilas = [...district.upazilas].sort((a, b) => a.bn.localeCompare(b.bn, 'bn'));
-            sortedUpazilas.forEach(u => {
-                const opt = document.createElement('option');
-                opt.value = u.bn;
-                opt.textContent = u.bn;
-                if (selectedUpazilaBn && u.bn === selectedUpazilaBn) opt.selected = true;
-                upazilaSelect.appendChild(opt);
-            });
+        function setSelectedArea(area) {
+            const input = document.getElementById(area === 'inside' ? 'acAreaInside' : 'acAreaOutside');
+            if (!input) return;
+            input.checked = true;
+            document.querySelectorAll('#addressForm .area-option').forEach(el => el.classList.remove('selected'));
+            input.closest('.area-option').classList.add('selected');
         }
 
-        document.getElementById('acDistrict').addEventListener('change', function () {
-            populateUpazilas(this.value, '');
+        // পুরনো (আগের জেলা/উপজেলা সিস্টেমের) সেভড city ভ্যালু থাকলেও যেন প্রোফাইল লোডে ভেঙে না পড়ে
+        function areaFromCityValue(city) {
+            if (!city) return '';
+            const c = city.trim().toLowerCase();
+            if (c === AREA_LABEL.inside || c === 'dhaka city' || c === 'dhaka') return 'inside';
+            if (c === AREA_LABEL.outside) return 'outside';
+            return '';
+        }
+
+        document.querySelectorAll('input[name="acDeliveryArea"]').forEach(radio => {
+            radio.addEventListener('change', function () { setSelectedArea(this.value); });
         });
-
-        populateDistricts();
 
         // ===== প্রোফাইল ও ঠিকানা লোড =====
         async function loadProfile() {
@@ -505,10 +508,8 @@
                 document.getElementById('acPhone').value = data.phone || '';
                 document.getElementById('acAddress').value = data.address || '';
 
-                if (data.city) {
-                    document.getElementById('acDistrict').value = data.city;
-                    populateUpazilas(data.city, data.thana || '');
-                }
+                const savedArea = areaFromCityValue(data.city);
+                if (savedArea) setSelectedArea(savedArea);
 
                 // সবচেয়ে আপডেটেড নাম localStorage-এও রেখে দেওয়া হচ্ছে (নেভবারে দেখানোর জন্য)
                 setCustomerSession(getCustomerToken(), data);
@@ -554,11 +555,7 @@
 
         async function saveAddress() {
             const address = document.getElementById('acAddress').value.trim();
-            const districtSelect = document.getElementById('acDistrict');
-            const upazilaSelect = document.getElementById('acUpazila');
-            const districtEn = districtSelect.value;
-            const districtBn = districtEn ? districtSelect.options[districtSelect.selectedIndex].textContent : '';
-            const upazilaBn = upazilaSelect.value;
+            const area = getSelectedArea();
             const msg = document.getElementById('addressMsg');
             const btn = document.getElementById('saveAddressBtn');
 
@@ -567,7 +564,7 @@
             try {
                 const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/me`, {
                     method: 'PUT',
-                    body: JSON.stringify({ address, city: districtEn, district: districtBn, thana: upazilaBn })
+                    body: JSON.stringify({ address, city: area ? AREA_LABEL[area] : '', district: '', thana: '' })
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'সেভ করা যায়নি।');
