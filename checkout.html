@@ -212,6 +212,7 @@
         document.querySelectorAll('input[name="deliveryArea"]').forEach(radio => {
             radio.addEventListener('change', function () {
                 setSelectedArea(this.value);
+                updateSameDayAvailability();
                 updateSummaryTotals();
             });
         });
@@ -236,6 +237,27 @@
         // ===== ডেলিভারি ধরণ বাছাই (Same Day হলে শুধু COD, চার্জ পরে অ্যাডমিন বসাবে) =====
         function isSameDaySelected() {
             return document.getElementById('deliverySameDay').checked;
+        }
+
+        // ঢাকার বাইরে সেইম ডে ডেলিভারি দেওয়া সম্ভব না — "ঢাকার বাইরে" বাছাই করলে এই অপশনটা
+        // ডিজেবল/গ্রে-আউট হয়ে যাবে (অনলাইন পেমেন্ট অপশন Same Day তে যেভাবে ডিজেবল হয়, সেভাবেই)।
+        // আগে থেকে সেইম ডে সিলেক্ট করা থাকলে, "ঢাকার বাইরে" বাছাই করার সাথে সাথে অটোমেটিক
+        // স্ট্যান্ডার্ড ডেলিভারিতে ফিরিয়ে দেওয়া হয় (deliveryType-এর change ইভেন্ট dispatch করে
+        // দেওয়া হচ্ছে, যাতে পেমেন্ট মেথড আনলক ইত্যাদি নিচের পুরোনো লজিকই সামলায়, ডুপ্লিকেট কোড না লাগে)
+        function updateSameDayAvailability() {
+            const isOutside = getSelectedArea() === 'outside';
+            const sameDayInput = document.getElementById('deliverySameDay');
+            const sameDayOption = sameDayInput.closest('.payment-option');
+
+            if (isOutside && sameDayInput.checked) {
+                const standardInput = document.getElementById('deliveryStandard');
+                standardInput.checked = true;
+                standardInput.dispatchEvent(new Event('change'));
+            }
+
+            sameDayInput.disabled = isOutside;
+            sameDayOption.style.opacity = isOutside ? '0.5' : '1';
+            sameDayOption.style.pointerEvents = isOutside ? 'none' : 'auto';
         }
 
         document.querySelectorAll('input[name="deliveryType"]').forEach(radio => {
@@ -345,6 +367,7 @@
 
                 const savedArea = areaFromCityValue(data.city);
                 if (savedArea) setSelectedArea(savedArea);
+                updateSameDayAvailability();
                 updateSummaryTotals();
             } catch (err) {
                 // নেটওয়ার্ক এরর হলেও guest checkout হিসেবে এগিয়ে যেতে দেওয়া হচ্ছে
