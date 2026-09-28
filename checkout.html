@@ -214,7 +214,57 @@
                 setSelectedArea(this.value);
                 updateSameDayAvailability();
                 updateSummaryTotals();
+                scheduleIncompleteDraftSave();
             });
+        });
+
+        // ===== Incomplete Order (Abandoned Checkout) অটো-সেভ =====
+        // কাস্টমার ফোন নাম্বার (অন্তত ১০ ডিজিট) লেখার পর ফর্মের যেকোনো প্রাসঙ্গিক তথ্য বদলালে
+        // ডিবাউন্স করে ব্যাকগ্রাউন্ডে ড্রাফট সেভ হয় (backend/routes/orders.js এর
+        // PUT /orders/incomplete/:phone) — "Place Order" না চেপে সাইট ছেড়ে গেলেও অ্যাডমিন
+        // প্যানেলের Orders > Incomplete ট্যাবে দেখা যাবে, যাতে চাইলে ফলো-আপ করা যায়। অর্ডার সত্যিই
+        // প্লেস হয়ে গেলে ব্যাকএন্ড নিজে থেকেই এই ড্রাফট মুছে ফেলে (routes/orders.js এর /checkout রুট)।
+        let incompleteDraftTimer = null;
+        function scheduleIncompleteDraftSave() {
+            clearTimeout(incompleteDraftTimer);
+            incompleteDraftTimer = setTimeout(saveIncompleteDraft, 900);
+        }
+
+        async function saveIncompleteDraft() {
+            const phone = (document.getElementById('custPhone').value || '').trim();
+            const digits = phone.replace(/\D/g, '');
+            if (digits.length < 10) return; // ফোন নাম্বার ছাড়া ড্রাফট সেভ করার মানে নেই — ফলো-আপ করা যাবে না
+
+            const cart = getCart();
+            try {
+                await fetch(`${API_BASE}/api/orders/incomplete/${encodeURIComponent(phone)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: (document.getElementById('custName').value || '').trim(),
+                        address: (document.getElementById('custAddress').value || '').trim(),
+                        city: AREA_LABEL[getSelectedArea()] || '',
+                        items: cart.map(item => ({
+                            productId: item.productId,
+                            name: item.name,
+                            variantLabel: item.variantLabel || '',
+                            price: item.price,
+                            quantity: item.quantity,
+                            image: item.image || ''
+                        })),
+                        estimatedTotal: getCartTotal(),
+                        deliveryType: isSameDaySelected() ? 'sameday' : 'standard',
+                        paymentMethod: (document.getElementById('payCod') && document.getElementById('payCod').checked) ? 'cod' : 'online'
+                    })
+                });
+            } catch (err) {
+                // ব্যাকগ্রাউন্ড অটো-সেভ — নেটওয়ার্ক এরর হলেও কাস্টমারের চেকআউট ফ্লো এতে আটকাবে না
+            }
+        }
+
+        ['custName', 'custPhone', 'custAddress'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', scheduleIncompleteDraftSave);
         });
 
         // ===== পেমেন্ট পদ্ধতি বাছাই =====
@@ -231,6 +281,7 @@
                 });
                 this.closest('.payment-option').classList.add('selected');
                 updatePlaceOrderBtnText();
+                scheduleIncompleteDraftSave();
             });
         });
 
@@ -289,6 +340,7 @@
 
                 updatePlaceOrderBtnText();
                 updateSummaryTotals();
+                scheduleIncompleteDraftSave();
             });
         });
 
