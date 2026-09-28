@@ -14,6 +14,30 @@
     <meta property="og:description" content="সব ব্র্যান্ডের মোবাইল রিপ্লেসমেন্ট পার্টস, সারা বাংলাদেশে ডেলিভারি। ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট এবং আরও অনেক কিছু।">
     <meta property="og:url" content="https://smarttechzone.com.bd/index.html">
     <meta property="og:image" content="https://smarttechzone.com.bd/images/logo.png">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Smart Tech Zone",
+        "image": "https://smarttechzone.com.bd/images/logo.png",
+        "url": "https://smarttechzone.com.bd",
+        "telephone": "+8801718381066",
+        "email": "mahmud88789@gmail.com",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Ataur Rahman Villa, House 49, Road 13",
+            "addressLocality": "Mohammadpur, Dhaka",
+            "postalCode": "1207",
+            "addressCountry": "BD"
+        },
+        "sameAs": [
+            "https://www.facebook.com/smarttechzonedhaka",
+            "https://www.youtube.com/@SmartTechZoneDhaka"
+        ],
+        "priceRange": "৳৳",
+        "description": "বাংলাদেশের অনলাইন মোবাইল রিপ্লেসমেন্ট পার্টস স্টোর — ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট, বডি হাউজিং সহ সব ব্র্যান্ডের পার্টস, সারা বাংলাদেশে হোম ডেলিভারি।"
+    }
+    </script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -178,6 +202,7 @@
     </style>
     <script src="config.js"></script>
     <script src="customer-auth.js"></script>
+    <script src="wishlist.js"></script>
     <script src="discount-rules.js"></script>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script src="chat-widget.js"></script>
@@ -523,6 +548,7 @@
                 card.style.cursor = 'pointer';
                 card.onclick = () => window.location.href = buildProductPath(p.name, p._id);
                 card.innerHTML = `
+                    ${typeof stzWishlistHeartHtml === 'function' ? stzWishlistHeartHtml(p._id) : ''}
                     <img src="${imgUrl}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'">
                     <h3>${p.name}</h3>
                     ${priceBlockHtml(p)}

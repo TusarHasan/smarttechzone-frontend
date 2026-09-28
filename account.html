@@ -138,6 +138,23 @@
         }
         .pm-add-row button { flex-shrink: 0; margin-top: 0; }
         #paymentMsg { margin-top: 10px; font-size: 13.5px; }
+
+        /* ===== উইশলিস্ট ===== */
+        .wishlist-item-row {
+            display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f5f5;
+        }
+        .wishlist-item-row:last-child { border-bottom: none; }
+        .wishlist-item-row img { width: 54px; height: 54px; object-fit: contain; border: 1px solid #eee; border-radius: 6px; flex-shrink: 0; background: #fff; }
+        .wishlist-item-info { flex: 1; min-width: 0; }
+        .wishlist-item-info a { color: #333; text-decoration: none; font-size: 13.5px; font-weight: bold; }
+        .wishlist-item-info a:hover { color: #e74c3c; }
+        .wishlist-item-price { font-size: 13px; color: #e74c3c; font-weight: bold; margin-top: 3px; }
+        .wishlist-item-price .wip-old { color: #999; font-weight: 400; text-decoration: line-through; margin-right: 6px; }
+        .wishlist-item-unavailable { font-size: 12px; color: #999; margin-top: 3px; }
+        .wishlist-remove-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 13px; padding: 4px; flex-shrink: 0; }
+        .wishlist-remove-btn:hover { text-decoration: underline; }
+        .no-wishlist { text-align: center; color: #999; padding: 30px 0; font-size: 14px; }
+        .no-wishlist a { color: #e74c3c; font-weight: bold; text-decoration: none; }
     </style>
     <script src="config.js"></script>
     <script src="customer-auth.js"></script>
@@ -217,6 +234,11 @@
             <div id="ordersList"><div class="loading-hint">লোড হচ্ছে...</div></div>
         </div>
 
+        <div class="account-card" id="wishlistSection">
+            <h3>আমার উইশলিস্ট</h3>
+            <div id="wishlistList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+        </div>
+
         <div class="account-card" id="returnTrackingSection">
             <h3>রিটার্ন ট্র্যাকিং</h3>
             <p style="font-size:12.5px; color:#999; margin:0;">আপনার রিটার্ন/রিফান্ড রিকোয়েস্টের সর্বশেষ অবস্থা এখানে দেখা যাবে।</p>
@@ -228,7 +250,7 @@
     <div class="modal" id="returnModal">
         <div class="modal-content return-modal-content">
             <h3>রিটার্ন রিকোয়েস্ট</h3>
-            <p style="font-size:12px; color:#999; margin:0;">ডেলিভারির ৭ দিনের মধ্যে রিটার্ন রিকোয়েস্ট করা যায়।</p>
+            <p style="font-size:12px; color:#999; margin:0;">ডেলিভারির ১৪ দিনের মধ্যে রিটার্ন রিকোয়েস্ট করা যায়।</p>
 
             <div class="return-item-preview" id="returnItemPreview"></div>
 
@@ -334,6 +356,7 @@
             document.getElementById('addressSection').style.display = '';
             document.getElementById('paymentSection').style.display = '';
             document.getElementById('ordersSection').style.display = '';
+            document.getElementById('wishlistSection').style.display = '';
             document.getElementById('returnTrackingSection').style.display = '';
             document.querySelector('.account-container h2').textContent = 'আমার অ্যাকাউন্ট';
 
@@ -341,13 +364,22 @@
                 document.getElementById('profileSection').style.display = 'none';
                 document.getElementById('addressSection').style.display = 'none';
                 document.getElementById('paymentSection').style.display = 'none';
+                document.getElementById('wishlistSection').style.display = 'none';
                 document.querySelector('.account-container h2').textContent = 'আমার অর্ডারসমূহ';
             } else if (window.location.hash === '#profileSection') {
                 document.getElementById('addressSection').style.display = 'none';
                 document.getElementById('paymentSection').style.display = 'none';
                 document.getElementById('ordersSection').style.display = 'none';
+                document.getElementById('wishlistSection').style.display = 'none';
                 document.getElementById('returnTrackingSection').style.display = 'none';
                 document.querySelector('.account-container h2').textContent = 'প্রোফাইল';
+            } else if (window.location.hash === '#wishlistSection') {
+                document.getElementById('profileSection').style.display = 'none';
+                document.getElementById('addressSection').style.display = 'none';
+                document.getElementById('paymentSection').style.display = 'none';
+                document.getElementById('ordersSection').style.display = 'none';
+                document.getElementById('returnTrackingSection').style.display = 'none';
+                document.querySelector('.account-container h2').textContent = 'আমার উইশলিস্ট';
             }
         }
         applyHashSection();
@@ -376,7 +408,7 @@
         };
 
         // ===== রিটার্ন/রিফান্ড রিকোয়েস্ট =====
-        const RETURN_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // backend/routes/returns.js এর RETURN_WINDOW_DAYS এর সাথে মিল রেখে
+        const RETURN_WINDOW_MS = 14 * 24 * 60 * 60 * 1000; // backend/routes/returns.js এর RETURN_WINDOW_DAYS এর সাথে মিল রেখে
         const reasonLabels = {
             defective: 'ত্রুটিপূর্ণ প্রোডাক্ট', wrong_item: 'ভুল প্রোডাক্ট এসেছে',
             quality_issue: 'কোয়ালিটি সমস্যা', missing_parts: 'বক্সে কিছু জিনিস কম ছিল',
@@ -641,6 +673,70 @@
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'মুছে ফেলা যায়নি।');
                 renderPaymentMethods(data);
+            } catch (err) {
+                alert('❌ ' + err.message);
+            }
+        }
+
+        // ===== উইশলিস্ট =====
+        // ইনডেক্স/সার্চ/ব্র্যান্ড/মডেল পেজের মতো একই কনভেনশনে প্রোডাক্ট পেজের লিংক বানানো হচ্ছে —
+        // account.html এ আগে কোনো প্রোডাক্ট লিংক ছিল না (অর্ডার আইটেম শুধু স্ন্যাপশট টেক্সট),
+        // তাই এই দুইটা হেল্পার ফাংশন এখানেই নতুন করে যোগ করা হলো (index.html এর buildProductPath
+        // এর সাথে হুবহু মিল রেখে, যাতে একই স্লাগ/URL তৈরি হয়)
+        function wlSlugify(name) {
+            let s = (name || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            if (s.length > 70) {
+                const cut = s.slice(0, 70);
+                const lastDash = cut.lastIndexOf('-');
+                s = lastDash > 20 ? cut.slice(0, lastDash) : cut;
+            }
+            return s || 'product';
+        }
+        function wlBuildProductPath(name, id) {
+            return `/product/${wlSlugify(name)}-i${id}`;
+        }
+
+        function renderWishlist(items) {
+            const box = document.getElementById('wishlistList');
+            if (!items || !items.length) {
+                box.innerHTML = `<div class="no-wishlist">এখনো কোনো প্রোডাক্ট উইশলিস্টে যোগ করা হয়নি।<br><br><a href="index.html">কেনাকাটা শুরু করুন →</a></div>`;
+                return;
+            }
+            box.innerHTML = items.map(p => `
+                <div class="wishlist-item-row">
+                    <img src="${resolveImg(p.image) || 'https://via.placeholder.com/80'}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/80'">
+                    <div class="wishlist-item-info">
+                        <a href="${wlBuildProductPath(p.name, p.id)}">${p.name}</a>
+                        ${p.unavailable
+                            ? `<div class="wishlist-item-unavailable">এই প্রোডাক্টটি এখন আর পাওয়া যাচ্ছে না</div>`
+                            : `<div class="wishlist-item-price">${p.originalPrice && p.originalPrice > p.price ? `<span class="wip-old">৳ ${formatPrice(p.originalPrice)}</span>` : ''}৳ ${formatPrice(p.price)}</div>`
+                        }
+                    </div>
+                    <button class="wishlist-remove-btn" onclick="removeFromWishlist('${p.id}')">সরান</button>
+                </div>
+            `).join('');
+        }
+
+        async function loadWishlist() {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/wishlist`);
+                if (!res.ok) { renderWishlist([]); return; }
+                const data = await res.json();
+                renderWishlist(data);
+            } catch (err) {
+                renderWishlist([]);
+            }
+        }
+
+        async function removeFromWishlist(id) {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/wishlist/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'সরানো যায়নি।');
+                renderWishlist(data);
             } catch (err) {
                 alert('❌ ' + err.message);
             }
@@ -1058,6 +1154,7 @@
 
         loadProfile();
         loadPaymentMethods();
+        loadWishlist();
         loadOrdersAndReturns();
     </script>
 </body>

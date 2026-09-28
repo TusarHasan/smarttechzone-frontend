@@ -60,6 +60,7 @@
                     <ul>
                         <li><a href="/index.html">Home</a></li>
                         <li><a href="/index.html#brands">Shop by Brand</a></li>
+                        <li><a href="/about.html">About Us</a></li>
                         <li><a href="/why-choose-us.html">Why Choose Us</a></li>
                         <li><a href="/track.html">Track Order</a></li>
                     </ul>

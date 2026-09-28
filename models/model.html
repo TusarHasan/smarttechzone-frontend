@@ -21,6 +21,7 @@
          এই স্ক্রিপ্ট যোগ করে renderNavAuth() চালু করা হলো, যাতে নতুন Login বাটন এবং
          লগইন করা থাকলে প্রোফাইল ড্রপডাউনও এখানে ঠিকমতো কাজ করে -->
     <script src="../customer-auth.js"></script>
+    <script src="../wishlist.js"></script>
 </head>
 <body>
 
@@ -131,6 +132,7 @@
 
                 grid.innerHTML = products.map(p => `
                     <div class="product-card">
+                        ${typeof stzWishlistHeartHtml === 'function' ? stzWishlistHeartHtml(p._id) : ''}
                         <img src="${p.images[0] || 'https://via.placeholder.com/100'}" alt="${p.name}" style="cursor:pointer" onclick="window.location.href='${buildProductPath(p.name, p._id)}'">
                         <h3 style="cursor:pointer" onclick="window.location.href='${buildProductPath(p.name, p._id)}'">${p.name}</h3>
                         <p class="price">৳ ${p.price || 0}</p>

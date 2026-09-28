@@ -198,6 +198,7 @@
     <script src="config.js"></script>
     <script src="cart.js"></script>
     <script src="customer-auth.js"></script>
+    <script src="wishlist.js"></script>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script src="chat-widget.js"></script>
 </head>
@@ -262,6 +263,7 @@
                 <div class="action-row">
                     <button class="btn-buy" onclick="buyNow()">Buy Now</button>
                     <button class="btn-cart" onclick="addCurrentToCart()">Add to Cart</button>
+                    <button type="button" id="wishlistBtn" class="btn-wishlist" data-label-off="🤍 উইশলিস্টে যোগ করুন" data-label-on="❤️ উইশলিস্টে আছে" onclick="stzToggleWishlist(productId, this)">🤍 উইশলিস্টে যোগ করুন</button>
                 </div>
             </div>
         </div>
@@ -448,6 +450,15 @@
     // নতুন /product/<slug>-i<id> URL হলে pathname থেকে, পুরোনো product.html?id= URL হলে
     // query string থেকে — দুই ধরনের URLই কাজ করবে
     const productId = params.get('id') || extractProductIdFromPath(window.location.pathname);
+
+    // উইশলিস্ট বাটনে data-wishlist-id বসিয়ে দেওয়া হচ্ছে যাতে wishlist.js এর
+    // stzRefreshWishlistButtons() (উইশলিস্ট ডেটা লোড হওয়ার পর) এই বাটনটাও ঠিক অবস্থায়
+    // (❤️ উইশলিস্টে আছে / 🤍 উইশলিস্টে যোগ করুন) আপডেট করতে পারে
+    if (productId) {
+        const wishlistBtnEl = document.getElementById('wishlistBtn');
+        if (wishlistBtnEl) wishlistBtnEl.setAttribute('data-wishlist-id', productId);
+    }
+
     let quantity = 1;
     let currentProduct = null;
     let currentProductImages = []; // SEO: রিভিউ ডেটা এলে JSON-LD আবার বানানোর সময় ছবিগুলো লাগবে

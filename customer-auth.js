@@ -91,6 +91,7 @@ function renderNavAuth() {
                     <a href="javascript:void(0)" onclick="customerLogout()" class="stz-signout-link">Sign Out</a>
                     <div class="stz-dropdown-divider"></div>
                     <a href="${base}account.html#ordersSection" class="stz-dropdown-item">📦 My Orders</a>
+                    <a href="${base}account.html#wishlistSection" class="stz-dropdown-item">❤️ Wishlist</a>
                     <a href="javascript:void(0)" onclick="stzOpenMessageCenter()" class="stz-dropdown-item">💬 Message Center <span id="stzNavUnreadBadge" class="stz-unread-badge" style="display:none;"></span></a>
                     <a href="${base}account.html#paymentSection" class="stz-dropdown-item">💳 Payment</a>
                 </div>
