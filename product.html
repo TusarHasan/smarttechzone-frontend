@@ -56,9 +56,14 @@
         padding: 5px 14px; font-size: 12.5px; font-weight: bold; cursor: pointer; margin-left: auto;
     }
     .chat-seller-btn:hover { background: #fdf1f0; }
-    .attr-group { margin-top: 16px; }
-    .attr-group-label { font-size: 13px; color: #666; font-weight: bold; }
-    .attr-selected-value { font-size: 13px; color: #333; margin-bottom: 8px; }
+    /* Daraz-এর ডেস্কটপ প্রোডাক্ট পেজের মতো দুই-কলাম লে-আউট — বামে ফিক্সড-উইথ লেবেল
+       ("Compatibility by Model", "Color Family" ইত্যাদি), ডানে সেই ভ্যারিয়েন্টের অপশনগুলো।
+       লেবেল না থাকলে (hideNameLabel — যেমন জেনেরিক "Option" নাম) .attr-group-label ডিভটাই
+       DOM-এ থাকে না, তাই খালি জায়গা তৈরি হয় না — .attr-group-content তখন পুরো width নেয়। */
+    .attr-group { margin-top: 16px; display: flex; align-items: flex-start; gap: 14px; }
+    .attr-group-label { font-size: 13px; color: #666; font-weight: bold; flex: 0 0 104px; padding-top: 8px; }
+    .attr-group-content { flex: 1; min-width: 0; }
+    .attr-selected-value { display: block; font-size: 13px; color: #333; margin-bottom: 8px; }
     .attr-swatch-row { display: flex; flex-wrap: wrap; gap: 8px; }
     .attr-swatch {
         width: 36px; height: 36px; padding: 2px; box-sizing: border-box;
@@ -194,6 +199,46 @@
     .question-status-msg { margin-top: 10px; font-size: 13px; }
 
     #loadingMsg, #errorMsg { text-align: center; padding: 60px 0; color: #888; }
+
+    /* ============ মোবাইল ভ্যারিয়েন্ট বটম-শীট (Daraz অ্যাপ/মোবাইল সাইটের মতো) ============
+       ডেস্কটপে #attrGroupsWrapper আর .qty-row সবসময় ইনলাইনই দেখা যায় (উপরের দুই-কলাম লে-আউটে)।
+       মোবাইলে (≤768px) Buy Now/Add to Cart চাপলে এই একই দুইটা নোড (কপি না করে, সরাসরি সরিয়ে)
+       এই বটম-শীটের ভেতরে চলে আসে — তাই ভ্যারিয়েন্ট-সিলেকশনের আসল লজিক একদম অপরিবর্তিত থাকে,
+       শুধু জায়গা বদলায়। ডেস্কটপে এই শীট কখনো display:none থেকে বেরই হয় না (JS-ও কখনো খোলে না)। */
+    .variant-sheet-backdrop {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5);
+        z-index: 1000; opacity: 0; transition: opacity .25s ease;
+    }
+    .variant-sheet-backdrop.open { opacity: 1; }
+    .variant-sheet {
+        display: none; flex-direction: column; position: fixed; left: 0; right: 0; bottom: 0;
+        max-height: 85vh; background: #fff; border-radius: 14px 14px 0 0; z-index: 1001;
+        transform: translateY(100%); transition: transform .28s ease;
+        box-shadow: 0 -4px 20px rgba(0,0,0,.15);
+    }
+    .variant-sheet.open { transform: translateY(0); }
+    body.variant-sheet-locked { overflow: hidden; }
+    .variant-sheet-header {
+        display: flex; align-items: center; gap: 12px; padding: 16px;
+        border-bottom: 1px solid #eee; flex-shrink: 0;
+    }
+    .variant-sheet-thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; flex-shrink: 0; }
+    .variant-sheet-price-wrap { flex: 1; min-width: 0; }
+    .variant-sheet-price { font-size: 20px; color: #e74c3c; font-weight: bold; }
+    .variant-sheet-original { font-size: 12px; color: #999; text-decoration: line-through; margin-top: 2px; }
+    .variant-sheet-close {
+        background: none; border: none; font-size: 26px; line-height: 1; color: #999;
+        cursor: pointer; padding: 4px 8px; flex-shrink: 0;
+    }
+    .variant-sheet-body { padding: 16px; overflow-y: auto; flex: 1; }
+    .variant-sheet-footer { padding: 14px 16px; border-top: 1px solid #eee; flex-shrink: 0; }
+    .variant-sheet-confirm { width: 100%; }
+    /* শীটের ভেতরে গেলে ডেস্কটপের দুই-কলাম (.attr-group flex row) লে-আউট ভেঙে Daraz-এর মোবাইল
+       মতো উপরে লেবেল, নিচে অপশন — একের পর এক স্ট্যাক হয়ে দেখায় */
+    #variantSheetBody .attr-group { display: block; margin-top: 0; margin-bottom: 20px; }
+    #variantSheetBody .attr-group:last-child { margin-bottom: 0; }
+    #variantSheetBody .attr-group-label { flex: none; padding-top: 0; margin-bottom: 10px; }
+    #variantSheetBody .qty-row { margin-top: 20px; }
 </style>
     <script src="config.js"></script>
     <script src="cart.js"></script>
@@ -262,7 +307,7 @@
 
                 <div class="action-row">
                     <button class="btn-buy" onclick="buyNow()">Buy Now</button>
-                    <button class="btn-cart" onclick="addCurrentToCart()">Add to Cart</button>
+                    <button class="btn-cart" onclick="addToCartClick()">Add to Cart</button>
                     <button type="button" id="wishlistBtn" class="btn-wishlist" style="display:none;" data-label-off="♡ Add to Wishlist" data-label-on="♥ Wishlisted" onclick="stzToggleWishlist(productId, this)">♡ Add to Wishlist</button>
                 </div>
             </div>
@@ -334,6 +379,24 @@
                 <div class="question-status-msg" id="questionStatusMsg"></div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- মোবাইল ভ্যারিয়েন্ট বটম-শীট — ডিফল্টভাবে বন্ধ থাকে (CSS-এ display:none), JS দিয়ে খোলা/বন্ধ হয়।
+     openVariantSheet()/closeVariantSheet() নিচের জাভাস্ক্রিপ্ট ব্লকে সংজ্ঞায়িত। -->
+<div class="variant-sheet-backdrop" id="variantSheetBackdrop" onclick="closeVariantSheet()"></div>
+<div class="variant-sheet" id="variantSheet" role="dialog" aria-modal="true" aria-label="ভ্যারিয়েন্ট বাছাই করুন">
+    <div class="variant-sheet-header">
+        <img id="sheetThumb" class="variant-sheet-thumb" src="" alt="">
+        <div class="variant-sheet-price-wrap">
+            <div class="variant-sheet-price">৳<span id="sheetPrice"></span></div>
+            <div class="variant-sheet-original" id="sheetOriginalPrice" style="display:none;">৳<span id="sheetOriginalPriceValue"></span></div>
+        </div>
+        <button type="button" class="variant-sheet-close" onclick="closeVariantSheet()" aria-label="বন্ধ করুন">&times;</button>
+    </div>
+    <div class="variant-sheet-body" id="variantSheetBody"></div>
+    <div class="variant-sheet-footer">
+        <button type="button" class="btn-buy variant-sheet-confirm" id="variantSheetConfirmBtn" onclick="confirmVariantSheet()">Confirm</button>
     </div>
 </div>
 
@@ -693,13 +756,13 @@
             if (variants.length > 1 || (variants.length === 1 && variants[0].label !== 'Default')) {
                 const group = document.createElement('div');
                 group.className = 'attr-group';
-                group.innerHTML = `<div class="attr-group-label">Variant</div><div class="attr-btn-grid">` +
+                group.innerHTML = `<div class="attr-group-label">Variant</div><div class="attr-group-content"><div class="attr-btn-grid">` +
                     variants.map((v, i) => `
                         <span class="attr-btn" onclick="selectLegacyVariant(${i})" id="legacy-btn-${i}">
                             <img src="${resolveImageUrl((v.images && v.images[0]) || product.images[0])}" alt="${escapeAttr(product.name)} - ${escapeAttr(v.label)}" onerror="this.style.display='none'">
                             <span>${v.label}</span>
                         </span>
-                    `).join('') + `</div>`;
+                    `).join('') + `</div></div>`;
                 wrapper.appendChild(group);
                 // আগে এখানে কোনো ভ্যারিয়েন্ট প্রাথমিকভাবে সিলেক্ট/হাইলাইট করা হতো না, ফলে পেজ লোড হওয়ার সাথে
                 // সাথে দাম ও স্টক তথ্য (এবং Buy বাটনের স্টক-গেটিং) আপডেট হতো না যতক্ষণ না ইউজার নিজে ক্লিক করতো।
@@ -762,8 +825,9 @@
             const hideNameLabel = name.toLowerCase().includes('option');
 
             if (showThumb) {
-                // Daraz এর মতো: উপরে লেবেল (যদি থাকে) + বর্তমান মান (টেক্সট), নিচে শুধু ছোট ছবির swatch (টেক্সট ছাড়া)
-                group.innerHTML = `${hideNameLabel ? '' : `<span class="attr-group-label">${name}</span> `}<span class="attr-selected-value" id="selectedValue-${name.replace(/\s+/g, '_')}">${currentVal}</span>
+                // Daraz এর মতো: বামে লেবেল (যদি থাকে), ডানে বর্তমান মান (টেক্সট) + নিচে ছোট ছবির swatch (টেক্সট ছাড়া)
+                const labelHtml = hideNameLabel ? '' : `<div class="attr-group-label">${name}</div>`;
+                group.innerHTML = labelHtml + `<div class="attr-group-content"><span class="attr-selected-value" id="selectedValue-${name.replace(/\s+/g, '_')}">${currentVal}</span>
                     <div class="attr-swatch-row">` +
                     values.map(val => {
                         const matchingVariant = variants.find(v => (v.attributes || []).some(a => a.name === name && a.value === val));
@@ -773,14 +837,15 @@
                         return `<span class="attr-swatch" onclick="selectAttribute('${name.replace(/'/g, "\\'")}', '${val.replace(/'/g, "\\'")}')" id="${safeId}" title="${val}">
                             <img src="${thumbUrl}" alt="${escapeAttr(product.name)} - ${escapeAttr(val)}" onerror="this.style.display='none'">
                         </span>`;
-                    }).join('') + `</div>`;
+                    }).join('') + `</div></div>`;
             } else {
-                // টেক্সট-ভিত্তিক attribute (যেমন Model) — শুধু টেক্সট বক্স, ছবি ছাড়া
-                group.innerHTML = `${hideNameLabel ? '' : `<div class="attr-group-label" style="margin-bottom:8px;">${name}</div>`}<div class="attr-btn-grid">` +
+                // টেক্সট-ভিত্তিক attribute (যেমন Model) — বামে লেবেল (যদি থাকে), ডানে শুধু টেক্সট বক্স, ছবি ছাড়া
+                const labelHtml = hideNameLabel ? '' : `<div class="attr-group-label">${name}</div>`;
+                group.innerHTML = labelHtml + `<div class="attr-group-content"><div class="attr-btn-grid">` +
                     values.map(val => {
                         const safeId = `attr-${name.replace(/\s+/g, '_')}-${val.replace(/\s+/g, '_')}`;
                         return `<span class="attr-btn" onclick="selectAttribute('${name.replace(/'/g, "\\'")}', '${val.replace(/'/g, "\\'")}')" id="${safeId}">${val}</span>`;
-                    }).join('') + `</div>`;
+                    }).join('') + `</div></div>`;
             }
             wrapper.appendChild(group);
         });
@@ -824,6 +889,7 @@
             document.getElementById('mainImage').src = resolveImageUrl(v.images[0]);
         }
         updateStockAndButtons(typeof v.stock === 'number' ? v.stock : null);
+        syncVariantSheetHeader();
     }
 
     // স্টক অনুযায়ী "স্টকে আছে/নেই" টেক্সট দেখানো এবং Buy Now/Add to Cart/Quantity বাটন অচল করা —
@@ -882,6 +948,7 @@
             document.getElementById('mainImage').src = resolveImageUrl(v.images[0]);
         }
         updateStockAndButtons(typeof v.stock === 'number' ? v.stock : null);
+        syncVariantSheetHeader();
     }
 
     function toggleDescription() {
@@ -937,10 +1004,136 @@
         flyToCart(imageUrl, currentProduct.name, document.getElementById('mainImage'));
     }
 
-    function buyNow() {
+    // ============ Daraz-স্টাইল মোবাইল ভ্যারিয়েন্ট বটম-শীট ============
+    // ডেস্কটপে #attrGroupsWrapper/.qty-row সবসময় পেজেই (দুই-কলাম লে-আউটে) দেখা যায় — সেই আচরণ
+    // অপরিবর্তিত। মোবাইলে (≤768px) Buy Now/Add to Cart চাপলে এই একই দুইটা DOM নোড কপি না করে
+    // সরাসরি সরিয়ে (appendChild) এই বটম-শীটের ভেতরে নেওয়া হয় — তাই id-নির্ভর আসল ভ্যারিয়েন্ট-
+    // সিলেকশন লজিক (selectAttribute/applySelectedVariant/updateQty ইত্যাদি) একদম অপরিবর্তিত থাকে,
+    // শুধু নোডগুলোর জায়গা বদলায়। বন্ধ করলে বা ডেস্কটপ সাইজে রিসাইজ হলে আবার আগের জায়গায় ফিরে যায়।
+    const MOBILE_SHEET_BREAKPOINT = 768;
+    let pendingSheetAction = null; // 'buy' | 'cart' — Confirm বাটনে কোন কাজটা করতে হবে মনে রাখার জন্য
+    let attrWrapperHomeMarker = null, qtyRowHomeMarker = null; // নোডগুলো ফিরিয়ে আনার আসল জায়গা মনে রাখতে
+
+    function shouldUseVariantSheet() {
+        return window.innerWidth <= MOBILE_SHEET_BREAKPOINT;
+    }
+
+    // শীটের হেডারে থাম্বনেইল/দাম — ভ্যারিয়েন্ট পাল্টালে (applySelectedVariant/selectLegacyVariant
+    // থেকে কল হয়) এটাও লাইভ আপডেট হয়, ঠিক Daraz-এর মতো
+    function syncVariantSheetHeader() {
+        const sheetThumb = document.getElementById('sheetThumb');
+        if (!sheetThumb) return;
+        const mainImg = document.getElementById('mainImage');
+        if (mainImg && mainImg.src) sheetThumb.src = mainImg.src;
+        document.getElementById('sheetPrice').textContent = document.getElementById('productPrice').textContent;
+        const originalWrap = document.getElementById('originalPriceWrap');
+        const sheetOriginalWrap = document.getElementById('sheetOriginalPrice');
+        if (originalWrap && originalWrap.style.display !== 'none') {
+            document.getElementById('sheetOriginalPriceValue').textContent = document.getElementById('originalPrice').textContent;
+            sheetOriginalWrap.style.display = 'block';
+        } else {
+            sheetOriginalWrap.style.display = 'none';
+        }
+    }
+
+    function openVariantSheet(action) {
+        pendingSheetAction = action;
+        const wrapper = document.getElementById('attrGroupsWrapper');
+        const qtyRow = document.querySelector('.qty-row');
+        const body = document.getElementById('variantSheetBody');
+        // প্রথমবার খোলার সময় নোডগুলোর আসল জায়গায় একটা খালি comment marker রেখে দেওয়া হচ্ছে,
+        // যাতে বন্ধ করার সময় ঠিক সেই জায়গাতেই ফিরিয়ে আনা যায়
+        if (!attrWrapperHomeMarker) {
+            attrWrapperHomeMarker = document.createComment('attr-groups-home');
+            wrapper.parentNode.insertBefore(attrWrapperHomeMarker, wrapper);
+        }
+        if (!qtyRowHomeMarker) {
+            qtyRowHomeMarker = document.createComment('qty-row-home');
+            qtyRow.parentNode.insertBefore(qtyRowHomeMarker, qtyRow);
+        }
+        body.appendChild(wrapper);
+        body.appendChild(qtyRow);
+        syncVariantSheetHeader();
+
+        const backdrop = document.getElementById('variantSheetBackdrop');
+        const sheet = document.getElementById('variantSheet');
+        backdrop.style.display = 'block';
+        sheet.style.display = 'flex';
+        document.body.classList.add('variant-sheet-locked');
+        // পরের ফ্রেমে .open ক্লাস যোগ করলে slide-up/fade transition স্মুথভাবে প্লে হয়
+        requestAnimationFrame(() => {
+            backdrop.classList.add('open');
+            sheet.classList.add('open');
+        });
+    }
+
+    function restoreVariantSheetNodes() {
+        const wrapper = document.getElementById('attrGroupsWrapper');
+        const qtyRow = document.querySelector('.qty-row');
+        if (attrWrapperHomeMarker && attrWrapperHomeMarker.parentNode) {
+            attrWrapperHomeMarker.parentNode.insertBefore(wrapper, attrWrapperHomeMarker);
+        }
+        if (qtyRowHomeMarker && qtyRowHomeMarker.parentNode) {
+            qtyRowHomeMarker.parentNode.insertBefore(qtyRow, qtyRowHomeMarker);
+        }
+    }
+
+    function closeVariantSheet() {
+        const backdrop = document.getElementById('variantSheetBackdrop');
+        const sheet = document.getElementById('variantSheet');
+        if (!backdrop || backdrop.style.display === 'none' || backdrop.style.display === '') return;
+        backdrop.classList.remove('open');
+        sheet.classList.remove('open');
+        document.body.classList.remove('variant-sheet-locked');
+        pendingSheetAction = null;
+        setTimeout(() => {
+            backdrop.style.display = 'none';
+            sheet.style.display = 'none';
+            restoreVariantSheetNodes();
+        }, 280);
+    }
+
+    function confirmVariantSheet() {
+        const action = pendingSheetAction;
+        closeVariantSheet();
+        if (action === 'buy') {
+            executeBuyNow();
+        } else {
+            addCurrentToCart();
+        }
+    }
+
+    // মোবাইলে (≤768px) ডিভাইস রোটেট বা উইন্ডো রিসাইজ করে ডেস্কটপ সাইজে গেলে, শীট খোলা থাকলে সেটা
+    // বন্ধ করে নোডগুলো স্বাভাবিক জায়গায় ফিরিয়ে আনা হচ্ছে — নাহলে ডেস্কটপ ভিউতে ভ্যারিয়েন্ট-পিকার
+    // শীটের ভেতরে আটকে থেকে অদৃশ্য/অ্যাক্সেসযোগ্যহীন হয়ে যেতে পারতো
+    window.addEventListener('resize', () => {
+        const sheet = document.getElementById('variantSheet');
+        if (sheet && sheet.style.display && sheet.style.display !== 'none' && !shouldUseVariantSheet()) {
+            closeVariantSheet();
+        }
+    });
+
+    // আগের buyNow()-এর আসল কাজটুকু (কার্টে যোগ করে cart.html-এ পাঠানো) হুবহু এখানে অপরিবর্তিত —
+    // শুধু নাম বদলে executeBuyNow() করা হলো, যাতে buyNow() নিজে আগে মোবাইলে শীট খুলবে কিনা
+    // সেটা ঠিক করতে পারে
+    function executeBuyNow() {
         if (isOutOfStock) { alert('❌ এই প্রোডাক্টটি বর্তমানে স্টকে নেই।'); return; }
         addCurrentToCart();
         window.location.href = 'cart.html';
+    }
+
+    function buyNow() {
+        if (isOutOfStock) { alert('❌ এই প্রোডাক্টটি বর্তমানে স্টকে নেই।'); return; }
+        if (shouldUseVariantSheet()) { openVariantSheet('buy'); return; }
+        executeBuyNow();
+    }
+
+    // Add to Cart বাটনের নতুন গেট — addCurrentToCart() নিজে অপরিবর্তিত রাখা হয়েছে (শীটের Confirm
+    // বাটনও সরাসরি সেটাই কল করে), শুধু মোবাইলে আগে শীট খুলবে কিনা এখানে ঠিক হয়
+    function addToCartClick() {
+        if (isOutOfStock) { alert('❌ এই প্রোডাক্টটি বর্তমানে স্টকে নেই।'); return; }
+        if (shouldUseVariantSheet()) { openVariantSheet('cart'); return; }
+        addCurrentToCart();
     }
 
     function starsHtml(rating) {
