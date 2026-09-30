@@ -1,2 +1,7 @@
 # sitemap.xml নিজের ব্যাকএন্ড থেকে লাইভ জেনারেট হয় — নিজের ডোমেইনেই দেখানোর জন্য প্রক্সি করা হলো
 /sitemap.xml  https://smarttechzone-backend.onrender.com/sitemap.xml  200
+
+# product-feed.xml (Google Merchant Center / Meta Catalog) — একই কারণে প্রক্সি করা হলো, যাতে
+# Merchant Center-এ নিজের ডোমেইনের URL (smarttechzone.com.bd/product-feed.xml) ব্যবহার করা যায়
+# ব্যাকএন্ডের সরাসরি Render URL-এর বদলে (routes/productFeed.js দেখুন)
+/product-feed.xml  https://smarttechzone-backend.onrender.com/product-feed.xml  200
