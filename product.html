@@ -35,10 +35,18 @@
         position: absolute;
         width: 150px;
         height: 150px;
-        border: 1px solid #e74c3c;
-        background: rgba(231, 76, 60, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
         pointer-events: none;
         display: none;
+    }
+    /* দারাজের মতো — প্রোডাক্ট ছবির উপর হোভার করলে কাস্টম সার্কুলার ম্যাগনিফায়ার কার্সর
+       (সাদা ব্যাজ + গাঢ় ধূসর ম্যাগনিফাইং-গ্লাস আইকন) দেখানো হয় */
+    @media (hover: hover) and (pointer: fine) {
+        .main-image {
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18.5' fill='white' fill-opacity='0.95' stroke='%23555555' stroke-width='2'/%3E%3Ccircle cx='17' cy='17' r='7' fill='none' stroke='%23555555' stroke-width='2.3'/%3E%3Cline x1='22' y1='22' x2='28.5' y2='28.5' stroke='%23555555' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='17' y1='13.5' x2='17' y2='20.5' stroke='%23555555' stroke-width='1.8' stroke-linecap='round'/%3E%3Cline x1='13.5' y1='17' x2='20.5' y2='17' stroke='%23555555' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") 20 20, zoom-in;
+        }
     }
     .zoom-result {
         position: absolute;
