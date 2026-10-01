@@ -113,7 +113,7 @@
 
             itemsWrapper.innerHTML = cart.map((item, i) => `
                 <div class="cart-item">
-                    <img src="${resolveImg(item.image)}" onerror="this.src='https://via.placeholder.com/100'">
+                    <img src="${resolveImg(item.image)}" alt="${(item.name || '').replace(/"/g, '&quot;')}" onerror="this.src='https://via.placeholder.com/100'">
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
                         ${item.variantLabel ? `<div class="cart-item-variant">${item.variantLabel}</div>` : ''}
