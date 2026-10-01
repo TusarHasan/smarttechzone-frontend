@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <script src="analytics.js"></script>
+    <script src="analytics.js" defer></script>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="images/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,10 +53,10 @@
         .cart-note { font-size: 12px; color: #999; margin-top: 8px; }
     </style>
     <script src="config.js"></script>
-    <script src="visitor-track.js"></script>
+    <script src="visitor-track.js" defer></script>
     <script src="customer-auth.js"></script>
-    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
-    <script src="chat-widget.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" defer></script>
+    <script src="chat-widget.js" defer></script>
     <script src="cart.js"></script>
 </head>
 <body>
@@ -72,6 +72,7 @@
             <a href="cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
         </div>
     </nav>
+    <main>
 
     <div class="cart-page-container">
         <h2 style="color:#333;">আপনার কার্ট</h2>
@@ -79,6 +80,7 @@
         <div id="cartSummaryWrapper"></div>
     </div>
 
+    </main>
     <div id="siteFooter"></div>
     <script src="footer.js"></script>
     <script src="search.js"></script>
