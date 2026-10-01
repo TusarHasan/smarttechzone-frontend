@@ -93,9 +93,13 @@
             return `/product/${slugifyProductName(name)}-i${id}`;
         }
 
-        function resolveImg(url) {
+        function resolveImg(url, w, h) {
             if (!url) return 'https://via.placeholder.com/200';
-            return url.startsWith('http') ? url : `${API_BASE}${url}`;
+            const abs = url.startsWith('http') ? url : `${API_BASE}${url}`;
+            if (!w) return abs;
+            const qs = new URLSearchParams({ url: abs, w: String(w), fit: 'cover', q: '75' });
+            if (h) qs.set('h', String(h));
+            return `/.netlify/images?${qs.toString()}`;
         }
 
         function quickAddToCart(productId, name, price, image, btnEl) {
@@ -172,7 +176,7 @@
         function renderItems(items) {
             const grid = document.getElementById('searchGrid');
             items.forEach(p => {
-                const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0]) : 'https://via.placeholder.com/200';
+                const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0], 200, 200) : 'https://via.placeholder.com/200';
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.style.cursor = 'pointer';

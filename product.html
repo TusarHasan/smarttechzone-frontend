@@ -28,6 +28,35 @@
     .product-layout { display: flex; gap: 30px; flex-wrap: wrap; }
     .image-section { flex: 1; min-width: 280px; }
     .main-image { width: 100%; border-radius: 8px; border: 1px solid #eee; }
+    /* দারাজের মতো হোভার-ম্যাগনিফায়ার — শুধু মাউস/ডেস্কটপে কাজ করে (টাচ ডিভাইসে স্বাভাবিক
+       পিঞ্চ-জুম ই থাকে, এখানে হাত দেওয়া হয়নি) */
+    .image-section { position: relative; }
+    .zoom-lens {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border: 1px solid #e74c3c;
+        background: rgba(231, 76, 60, 0.15);
+        pointer-events: none;
+        display: none;
+    }
+    .zoom-result {
+        position: absolute;
+        top: 0;
+        left: calc(100% + 16px);
+        width: 400px;
+        height: 400px;
+        background-color: #fff;
+        background-repeat: no-repeat;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        display: none;
+        z-index: 50;
+    }
+    @media (max-width: 1000px) {
+        .zoom-result { display: none !important; }
+    }
     /* Daraz-এর মতো — গ্যালারির প্রথম থাম্বনেইলে ভিডিও থাকলে ক্লিক করলে মেইন এরিয়াতে এমবেড হয়ে প্লে হয় */
     .main-video-wrap { width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; border: 1px solid #eee; background: #000; }
     .main-video-wrap iframe { width: 100%; height: 100%; display: block; }
@@ -1364,7 +1393,55 @@
         document.getElementById('errorMsg').style.display = 'block';
     }
 
+    // দারাজের মতো হোভার-ম্যাগনিফায়ার: মাউস মূল ছবির উপর রাখলে পাশে বড় করে জুম করে দেখায়
+    function initImageZoom() {
+        const mainImg = document.getElementById('mainImage');
+        const section = document.querySelector('.image-section');
+        if (!mainImg || !section) return;
+        // টাচ ডিভাইসে hover থাকে না — সেখানে স্বাভাবিক পিঞ্চ-জুম আচরণই রাখা হলো, এখানে কিছু করা হয়নি
+        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+        const lens = document.createElement('div');
+        lens.className = 'zoom-lens';
+        const result = document.createElement('div');
+        result.className = 'zoom-result';
+        section.appendChild(lens);
+        section.appendChild(result);
+
+        function activate() {
+            if (window.innerWidth < 1000) return; // সরু স্ক্রিনে জুম প্যানেল রাখার জায়গা নেই
+            if (!mainImg.src || mainImg.style.display === 'none') return;
+            result.style.backgroundImage = `url('${mainImg.src}')`;
+            lens.style.display = 'block';
+            result.style.display = 'block';
+        }
+        function deactivate() {
+            lens.style.display = 'none';
+            result.style.display = 'none';
+        }
+        function move(e) {
+            if (lens.style.display === 'none') return;
+            const rect = mainImg.getBoundingClientRect();
+            const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
+            let x = e.clientX - rect.left - lensW / 2;
+            let y = e.clientY - rect.top - lensH / 2;
+            x = Math.max(0, Math.min(x, rect.width - lensW));
+            y = Math.max(0, Math.min(y, rect.height - lensH));
+            lens.style.left = x + 'px';
+            lens.style.top = y + 'px';
+            const resultW = result.offsetWidth, resultH = result.offsetHeight;
+            const ratioX = resultW / lensW;
+            const ratioY = resultH / lensH;
+            result.style.backgroundSize = `${rect.width * ratioX}px ${rect.height * ratioY}px`;
+            result.style.backgroundPosition = `-${x * ratioX}px -${y * ratioY}px`;
+        }
+        mainImg.addEventListener('mouseenter', activate);
+        mainImg.addEventListener('mousemove', move);
+        mainImg.addEventListener('mouseleave', deactivate);
+    }
+
     loadProduct();
+    initImageZoom();
 </script>
 <div id="siteFooter"></div>
 <script src="footer.js"></script>

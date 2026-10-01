@@ -392,9 +392,13 @@
 
         // ============ Category ও Brand গ্রিড — এখন backend aggregation endpoint থেকে সরাসরি কাউন্ট/ছবি
         // আসে (হাজার হাজার প্রোডাক্ট ব্রাউজারে ডাউনলোড করে হিসেব করতে হয় না, তাই অনেক দ্রুত) ============
-        function resolveImg(url) {
+        function resolveImg(url, w, h) {
             if (!url) return 'https://via.placeholder.com/200';
-            return url.startsWith('http') ? url : `${API_BASE}${url}`;
+            const abs = url.startsWith('http') ? url : `${API_BASE}${url}`;
+            if (!w) return abs;
+            const qs = new URLSearchParams({ url: abs, w: String(w), fit: 'cover', q: '75' });
+            if (h) qs.set('h', String(h));
+            return `/.netlify/images?${qs.toString()}`;
         }
 
         async function renderCategoryGrid() {
@@ -403,7 +407,7 @@
                 const res = await fetch(`${API_BASE}/api/products/category-counts`);
                 const rows = await res.json();
                 grid.innerHTML = rows.map(r => {
-                    const img = r.image ? resolveImg(r.image) : 'https://via.placeholder.com/64?text=%20';
+                    const img = r.image ? resolveImg(r.image, 128, 128) : 'https://via.placeholder.com/64?text=%20';
                     return `
                         <div class="part-cat-card" onclick="goToCategory('${r.name.replace(/'/g, "\\'")}')">
                             <div class="part-cat-icon"><img src="${img}" alt="${(r.name || '').replace(/"/g, '&quot;')}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/64?text=%20'"></div>
@@ -423,7 +427,7 @@
                 const res = await fetch(`${API_BASE}/api/products/brand-counts`);
                 const rows = await res.json();
                 grid.innerHTML = rows.map(r => {
-                    const img = r.image ? resolveImg(r.image) : 'https://via.placeholder.com/80?text=%20';
+                    const img = r.image ? resolveImg(r.image, 80, 80) : 'https://via.placeholder.com/80?text=%20';
                     return `
                         <a href="brands/brand.html?name=${encodeURIComponent(r.name)}" class="category-card">
                             <div class="category-icon"><img src="${img}" alt="${r.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/80?text=%20'"></div>
@@ -543,7 +547,7 @@
         function renderProductCards(items) {
             const container = document.getElementById('product-list');
             items.forEach(p => {
-                const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0]) : 'https://via.placeholder.com/200';
+                const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0], 200, 200) : 'https://via.placeholder.com/200';
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.style.cursor = 'pointer';
@@ -641,7 +645,7 @@
                 }
 
                 grid.innerHTML = withDiscount.slice(0, 12).map(({ product: p, rule }) => {
-                    const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0]) : 'https://via.placeholder.com/200';
+                    const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0], 200, 200) : 'https://via.placeholder.com/200';
                     const flashPrice = computeFlashPrice(p.price, rule.discountPct);
                     return `
                         <div class="flash-card" onclick="window.location.href='${buildProductPath(p.name, p._id)}'">

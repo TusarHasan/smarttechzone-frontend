@@ -86,9 +86,13 @@
     <script>
         const API_BASE = BACKEND_URL;
 
-        function resolveImg(url) {
+        function resolveImg(url, w, h) {
             if (!url) return 'https://via.placeholder.com/100';
-            return url.startsWith('http') ? url : `${API_BASE}${url}`;
+            const abs = url.startsWith('http') ? url : `${API_BASE}${url}`;
+            if (!w) return abs;
+            const qs = new URLSearchParams({ url: abs, w: String(w), fit: 'cover', q: '75' });
+            if (h) qs.set('h', String(h));
+            return `/.netlify/images?${qs.toString()}`;
         }
 
         function formatPrice(n) {
@@ -113,7 +117,7 @@
 
             itemsWrapper.innerHTML = cart.map((item, i) => `
                 <div class="cart-item">
-                    <img src="${resolveImg(item.image)}" alt="${(item.name || '').replace(/"/g, '&quot;')}" onerror="this.src='https://via.placeholder.com/100'">
+                    <img src="${resolveImg(item.image, 140, 140)}" alt="${(item.name || '').replace(/"/g, '&quot;')}" onerror="this.src='https://via.placeholder.com/100'">
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
                         ${item.variantLabel ? `<div class="cart-item-variant">${item.variantLabel}</div>` : ''}
