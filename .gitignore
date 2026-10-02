@@ -1,3 +1,6 @@
 Claude outputs/
 .env
 node_modules/
+
+# Leftover git lock/temp files moved aside during automated commits (safe to ignore/delete)
+_to_delete/
