@@ -84,6 +84,8 @@
     .original-price { font-size: 14px; color: #999; text-decoration: line-through; font-weight: normal; }
     .discount-badge { font-size: 13px; color: #e74c3c; background: #fdf1f0; padding: 1px 6px; border-radius: 3px; margin-left: 8px; font-weight: bold; }
     .meta { color: #666; font-size: 14px; margin-bottom: 6px; }
+    .meta a { color: #666; text-decoration: underline; text-decoration-color: #ccc; }
+    .meta a:hover { color: #e74c3c; text-decoration-color: #e74c3c; }
     .sold-by-row {
         display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #555;
         margin: 10px 0 6px; padding: 8px 10px; background: #fafafa; border-radius: 6px;
@@ -317,7 +319,7 @@
             <div class="info-section">
                 <h1 id="productName"></h1>
                 <div class="product-name-bn" id="productNameBn" style="display:none;"></div>
-                <div class="meta">Brand: <span id="productBrand"></span> | Model: <span id="productModel"></span></div>
+                <div class="meta">Brand: <a id="productBrand" href="#"></a> | Model: <a id="productModel" href="#"></a></div>
                 <div class="meta">Part Type: <span id="productPartType"></span></div>
                 <div class="sold-by-row">
                     Sold by <strong>Smart Tech Zone</strong>
@@ -625,8 +627,27 @@
         } else {
             nameBnEl.style.display = 'none';
         }
-        document.getElementById('productBrand').textContent = product.brand || '-';
-        document.getElementById('productModel').textContent = product.model || '-';
+        // SEO (internal linking): আগে এখানে শুধু প্লেইন টেক্সট দেখানো হতো, আর অনির্ভরযোগ্য
+        // product.brand ফিল্ড (বেশিরভাগ প্রোডাক্টেই খালি/"No Brand") ব্যবহার হতো। এখন নির্ভরযোগ্য
+        // phoneBrand ফিল্ড দিয়ে Brand/Model-কে brands/brand.html ও models/model.html পেজের
+        // লিংকে পরিণত করা হলো — আগে এই পেজগুলো শুধু sitemap.xml দিয়েই খুঁজে পাওয়া যেতো, সাইটের
+        // ভেতরে কোনো লিংক ছিলো না, যা Google-এর কাছে এগুলোকে কম গুরুত্বপূর্ণ মনে করাতো। প্রতিটা
+        // প্রোডাক্ট পেজ থেকে এখন একটা করে আসল internal link তৈরি হচ্ছে।
+        const linkableBrand = (product.phoneBrand && product.phoneBrand !== 'Others') ? product.phoneBrand : '';
+        const brandEl = document.getElementById('productBrand');
+        brandEl.textContent = linkableBrand || product.brand || '-';
+        if (linkableBrand) {
+            brandEl.href = `brands/brand.html?name=${encodeURIComponent(linkableBrand)}`;
+        } else {
+            brandEl.removeAttribute('href');
+        }
+        const modelEl = document.getElementById('productModel');
+        modelEl.textContent = product.model || '-';
+        if (linkableBrand && product.model) {
+            modelEl.href = `models/model.html?brand=${encodeURIComponent(linkableBrand)}&model=${encodeURIComponent(product.model)}`;
+        } else {
+            modelEl.removeAttribute('href');
+        }
         document.getElementById('productPartType').textContent = product.partType || '-';
         document.getElementById('productPrice').textContent = formatPrice(product.price);
         updatePriceDisplay(product.price, product.originalPrice);
