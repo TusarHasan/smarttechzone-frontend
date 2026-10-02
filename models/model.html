@@ -110,9 +110,14 @@
             }
 
             titleEl.textContent = `${brand} ${model} — Replacement Parts`;
+            // SEO ফিক্স: আগে এখানে ../brands/<brand>.html (যেমন samsung.html) লিংক করা হতো —
+            // এই স্ট্যাটিক stub ফাইলগুলো মাত্র ৮টা পুরনো ব্র্যান্ডের জন্যই আছে (Apple, Samsung,
+            // Xiaomi, Oppo, Vivo, Realme, Nokia, Symphony), বাকি ১৩টা ব্র্যান্ডের (Honor, Huawei,
+            // Infinix, OnePlus ইত্যাদি) জন্য এই লিংক 404 দিতো। এখন সবসময় কাজ করা canonical
+            // brands/brand.html?name= লিংক ব্যবহার করা হচ্ছে, যেকোনো ব্র্যান্ডের জন্যই।
             breadcrumbEl.innerHTML = `
                 <a href="../index.html">Home</a> /
-                <a href="../brands/${brand.toLowerCase()}.html">${brand}</a> /
+                <a href="../brands/brand.html?name=${encodeURIComponent(brand)}">${brand}</a> /
                 <span>${model}</span>
             `;
 
