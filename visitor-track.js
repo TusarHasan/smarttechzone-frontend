@@ -24,7 +24,12 @@
         // sendBeacon ব্যবহার করা হচ্ছে যেখানে সাপোর্ট আছে — পেজ থেকে নেভিগেট করে চলে গেলেও
         // নির্ভরযোগ্যভাবে পাঠায়, fetch-এর চেয়ে এই কাজের জন্য ভালো
         if (navigator.sendBeacon) {
-            var blob = new Blob([payload], { type: 'application/json' });
+            // cross-origin sendBeacon-এ Content-Type 'application/json' দিলে ব্রাউজার CORS preflight
+            // (OPTIONS) পাঠায় — Chromium-এ এটার পর আসল POST-টা প্রায়ই আর পাঠানোই হয় না (preflight
+            // সফল হলেও), ফলে অ্যাডমিন প্যানেলের "এখন সাইটে আছে" সবসময় ০ দেখাচ্ছিল যদিও আসল ট্রাফিক
+            // ছিল। 'text/plain' একটা CORS-সেফলিস্টেড টাইপ বলে প্রিফ্লাইট ছাড়াই সরাসরি POST যায় —
+            // backend/routes/track.js এখন text/plain বডিও JSON হিসেবে পার্স করে নেয়।
+            var blob = new Blob([payload], { type: 'text/plain' });
             navigator.sendBeacon(url, blob);
         } else {
             fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(function () {});
