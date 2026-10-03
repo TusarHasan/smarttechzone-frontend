@@ -37,4 +37,10 @@
     s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
 }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
 window.fbq('init', '390654674084858');
+// Meta Ads অ্যাকাউন্টের (353613444752028) নিজস্ব পিক্সেল — উপরের মূল পিক্সেলটা Ad Account-এর
+// সাথে শেয়ার করা সম্ভব হয়নি (আলাদা Business Manager-এর আন্ডারে, পার্সোনাল অ্যাকাউন্ট), তাই এই
+// নতুন পিক্সেলটা শুধু ওই Ad Account দিয়ে ক্যাম্পেইন অপ্টিমাইজেশনের জন্য যোগ করা হলো। একই পেজে
+// একাধিক পিক্সেল init করলে fbq('track', ...) কল পরবর্তীতে সবগুলো পিক্সেলেই যায়, তাই product.html/
+// cart.js/checkout.html/order-success.html-এর বিদ্যমান fbq('track', ...) কলগুলো বদলানোর দরকার নেই।
+window.fbq('init', '934494892676293');
 window.fbq('track', 'PageView');
