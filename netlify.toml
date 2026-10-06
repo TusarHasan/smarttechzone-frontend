@@ -33,5 +33,7 @@
 [images]
   remote_images = [
     "https://pub-[a-z0-9]+\\.r2\\.dev/.*",
-    "https://smarttechzone-backend\\.onrender\\.com/.*"
+    "https://smarttechzone-backend\\.onrender\\.com/.*",
+    "https://static-0[0-9]\\.daraz\\.com\\.bd/.*",
+    "https://[a-z0-9-]+\\.slatic\\.net/.*"
   ]
