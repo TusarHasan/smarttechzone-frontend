@@ -821,3 +821,66 @@ body {
         gap: 12px;
     }
 }
+
+/* ===== হোমপেজ কার্ডের Daraz-স্টাইল দাম/ছাড়/রিভিউ ব্লক (index.html priceBlockHtml) =====
+   brand.html/search.html এখনো পুরনো .price-block-row ব্যবহার করে, তাই ওগুলোর রুল অপরিবর্তিত রাখা হয়েছে */
+.product-card .stz-price-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.product-card .stz-price {
+    color: #e74c3c;
+    font-weight: 700;
+    font-size: 17px;
+}
+.product-card .stz-pct {
+    color: #777;
+    font-size: 12px;
+    font-weight: 500;
+}
+.product-card .stz-old-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 3px;
+}
+.product-card .stz-old {
+    color: #999;
+    font-size: 12px;
+    text-decoration: line-through;
+}
+.product-card .stz-rating-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 4px;
+    font-size: 12px;
+}
+/* তারা: নিচে ফ্যাকাশে ধূসর ৫টা, উপরে দামের রঙের ৫টা — গড় রেটিং অনুযায়ী width কেটে আংশিক ভরাট */
+.product-card .stz-stars {
+    position: relative;
+    display: inline-block;
+    color: #ddd;
+    letter-spacing: 1px;
+    line-height: 1;
+    font-size: 13px;
+}
+.product-card .stz-stars-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    color: #e74c3c;
+}
+.product-card .stz-rating-count {
+    color: #222;
+    font-size: 12px;
+}
+
+.product-card .stz-price-block { margin-bottom: 12px; }

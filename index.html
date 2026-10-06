@@ -496,7 +496,8 @@
             const container = document.getElementById('product-list');
             const banner = document.getElementById('categoryBanner');
             try {
-                const qs = new URLSearchParams({ status: 'published', fields: 'summary', page: currentPage, limit: PAGE_SIZE });
+                // sort=reviews: রিভিউ আছে এমন প্রোডাক্ট সবার আগে দেখাবে, তারপর বাকিগুলো নতুন-থেকে-পুরনো
+                const qs = new URLSearchParams({ status: 'published', fields: 'summary', sort: 'reviews', page: currentPage, limit: PAGE_SIZE });
                 if (currentCategory) qs.set('category', currentCategory);
 
                 const res = await fetch(`${API_BASE}/api/products?${qs.toString()}`);
@@ -526,20 +527,28 @@
             }
         }
 
-        // Daraz-এর মতো — originalPrice (Special Price ব্যবহার করলে Add Products ফর্ম থেকে বেস দামটাই
-        // এখানে আসে) থাকলে সেটা কেটে/স্ট্রাইকথ্রু দেখিয়ে পাশে আসল বিক্রয় মূল্য (p.price) দেখানো হয়।
-        // p.price সবসময়ই কার্ট/চেকআউটে যেই দামে যোগ হয়, তাই ছাড় দেখানোর জন্য এখানে কোনো আলাদা হিসেব
-        // করতে হচ্ছে না — শুধু originalPrice থাকলে সেটা অতিরিক্ত দেখানো হচ্ছে।
+        // Daraz-স্টাইল দাম ব্লক। p.price = Daily Discount Price (কাস্টমার আসলে যা পে করে), p.originalPrice =
+        // Product Retail Price (ব্যাকএন্ড সবচেয়ে কম দামের Active ভ্যারিয়েন্ট থেকে বের করে পাঠায়)।
+        //  • রিভিউ আছে: দামের ডানে ছোট ধূসর ছাড় %, নিচে তারা (দামের রঙে) + রিভিউ সংখ্যা ব্র্যাকেটে (কালো)
+        //  • রিভিউ নেই: দামের নিচে কাটা Retail Price আর তার ডানে ছাড় %
+        function starsHtml(avg) {
+            const pct = Math.max(0, Math.min(100, (Number(avg) || 0) / 5 * 100));
+            return `<span class="stz-stars" aria-label="${Number(avg || 0).toFixed(1)} out of 5"><span class="stz-stars-fill" style="width:${pct}%">★★★★★</span>★★★★★</span>`;
+        }
+
         function priceBlockHtml(p) {
-            if (p.originalPrice && p.originalPrice > p.price) {
-                const pct = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
-                return `<div class="price-block-row">
-                    <span class="price-old">৳ ${p.originalPrice}</span>
-                    <span class="price">৳ ${p.price}</span>
-                    <span class="discount-tag">-${pct}%</span>
-                </div>`;
+            const hasDiscount = p.originalPrice && p.originalPrice > p.price;
+            const pct = hasDiscount ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
+            const pctTag = (hasDiscount && pct > 0) ? `<span class="stz-pct">-${pct}%</span>` : '';
+
+            if (p.reviewCount > 0) {
+                return `<div class="stz-price-block"><div class="stz-price-line"><span class="stz-price">৳${p.price}</span>${pctTag}</div>
+                    <div class="stz-rating-line">${starsHtml(p.ratingAvg)}<span class="stz-rating-count">(${p.reviewCount})</span></div></div>`;
             }
-            return `<div class="price">৳ ${p.price}</div>`;
+            const oldLine = hasDiscount
+                ? `<div class="stz-old-line"><span class="stz-old">৳${p.originalPrice}</span>${pctTag}</div>`
+                : '';
+            return `<div class="stz-price-block"><div class="stz-price-line"><span class="stz-price">৳${p.price}</span></div>${oldLine}</div>`;
         }
 
         // আগে এই কার্ডগুলো fixed 200px width + display:inline-block দিয়ে বসতো (CSS গ্রিড ছাড়া) —
