@@ -374,15 +374,25 @@
 
         // Meta Pixel — InitiateCheckout ইভেন্ট (কেউ কার্ট থেকে চেকআউট পেজে পৌঁছালো, অর্ডার এখনো
         // কনফার্ম হয়নি)। analytics.js-এ বেস পিক্সেল কোড আগেই লোড হয়ে গেছে।
+        // analytics.js 'defer' দিয়ে লোড হয়, কিন্তু renderSummary() পেজ পার্স হওয়ার সময়ই চলে — তখন window.fbq
+        // এখনো নেই (আগে তাই InitiateCheckout কখনোই যেত না)। তাই fbq না থাকলে DOMContentLoaded-এ পাঠানো হয়,
+        // আর একই পেজ-লোডে একবারের বেশি পাঠানো হয় না।
+        let metaInitiateCheckoutSent = false;
         function trackMetaInitiateCheckout(cart) {
-            if (typeof window.fbq !== 'function' || !cart.length) return;
-            window.fbq('track', 'InitiateCheckout', {
-                content_ids: cart.map(item => item.productId),
-                content_type: 'product',
-                num_items: cart.reduce((sum, item) => sum + item.quantity, 0),
-                value: getCartTotal(),
-                currency: 'BDT'
-            });
+            if (metaInitiateCheckoutSent || !cart.length) return;
+            const send = () => {
+                if (metaInitiateCheckoutSent || typeof window.fbq !== 'function') return;
+                metaInitiateCheckoutSent = true;
+                window.fbq('track', 'InitiateCheckout', {
+                    content_ids: cart.map(item => item.productId),
+                    content_type: 'product',
+                    num_items: cart.reduce((sum, item) => sum + item.quantity, 0),
+                    value: getCartTotal(),
+                    currency: 'BDT'
+                });
+            };
+            if (typeof window.fbq === 'function') send();
+            else document.addEventListener('DOMContentLoaded', send);
         }
 
         function updateSummaryTotals() {

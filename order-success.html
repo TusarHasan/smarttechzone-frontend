@@ -85,7 +85,10 @@
         // এর payment/success দেখো) — কখনো ক্লায়েন্ট-সাইডে দাম বানানো হয় না, param না থাকলে ইভেন্টই
         // পাঠানো হয় না। localStorage গার্ড দিয়ে একই অর্ডারের জন্য পেজ রিফ্রেশ/আবার ভিজিট করলে Purchase
         // বারবার পাঠানো ঠেকানো হচ্ছে (নইলে রিপোর্টে ভুলভাবে একই অর্ডার একাধিকবার গোনা হতে পারতো)।
-        (function trackMetaPurchase() {
+        // analytics.js 'defer' দিয়ে লোড হয় — অর্থাৎ এই ইনলাইন স্ক্রিপ্ট চলার সময় window.fbq এখনো তৈরি হয় না
+        // (আগে তাই Purchase কখনোই পাঠানো হয়নি)। DOMContentLoaded defer-করা স্ক্রিপ্টগুলো চলার পরে ফায়ার করে,
+        // তখন fbq রেডি।
+        function trackMetaPurchase() {
             const value = params.get('value');
             if (typeof window.fbq !== 'function' || !orderNumber || !value) return;
             const guardKey = 'stz_meta_purchase_fired_' + orderNumber;
@@ -98,7 +101,12 @@
                 currency: 'BDT',
                 content_type: 'product'
             });
-        })();
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', trackMetaPurchase);
+        } else {
+            trackMetaPurchase();
+        }
     </script>
 </body>
 </html>
