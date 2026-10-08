@@ -37,6 +37,10 @@
         }
         .pw-toggle:hover { color: #333; }
 
+        .auth-forgot { text-align: right; margin-top: 8px; font-size: 13px; }
+        .auth-forgot a { color: #e74c3c; text-decoration: none; }
+        .auth-forgot a:hover { text-decoration: underline; }
+
         .auth-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: #999; font-size: 12.5px; }
         .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #eee; }
         .social-login-row { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
@@ -94,6 +98,7 @@
                     <input type="password" id="loginPassword" name="password" autocomplete="current-password" placeholder="আপনার পাসওয়ার্ড">
                     <button type="button" class="pw-toggle" onclick="togglePassword('loginPassword', this)" aria-label="পাসওয়ার্ড দেখান">👁️</button>
                 </div>
+                <div class="auth-forgot"><a id="forgotLink" href="forgot-password.html">পাসওয়ার্ড ভুলে গেছেন?</a></div>
             </form>
             <button class="auth-btn" id="loginBtn" onclick="doLogin()">লগইন করুন</button>
             <div id="authMsg"></div>
@@ -144,6 +149,7 @@
         const params = new URLSearchParams(window.location.search);
         const redirectTo = params.get('redirect') || 'account.html';
         document.getElementById('registerLink').href = `register.html?redirect=${encodeURIComponent(redirectTo)}`;
+        document.getElementById('forgotLink').href = `forgot-password.html?redirect=${encodeURIComponent(redirectTo)}`;
 
         // ইতিমধ্যে লগইন করা থাকলে আর এই পেজে থাকার দরকার নেই
         if (getCustomerToken() && getCustomerData()) {
