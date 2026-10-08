@@ -879,7 +879,11 @@
             null;
 
         let thumbAlreadyShown = false;
-        attrNames.forEach(name => {
+        // রং/Option (ছবি-সহ swatch) গ্রুপ সবার উপরে, বাকি গ্রুপ (যেমন Compatibility by Model) তার নিচে
+        const renderOrder = thumbAttrName
+            ? [thumbAttrName, ...attrNames.filter(n => n !== thumbAttrName)]
+            : attrNames;
+        renderOrder.forEach(name => {
             const values = attrValuesOf(name);
 
             const group = document.createElement('div');
