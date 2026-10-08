@@ -86,15 +86,18 @@
             return url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
         }
 
-        function quickAddToCart(p) {
-            addToCart({
-                productId: p._id,
+        async function quickAddToCart(p) {
+            // ভ্যারিয়েন্ট থাকলে কার্টে অন্ধভাবে না তুলে প্রোডাক্ট পেজে পাঠানো হয় (cart.js-এর resolveQuickAddItem দেখুন)
+            const r = await resolveQuickAddItem(p._id, {
                 name: p.name,
                 price: p.price,
-                variantLabel: '',
-                image: (p.images && p.images[0]) ? resolveImg(p.images[0]) : '',
-                quantity: 1
+                image: (p.images && p.images[0]) ? resolveImg(p.images[0]) : ''
             });
+            if (r.needsChoice) {
+                window.location.href = buildProductPath(p.name, p._id);
+                return;
+            }
+            addToCart(r.item);
             alert('কার্টে যোগ করা হয়েছে ✅');
         }
 

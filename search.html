@@ -104,10 +104,19 @@
             return `/.netlify/images?${qs.toString()}`;
         }
 
-        function quickAddToCart(productId, name, price, image, btnEl) {
-            addToCart({ productId, name, price, variantLabel: '', image, quantity: 1 });
+        async function quickAddToCart(productId, name, price, image, btnEl) {
+            // ভ্যারিয়েন্ট থাকলে কার্টে অন্ধভাবে না তুলে প্রোডাক্ট পেজে পাঠানো হয় (cart.js-এর resolveQuickAddItem দেখুন)
+            const oldText = btnEl ? btnEl.textContent : '';
+            if (btnEl) { btnEl.disabled = true; btnEl.textContent = '...'; }
+            const r = await resolveQuickAddItem(productId, { name, price, image });
+            if (btnEl) { btnEl.disabled = false; btnEl.textContent = oldText; }
+            if (r.needsChoice) {
+                window.location.href = buildProductPath(name, productId);
+                return;
+            }
+            addToCart(r.item);
             const card = btnEl ? btnEl.closest('.product-card') : null;
-            flyToCart(image, name, (card && card.querySelector('img')) || btnEl);
+            flyToCart(r.item.image || image, name, (card && card.querySelector('img')) || btnEl);
         }
 
         let currentPage = 1;

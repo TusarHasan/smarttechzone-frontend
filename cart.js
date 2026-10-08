@@ -35,6 +35,46 @@ function addToCart(item) {
     return cart;
 }
 
+// ===== লিস্টিং কার্ডের "Add to Cart" (সার্চ/ব্র্যান্ড/মডেল পেজ) — ভ্যারিয়েন্ট ঠিক রেখে কার্টে তোলার হেল্পার =====
+// সমস্যা ছিল: কার্ডের বাটন সবসময় variantLabel: '' দিয়ে প্রোডাক্টের মূল ছবি/দামে কার্টে তুলত, কাস্টমার কোন
+// কালার/ভ্যারিয়েন্ট চাইছে সেটা জানার উপায়ই থাকত না — অর্ডারে (অ্যাডমিন প্যানেলে) ভ্যারিয়েন্ট ফাঁকা আর মূল ছবি আসত।
+// এখন: প্রোডাক্টের আসল ডেটা এনে —
+//   • একাধিক Active ভ্যারিয়েন্ট থাকলে কার্টে না তুলে প্রোডাক্ট পেজে পাঠানো হয় (কাস্টমার নিজে বেছে নেবে),
+//   • একটাই ভ্যারিয়েন্ট থাকলে সেটার লেবেল/দাম/ছবি সহ তোলা হয়,
+//   • ভ্যারিয়েন্ট না থাকলে (বা "Default") আগের মতোই,
+//   • ডেটা আনা না গেলে অনুমানে না তুলে প্রোডাক্ট পেজে পাঠানো হয়।
+// ফেরত: { item } (কার্টে তোলার জন্য তৈরি) অথবা { needsChoice: true } (প্রোডাক্ট পেজে যেতে হবে)
+async function resolveQuickAddItem(productId, fallback) {
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/products/${encodeURIComponent(productId)}`);
+        if (!res.ok) return { needsChoice: true };
+        const product = await res.json();
+        if (!product || !product._id) return { needsChoice: true };
+
+        const active = (product.variants || []).filter(v => v && v.isActive !== false);
+        if (active.length > 1) return { needsChoice: true };
+
+        const absImg = (u) => (u ? (/^https?:\/\//.test(u) ? u : `${BACKEND_URL}${u}`) : '');
+        const base = { productId, name: product.name || fallback.name, quantity: 1 };
+
+        if (active.length === 1) {
+            const v = active[0];
+            return { item: Object.assign(base, {
+                price: v.price,
+                variantLabel: v.label && v.label !== 'Default' ? v.label : '',
+                image: absImg(v.images && v.images[0]) || fallback.image || absImg(product.images && product.images[0])
+            }) };
+        }
+        return { item: Object.assign(base, {
+            price: product.price,
+            variantLabel: '',
+            image: fallback.image || absImg(product.images && product.images[0])
+        }) };
+    } catch (err) {
+        return { needsChoice: true };
+    }
+}
+
 // "কতজন Cart-এ যোগ করেছে" ট্র্যাকিং (Manage Products-এ ভবিষ্যতে দেখানোর জন্য) — silent fire-and-forget,
 // ব্যর্থ হলেও কার্টের আসল কাজে কোনো প্রভাব পড়বে না। BACKEND_URL config.js থেকে আসে — এই ফাইলের সব
 // ব্যবহারের জায়গাতেই cart.js-এর আগে config.js লোড করা আছে (এই ফাইলের শীর্ষের নোট দ্রষ্টব্য)

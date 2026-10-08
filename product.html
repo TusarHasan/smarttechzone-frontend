@@ -851,13 +851,36 @@
             if (first) selectedAttrs[name] = first.value;
         });
 
-        let thumbAlreadyShown = false;
-        attrNames.forEach(name => {
-            const values = [];
+        // কোন attribute-এ ছবির swatch দেখানো হবে — আগে "প্রথম যেটা ছবির যোগ্য" সেটাতেই দেখানো হতো। সমস্যা: প্রথম
+        // attribute যদি "Compatibility by Model"-এর মতো এমন কিছু হয় যার মাত্র একটাই মান (বাছাই করার কিছু নেই), তাও
+        // সেটাই ছবি পেয়ে যেত, আর আসল বাছাইয়ের attribute (যেমন Option: Gray/Green/Blue, প্রতিটার নিজস্ব ছবি আছে)
+        // শুধু টেক্সট বাটন হয়ে থাকত — বাকি ভ্যারিয়েন্টের থাম্বনেইল দেখা যেত না (রিপোর্ট করা বাগ)।
+        // এখন: একাধিক মান আছে এমন ছবির-যোগ্য attribute অগ্রাধিকার পায়; সেরকম কিছু না থাকলে আগের নিয়মই বহাল।
+        const attrValuesOf = (name) => {
+            const vals = [];
             variants.forEach(v => {
                 const found = (v.attributes || []).find(a => a.name === name);
-                if (found && !values.includes(found.value)) values.push(found.value);
+                if (found && !vals.includes(found.value)) vals.push(found.value);
             });
+            return vals;
+        };
+        const attrWantsThumb = (name) => {
+            const hasOwn = attrValuesOf(name).some(val => {
+                const mv = variants.find(v => (v.attributes || []).some(a => a.name === name && a.value === val));
+                return mv && mv.images && mv.images.length;
+            });
+            return hasOwn || name.toLowerCase().includes('option') || name.toLowerCase().includes('color');
+        };
+        const isOptionOrColor = (n) => n.toLowerCase().includes('option') || n.toLowerCase().includes('color');
+        const thumbAttrName =
+            attrNames.find(n => isOptionOrColor(n) && attrValuesOf(n).length > 1) ||
+            attrNames.find(n => attrWantsThumb(n) && attrValuesOf(n).length > 1) ||
+            attrNames.find(n => attrWantsThumb(n)) ||
+            null;
+
+        let thumbAlreadyShown = false;
+        attrNames.forEach(name => {
+            const values = attrValuesOf(name);
 
             const group = document.createElement('div');
             group.className = 'attr-group';
@@ -872,12 +895,7 @@
             // শুধু টেক্সট বাটন হিসেবে দেখাতো (রিপোর্ট করা বাগ — Oppo Reno2 Power Volume Flex Cable প্রোডাক্টে)।
             // এখন থেকে নাম যাই হোক না কেন, যদি এই attribute এর অন্তত একটা ভ্যালুর জন্য ম্যাচিং ভ্যারিয়েন্টে
             // নিজস্ব (আলাদা) ছবি আপলোড করা থাকে, তাহলে সেটাকে swatch হিসেবেই দেখানো হবে।
-            const hasOwnImages = values.some(val => {
-                const mv = variants.find(v => (v.attributes || []).some(a => a.name === name && a.value === val));
-                return mv && mv.images && mv.images.length;
-            });
-            const wantsThumb = hasOwnImages || name.toLowerCase().includes('option') || name.toLowerCase().includes('color');
-            const showThumb = wantsThumb && !thumbAlreadyShown;
+            const showThumb = name === thumbAttrName && !thumbAlreadyShown;
             if (showThumb) thumbAlreadyShown = true;
             const currentVal = selectedAttrs[name] || '';
             // "Option"-জাতীয় জেনেরিক attribute নামের (যেমন "Option", "Option 2") লেবেল আর দেখানো হবে না,
