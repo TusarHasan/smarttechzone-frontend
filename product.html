@@ -141,7 +141,7 @@
     .section-title { font-size: 17px; color: #333; margin: 0 0 14px; font-weight: bold; }
     /* Add Products-এর রিচ-টেক্সট এডিটর থেকে আসা HTML (প্যারাগ্রাফ/লিস্ট/ছবি) রেন্ডার হয় বলে আর
        white-space: pre-wrap লাগে না (আগে প্লেইন টেক্সটে লাইন-ব্রেক ধরে রাখার জন্য দরকার ছিল) */
-    .description { line-height: 1.7; color: #444; font-size: 14px; }
+    .description { line-height: 1.7; color: #444; font-size: 14px; overflow-wrap: break-word; max-width: 100%; }
     .description ul, .description ol { margin: 8px 0; padding-left: 24px; }
     .description img { max-width: 100%; border-radius: 6px; margin: 8px 0; display: block; }
     .description p { margin: 0 0 10px; }
@@ -381,12 +381,33 @@
         .m-ab-cart { background: #f57224; }
         .m-ab-btn:active { opacity: .85; }
         .m-ab-btn:disabled { background: #ccc; color: #777; cursor: not-allowed; }
-        /* চ্যাট ফ্লোটিং বাটন নিচের বারের উপরে তুলে রাখা (বারের বাটন ঢাকা না পড়ার জন্য) */
-        #stzChatFab { bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
-        #stzTwFab { bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
-        #stzTwPanel { bottom: calc(136px + env(safe-area-inset-bottom)) !important; }
-        /* ভ্যারিয়েন্ট শীট খোলা থাকলে ভাসমান বাটনগুলো শীটের উপর না এসে লুকানো থাকে */
-        body:has(.variant-sheet.open) #stzChatFab, body:has(.variant-sheet.open) #stzTwFab { display: none !important; }
+        /* মোবাইল প্রোডাক্ট পেজ: ভাসমান চ্যাট বাটন লুকানো, কারণ নিচের বারেই Chat আছে (সেটা সরাসরি
+           openVendorChat() চালায়, ভাসমান বাটনের উপর নির্ভর করে না)। */
+        #stzChatFab { display: none !important; }
+        /* ভাসমান "অর্ডার ট্র্যাক" এখন ডান প্রান্তের মাঝখানে লম্বা ট্যাব: স্ক্রিনের দেয়ালে আধা-গোঁজা, বাঁ দিকের কোণা গোল।
+           track-widget.js বদলানো হয়নি, তাই অন্য পেজে আগের বাটনই থাকে। */
+        #stzTwFab {
+            left: auto !important; bottom: auto !important; right: -3px !important; top: 50% !important;
+            transform: translateY(-50%) !important; z-index: 1000 !important;
+            flex-direction: column !important; gap: 8px !important; align-items: center !important;
+            width: 40px !important; padding: 12px 6px 12px 3px !important; box-sizing: border-box !important;
+            background: linear-gradient(180deg, #ee5a45 0%, #d93a28 100%) !important; color: #fff !important; border: none !important;
+            border-radius: 14px 0 0 14px !important; box-shadow: -2px 3px 12px rgba(0,0,0,.25) !important;
+            font: 700 12px/1 Arial, sans-serif !important; letter-spacing: .3px; -webkit-tap-highlight-color: transparent;
+            transition: right .18s ease, box-shadow .18s ease !important;
+        }
+        #stzTwFab:hover { background: linear-gradient(180deg, #ee5a45 0%, #d93a28 100%) !important; color: #fff !important; }
+        #stzTwFab:active { right: 0 !important; box-shadow: -1px 2px 8px rgba(0,0,0,.3) !important; }
+        #stzTwFab svg { width: 20px !important; height: 20px !important; flex: none; }
+        #stzTwFab span { display: none !important; }
+        #stzTwFab::after { content: "Track Order"; writing-mode: vertical-rl; white-space: nowrap; }
+        /* ট্র্যাক প্যানেল ডান প্রান্ত থেকে ট্যাবের পাশে খোলে */
+        #stzTwPanel {
+            left: auto !important; right: 48px !important; bottom: auto !important; top: 50% !important;
+            transform: translateY(-50%) !important; width: min(330px, calc(100vw - 64px)) !important; max-height: 80vh; overflow-y: auto !important;
+        }
+        /* ভ্যারিয়েন্ট শীট খোলা থাকলে ট্যাব শীটের উপর না এসে লুকানো থাকে */
+        body:has(.variant-sheet.open) #stzTwFab, body:has(.variant-sheet.open) #stzTwPanel { display: none !important; }
     }
 </style>
     <script src="config.js"></script>
@@ -632,6 +653,14 @@
         if (!html) return html;
         const wrap = document.createElement('div');
         wrap.innerHTML = html;
+        // কিছু description-এ প্রতিটা স্পেস &nbsp; (নন-ব্রেকিং) হয়ে সেভ আছে (এডিটরে পেস্ট/টাইপ থেকে) — তখন লাইন কোথাও
+        // ভাঙতে পারে না, লেখা কার্ডের বাইরে দৌড়ায়। দেখানোর সময় সেগুলো সাধারণ স্পেসে বদলানো হয় (ডেটাবেজ অপরিবর্তিত)।
+        const NBSP = String.fromCharCode(160);
+        const tw = document.createTreeWalker(wrap, NodeFilter.SHOW_TEXT);
+        let tn;
+        while ((tn = tw.nextNode())) {
+            if (tn.nodeValue.indexOf(NBSP) !== -1) tn.nodeValue = tn.nodeValue.split(NBSP).join(' ');
+        }
         wrap.querySelectorAll('img[src]').forEach(img => {
             img.setAttribute('src', resolveImageUrl(img.getAttribute('src')));
         });
