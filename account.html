@@ -198,7 +198,8 @@
                 <label>নাম</label>
                 <input type="text" id="acName" name="name" autocomplete="name" placeholder="আপনার পুরো নাম">
                 <label>ফোন নাম্বার</label>
-                <input type="text" id="acPhone" name="tel" autocomplete="tel" disabled>
+                <input type="text" id="acPhone" name="tel" autocomplete="tel" inputmode="tel" disabled>
+                <p id="acPhoneHint" style="display:none; font-size:12.5px; color:#999; margin:6px 0 0;">Google/Facebook দিয়ে লগইন করেছেন, তাই ফোন নাম্বার খালি। এখানে আপনার মোবাইল নাম্বার (01XXXXXXXXX) দিন। একবার সেভ করলে আর বদলানো যাবে না।</p>
             </form>
             <button class="save-btn" id="saveProfileBtn" onclick="saveProfile()">প্রোফাইল সেভ করুন</button>
             <div id="profileMsg"></div>
@@ -506,7 +507,7 @@
                 if (!res.ok) throw new Error(data.error || 'প্রোফাইল লোড করা যায়নি।');
 
                 document.getElementById('acName').value = data.name || '';
-                document.getElementById('acPhone').value = data.phone || '';
+                applyPhoneField(data.phone);
                 document.getElementById('acAddress').value = data.address || '';
 
                 const savedArea = areaFromCityValue(data.city);
@@ -521,6 +522,16 @@
             }
         }
 
+        // ফোন থাকলে লক (বদলানো যায় না); না থাকলে (Google/Facebook অ্যাকাউন্ট) লিখে সেভ করা যায়
+        function applyPhoneField(phone) {
+            const input = document.getElementById('acPhone');
+            const hint = document.getElementById('acPhoneHint');
+            input.value = phone || '';
+            input.disabled = Boolean(phone);
+            input.placeholder = phone ? '' : '01XXXXXXXXX';
+            hint.style.display = phone ? 'none' : 'block';
+        }
+
         async function saveProfile() {
             const name = document.getElementById('acName').value.trim();
             const msg = document.getElementById('profileMsg');
@@ -532,18 +543,23 @@
                 return;
             }
 
+            // ফোন ঘর খোলা থাকলে (অ্যাকাউন্টে এখনো ফোন নেই) এবং কিছু লেখা থাকলে সেটাও সেভ হবে
+            const phoneInput = document.getElementById('acPhone');
+            const phoneToSave = (!phoneInput.disabled && phoneInput.value.trim()) ? phoneInput.value.trim() : '';
+
             btn.disabled = true;
             msg.textContent = '';
             try {
                 const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/me`, {
                     method: 'PUT',
-                    body: JSON.stringify({ name })
+                    body: JSON.stringify(phoneToSave ? { name, phone: phoneToSave } : { name })
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'সেভ করা যায়নি।');
 
                 setCustomerSession(getCustomerToken(), data);
                 renderNavAuth();
+                applyPhoneField(data.phone);
                 msg.style.color = '#16a34a';
                 msg.textContent = '✅ প্রোফাইল সেভ হয়েছে।';
             } catch (err) {

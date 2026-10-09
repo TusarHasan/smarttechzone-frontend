@@ -449,6 +449,45 @@
         return url.startsWith('http') ? url : `${API_BASE}${url}`;
     }
 
+    // ============ Product Description ফরম্যাটিং ============
+    // Add Products-এর রিচ-টেক্সট এডিটর থেকে আসা description আসলে HTML (<p>, <ul> ইত্যাদি) — সেটা যেমন আছে তেমনই
+    // দেখানো হয়। কিন্তু Daraz/AI/Excel ইমপোর্ট বা সাধারণ টেক্সটবক্স থেকে আসা description প্লেইন টেক্সট: HTML-এ
+    // লাইন-ব্রেক (\n) কোনো কাজ করে না, তাই পুরোটা একটা বড় অনুচ্ছেদ হয়ে যেত ("Key Features: • ... • ... Why Choose ...").
+    // এখানে প্লেইন টেক্সট হলে: লাইন-ব্রেক রাখা হয়, Key Features / Why Choose ...? / Conclusion: ইত্যাদি শিরোনাম
+    // আলাদা লাইনে বোল্ড করা হয়, আর • দিয়ে লেখা অংশগুলো বুলেট লিস্ট হয়। ডেটাবেজের কিছু বদলায় না।
+    function formatDescription(raw) {
+        if (!raw) return raw;
+        if (/<\/?[a-z][^>]*>/i.test(raw)) return raw; // আগে থেকেই HTML — হাত দেওয়া হয় না
+        const esc = String(raw).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const HEAD = "(?:Key Features:|Why Choose [^?:\\n]{1,60}\\?|Conclusion:|Highlights:|Specifications?:|What(?:'|’)s in the Box:?|Package Includes:?)";
+        let t = esc.replace(/\r\n?/g, '\n')
+            .replace(new RegExp('[ \\t]*(' + HEAD + ')', 'gi'), '\n$1')
+            .replace(/[ \t]*[•●▪]\s*/g, '\n• ');
+        const headRe = new RegExp('^(' + HEAD + ')\\s*(.*)$', 'i');
+        const lines = t.split('\n').map(l => l.trim()).filter(Boolean);
+        let out = '', inList = false;
+        const closeList = () => { if (inList) { out += '</ul>'; inList = false; } };
+        lines.forEach(line => {
+            const bullet = line.match(/^(?:•|[-*])\s+(.*)$/);
+            if (bullet) {
+                if (!inList) { out += '<ul>'; inList = true; }
+                const body = bullet[1].replace(/^([^:]{2,45}:)(\s|$)/, '<strong>$1</strong> ');
+                out += '<li>' + body + '</li>';
+                return;
+            }
+            closeList();
+            const h = line.match(headRe);
+            if (h) {
+                out += '<p style="margin:14px 0 6px"><strong>' + h[1] + '</strong></p>';
+                if (h[2]) out += '<p>' + h[2] + '</p>';
+            } else {
+                out += '<p>' + line + '</p>';
+            }
+        });
+        closeList();
+        return out;
+    }
+
     // Add Products-এর রিচ-টেক্সট এডিটর থেকে আসা description-এ ছবি থাকলে সেগুলো রিলেটিভ পাথে সেভ
     // থাকে (দেখুন backend/models/product.js) — এখানে দেখানোর আগে resolveImageUrl() দিয়ে অ্যাবসোলিউট
     // করে নেওয়া হচ্ছে, ঠিক মূল প্রোডাক্ট গ্যালারির ছবির মতোই
@@ -655,7 +694,7 @@
         const descBox = document.getElementById('productDescription');
         const viewMoreBtn = document.getElementById('viewMoreBtn');
         if (product.description) {
-            descBox.innerHTML = resolveDescriptionImages(product.description);
+            descBox.innerHTML = resolveDescriptionImages(formatDescription(product.description));
         } else {
             descBox.textContent = 'এই প্রোডাক্টের জন্য এখনো কোনো বিস্তারিত বিবরণ যোগ করা হয়নি।';
         }
