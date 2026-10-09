@@ -59,23 +59,6 @@
         .area-option:hover { border-color: #f0a8a0; }
         .area-option input { width: auto; margin: 0; padding: 0; }
         .area-option.selected { border-color: #e74c3c; background: #fdf6f5; }
-        /* ===== কুরিয়ার স্কোর গেটের পপআপ (সার্ভার 403 + code COURIER_SCORE_LOW দিলে) ===== */
-        .cb-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 10000; }
-        .cb-bg.open { display: flex; }
-        .cb-box { background: #fff; border-radius: 12px; max-width: 480px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 22px 20px 18px; box-shadow: 0 10px 40px rgba(0,0,0,.3); font-family: Arial, sans-serif; }
-        .cb-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .cb-icon { width: 36px; height: 36px; border-radius: 50%; background: #fdecea; color: #e74c3c; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; flex: none; }
-        .cb-head h3 { margin: 0; font-size: 16px; color: #222; }
-        .cb-box p { margin: 0 0 10px; font-size: 14px; line-height: 1.55; color: #444; }
-        .cb-box p.en { font-size: 13px; color: #666; padding-top: 10px; border-top: 1px dashed #e5e5e5; }
-        .cb-contact { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 4px; }
-        .cb-btn { flex: 1 1 120px; text-align: center; text-decoration: none; padding: 10px 12px; border-radius: 6px; font-size: 14px; font-weight: bold; border: 1.5px solid transparent; cursor: pointer; font-family: inherit; }
-        .cb-btn.call { background: #e74c3c; color: #fff; }
-        .cb-btn.wa { background: #25D366; color: #fff; }
-        .cb-btn.fb { background: #1877f2; color: #fff; }
-        .cb-btn.pay { flex-basis: 100%; background: #fff; color: #e74c3c; border-color: #e74c3c; }
-        .cb-btn.pay:hover { background: #fdf6f5; }
-        .cb-close { display: block; width: 100%; margin-top: 8px; background: none; border: none; color: #888; font-size: 13px; padding: 8px; cursor: pointer; }
     </style>
     <script src="config.js"></script>
     <script src="visitor-track.js" defer></script>
@@ -512,15 +495,7 @@
                 });
                 const data = await res.json();
 
-                if (!res.ok) {
-                    if (data.code === 'COURIER_SCORE_LOW') {
-                        const blockErr = new Error(data.error || 'অর্ডার গ্রহণ করা যাচ্ছে না।');
-                        blockErr.courierBlock = true;
-                        blockErr.onlineOk = data.onlinePaymentAllowed !== false;
-                        throw blockErr;
-                    }
-                    throw new Error(data.error || 'অর্ডার করা যায়নি।');
-                }
+                if (!res.ok) throw new Error(data.error || 'অর্ডার করা যায়নি।');
 
                 // পেমেন্ট গেটওয়েতে (বা সরাসরি সফল পেজে) পাঠানোর আগে কার্ট খালি করা হচ্ছে
                 clearCart();
@@ -534,13 +509,6 @@
                 }
 
             } catch (err) {
-                if (err.courierBlock) {
-                    statusMsg.textContent = '';
-                    btn.disabled = false;
-                    updatePlaceOrderBtnText();
-                    openCourierBlock(err.onlineOk);
-                    return;
-                }
                 statusMsg.style.color = '#e74c3c';
                 statusMsg.textContent = '❌ ' + err.message;
                 btn.disabled = false;
@@ -549,45 +517,6 @@
         }
 
         renderSummary();
-    </script>
-    <div class="cb-bg" id="courierBlockModal" role="dialog" aria-modal="true" aria-labelledby="cbTitle" onclick="if(event.target===this)closeCourierBlock()">
-        <div class="cb-box">
-            <div class="cb-head"><div class="cb-icon" aria-hidden="true">!</div><h3 id="cbTitle">অর্ডার গ্রহণ করা যাচ্ছে না / Order cannot be accepted</h3></div>
-            <p>আপনার কুরিয়ার স্কোর আশানুরূপ না হওয়ায় আমরা আপনার অর্ডারটি গ্রহণ করতে পারছি না। দয়া করে মার্চেন্টের সাথে যোগাযোগ করুন। নিচের বাটন থেকে হটলাইনে কল, WhatsApp বা ফেসবুক পেজে মেসেজ দিতে পারেন। অর্ডারটি গ্রহণ করতে অগ্রিম পেমেন্ট প্রদান জরুরি হতে পারে।</p>
-            <p class="en">We are unable to accept your order as your courier success score is not up to the mark. Please contact the merchant using the buttons below (call, WhatsApp or Facebook page). Alternatively, paying in advance may be required to process your order.</p>
-            <div class="cb-contact">
-                <a class="cb-btn call" href="tel:+8801718381066">কল করুন / Call 01718381066</a>
-                <a class="cb-btn wa" href="https://wa.me/8801718381066" target="_blank" rel="noopener">WhatsApp</a>
-                <a class="cb-btn fb" href="https://www.facebook.com/smarttechzonedhaka" target="_blank" rel="noopener">Facebook</a>
-                <button type="button" class="cb-btn pay" id="cbPayOnline" onclick="chooseOnlinePayment()" style="display:none;">অনলাইন পেমেন্টে অর্ডার করুন / Pay online instead</button>
-            </div>
-            <button type="button" class="cb-close" onclick="closeCourierBlock()">বন্ধ করুন / Close</button>
-        </div>
-    </div>
-    <script>
-        // কুরিয়ার স্কোর গেট: সার্ভার COD অর্ডার আটকালে এই পপআপ দেখায় (স্কোরের সংখ্যা ক্রেতাকে বলা হয় না)
-        function openCourierBlock(onlineOk) {
-            const payBtn = document.getElementById('cbPayOnline');
-            const onlineOpt = document.getElementById('payOnline');
-            payBtn.style.display = (onlineOk && onlineOpt) ? '' : 'none';
-            document.getElementById('courierBlockModal').classList.add('open');
-            const first = document.querySelector('#courierBlockModal .cb-btn.call');
-            if (first) first.focus();
-        }
-        function closeCourierBlock() {
-            document.getElementById('courierBlockModal').classList.remove('open');
-        }
-        function chooseOnlinePayment() {
-            const r = document.getElementById('payOnline');
-            if (r) {
-                r.checked = true;
-                r.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-            closeCourierBlock();
-            const opt = document.getElementById('payOnlineOption');
-            if (opt && opt.scrollIntoView) opt.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCourierBlock(); });
     </script>
 </body>
 </html>
