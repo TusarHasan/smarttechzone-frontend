@@ -172,7 +172,6 @@
     <script src="config.js"></script>
     <script src="visitor-track.js" defer></script>
     <script src="customer-auth.js"></script>
-    <script src="order-cancel.js"></script>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" defer></script>
     <script src="chat-widget.js" defer></script>
 </head>
@@ -800,7 +799,6 @@
                         })()}
                     `).join('')}
                     <div class="order-mini-total">মোট: ৳ ${formatPrice(order.total)}</div>
-                    ${order.canCancel ? `<button type="button" class="order-cancel-btn" onclick="openCancelOrder('${order._id}')">অর্ডার ক্যান্সেল করুন</button>` : ''}
                     ${order.packagingProofVideoUrl ? `
                         <div class="order-packaging-proof">
                             <button class="pp-toggle-btn" onclick="togglePackagingProof('${order._id}')">🎥 Packaging Proof ভিডিও দেখুন</button>
@@ -811,19 +809,6 @@
                     ` : ''}
                 </div>
             `).join('');
-        }
-
-        // Daraz-স্টাইল ক্যান্সেল: শুধু Pending + COD অর্ডারে সার্ভার canCancel দেয় (order-cancel.js পপআপ খোলে)
-        function openCancelOrder(orderId) {
-            const order = (lastOrders || []).find(o => String(o._id) === String(orderId));
-            if (!order || !window.STZCancel) return;
-            STZCancel.open({
-                mode: 'account',
-                orderId: order._id,
-                orderNumber: order.orderNumber,
-                items: order.items,
-                onDone: loadOrders
-            });
         }
 
         async function loadOrders() {

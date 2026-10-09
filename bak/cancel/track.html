@@ -80,7 +80,6 @@
     <script src="config.js"></script>
     <script src="visitor-track.js" defer></script>
     <script src="customer-auth.js"></script>
-    <script src="order-cancel.js"></script>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" defer></script>
     <script src="chat-widget.js" defer></script>
     <script src="cart.js"></script>
@@ -135,19 +134,6 @@
 
         const payLabels = { pending: 'পেমেন্ট বাকি', paid: 'পেমেন্ট সম্পন্ন', failed: 'পেমেন্ট ব্যর্থ', cancelled: 'পেমেন্ট বাতিল' };
 
-        let lastTracked = null;
-        // Daraz-স্টাইল ক্যান্সেল: শুধু Pending + COD অর্ডারে সার্ভার canCancel দেয়; ফোন নাম্বার ট্র্যাকের সময়ের মতোই যাচাই হয়
-        function openTrackCancel() {
-            if (!lastTracked || !window.STZCancel) return;
-            STZCancel.open({
-                mode: 'track',
-                phone: document.getElementById('trackPhone').value.trim(),
-                orderNumber: lastTracked.orderNumber,
-                items: lastTracked.items,
-                onDone: trackOrder
-            });
-        }
-
         function renderOrder(o) {
             const t = o.tracking || { steps: [], headline: '', detail: '' };
             const cls = t.terminal ? 'bad' : (t.stageIndex === 6 ? 'delivered' : '');
@@ -156,7 +142,6 @@
                 <li class="${esc(s.state)}"><span class="dot">${s.state === 'done' ? '&#10003;' : ''}</span>
                     <span class="t">${esc(s.label)}<span class="en">${esc(s.en)}</span></span></li>`).join('');
 
-            lastTracked = o;
             document.getElementById('orderResult').innerHTML = `
                 <div class="track-card tr-status ${cls}">
                     <div class="tr-order-no">অর্ডার নাম্বার: <strong>${esc(o.orderNumber)}</strong> &middot; ${esc(new Date(o.createdAt).toLocaleDateString('bn-BD'))}</div>
@@ -165,7 +150,6 @@
                     ${t.latestUpdate ? `<div class="tr-latest"><b>সর্বশেষ আপডেট:</b> ${esc(t.latestUpdate)}${when ? `<br><span style="color:#999;font-size:12px;">${esc(when)}</span>` : ''}</div>` : ''}
                     ${t.courierName ? `<div class="tr-courier">কুরিয়ার: <b>${esc(t.courierName)}</b>${t.trackingCode ? ` &middot; ট্র্যাকিং কোড: <code>${esc(t.trackingCode)}</code>` : ''}</div>` : ''}
                     ${t.live ? '<span class="tr-live">&#9679; কুরিয়ার থেকে লাইভ স্ট্যাটাস</span>' : ''}
-                    ${o.canCancel ? '<div><button type="button" class="stz-cancel-order-btn" onclick="openTrackCancel()">অর্ডার ক্যান্সেল করুন</button></div>' : ''}
                 </div>
 
                 <div class="track-card ${t.terminal ? 'tl-bad' : ''}">
