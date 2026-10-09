@@ -38,6 +38,9 @@
         "description": "বাংলাদেশের অনলাইন মোবাইল রিপ্লেসমেন্ট পার্টস স্টোর — ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট, বডি হাউজিং সহ সব ব্র্যান্ডের পার্টস, সারা বাংলাদেশে হোম ডেলিভারি।"
     }
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -205,7 +208,7 @@
            যাতে search/brand/model পেজের শেয়ার্ড .product-card স্টাইল একদম অপরিবর্তিত থাকে।
            ব্র্যান্ড রং এক জায়গায় (--mp-accent) — সাইটের বর্তমান লাল (#e74c3c) অনুযায়ী। ===================== */
         :root { --mp-accent:#e74c3c; --mp-accent-soft:#fdf1f0; --mp-bg:#f5f5f5; --mp-line:#eee; --mp-muted:#777; }
-        .mp-home .container { max-width:1320px; padding:0 20px; }
+        .mp-home .container { max-width:1280px; padding:0 20px; }
         .mp-home .promo-strip, .mp-home .flash-sale-section, .mp-home .part-categories-section, .mp-home .category-section { padding-left:0; padding-right:0; }
         .mp-home .category-section { padding-top:20px; padding-bottom:30px; }
         .mp-home .products-section { background:transparent; padding:0; margin-bottom:34px; }
@@ -213,53 +216,74 @@
         .mp-home .section-subtitle { text-align:left; margin-bottom:16px; font-size:13px; }
         .mp-home .flash-sale-section { padding-top:22px; }
 
-        .mp-top { background:var(--mp-bg); padding:14px 0 0; }
-        .mp-wrap { max-width:1320px; margin:0 auto; padding:0 20px; }
-        .mp-top-inner { position:relative; display:grid; grid-template-columns:236px minmax(0,1fr) 224px; gap:12px; height:420px; }
+        .mp-top { background:var(--mp-bg); padding:16px 0 0; }
+        .mp-wrap { max-width:1280px; margin:0 auto; padding:0 20px; }
+        .mp-top-inner { --mp-side-w:232px; position:relative; display:grid; grid-template-columns:var(--mp-side-w) minmax(0,1fr) 232px; gap:14px; height:430px; align-items:stretch; }
         .mp-menu { min-height:0; display:flex; }
-        .mp-sidebar { background:#fff; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,.06); display:flex; flex-direction:column; overflow:hidden; width:100%; min-height:0; }
-        .mp-side-title { display:flex; align-items:center; gap:8px; padding:12px 14px; font-weight:700; font-size:14px; color:#222; border-bottom:1px solid var(--mp-line); flex:none; }
-        .mp-side-title i { color:var(--mp-accent); }
-        .mp-cat-list { list-style:none; overflow-y:auto; flex:1; min-height:0; padding:4px 0; scrollbar-width:thin; }
-        .mp-cat-item > a { display:flex; align-items:center; gap:10px; padding:8px 14px; font-size:13.5px; color:#333; text-decoration:none; }
-        .mp-cat-item.active > a, .mp-cat-item > a:hover, .mp-cat-item > a:focus-visible { background:var(--mp-accent-soft); color:var(--mp-accent); outline:none; }
-        .mp-cat-ico { width:24px; height:24px; border-radius:6px; object-fit:cover; flex:none; background:#fafafa; border:1px solid var(--mp-line); }
+        .mp-sidebar { background:#fff; border:1px solid #e9e9e9; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.05); display:flex; flex-direction:column; overflow:hidden; width:100%; min-height:0; }
+        .mp-side-title { display:flex; align-items:center; gap:10px; padding:0 16px; height:46px; font-weight:700; font-size:14px; color:#222; border-bottom:1px solid #eee; flex:none; }
+        .mp-side-title svg { width:18px; height:18px; color:var(--mp-accent); flex:none; }
+        .mp-cat-list { list-style:none; margin:0; padding:6px 0; overflow-y:auto; flex:1; min-height:0; scrollbar-width:thin; scrollbar-color:#d6d6d6 transparent; }
+        .mp-cat-item > a { display:flex; align-items:center; gap:11px; height:38px; padding:0 12px 0 16px; font-size:13.5px; line-height:1.2; color:#333; text-decoration:none; }
+        .mp-cat-item > a:focus-visible { outline:2px solid var(--mp-accent); outline-offset:-2px; }
+        .mp-cat-item.active > a, .mp-cat-item > a:hover { background:#fff4f2; color:var(--mp-accent); }
+        .mp-cat-ico { width:18px; height:18px; flex:none; color:#8c8c8c; }
+        .mp-cat-item.active .mp-cat-ico, .mp-cat-item > a:hover .mp-cat-ico { color:var(--mp-accent); }
         .mp-cat-name { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .mp-cat-chev { font-size:10px; color:#bbb; }
-        .mp-side-empty { padding:14px; font-size:12.5px; color:#999; }
-        .mp-flyout { position:absolute; top:0; bottom:0; left:236px; right:0; background:#fff; border-radius:0 10px 10px 0; box-shadow:0 10px 30px rgba(0,0,0,.2); z-index:60; padding:20px 26px; overflow:auto; display:none; }
-        .mp-flyout.open { display:block; }
-        .mp-fly-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding-bottom:12px; border-bottom:1px solid var(--mp-line); margin-bottom:14px; }
-        .mp-fly-title { font-size:18px; font-weight:700; color:#222; }
-        .mp-fly-count { font-size:12px; color:#999; margin-top:2px; }
+        .mp-cat-chev { width:12px; height:12px; flex:none; color:#c2c2c2; }
+        .mp-cat-item.active .mp-cat-chev { color:var(--mp-accent); }
+        .mp-side-empty { padding:14px 16px; font-size:12.5px; color:#999; }
+
+        .mp-flyout { position:absolute; top:0; bottom:0; left:calc(var(--mp-side-w) - 1px); right:0; z-index:80; background:#fff; border:1px solid #e9e9e9; border-left:0; border-radius:0 8px 8px 0; box-shadow:0 14px 34px rgba(0,0,0,.16); padding:20px 28px 18px; overflow-y:auto; opacity:0; visibility:hidden; pointer-events:none; transform:translateX(-6px); transition:opacity .14s ease, transform .14s ease, visibility 0s linear .14s; }
+        .mp-flyout.open { opacity:1; visibility:visible; pointer-events:auto; transform:none; transition-delay:0s; }
+        .mp-fly-head { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-bottom:12px; margin-bottom:16px; border-bottom:1px solid #eee; }
+        .mp-fly-title { font-size:17px; font-weight:700; color:#222; line-height:1.3; }
+        .mp-fly-count { font-size:12px; font-weight:400; color:#999; margin-left:8px; }
         .mp-fly-all { font-size:13px; font-weight:600; color:var(--mp-accent); text-decoration:none; white-space:nowrap; }
         .mp-fly-all:hover { text-decoration:underline; }
-        .mp-fly-sub { font-size:12px; font-weight:600; color:#999; text-transform:uppercase; letter-spacing:.4px; margin-bottom:10px; }
-        .mp-fly-cols { list-style:none; column-count:3; column-gap:28px; }
-        .mp-fly-cols li { break-inside:avoid; }
-        .mp-fly-cols a { display:flex; justify-content:space-between; gap:8px; padding:6px 0; font-size:13.5px; color:#333; text-decoration:none; }
-        .mp-fly-cols a:hover { color:var(--mp-accent); }
-        .mp-fly-cols a span { color:#bbb; font-size:12px; }
+        .mp-fly-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(172px,1fr)); gap:18px 30px; }
+        .mp-fg { min-width:0; }
+        .mp-fg-h { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:13.5px; font-weight:700; color:#222; text-decoration:none; padding-bottom:6px; margin-bottom:6px; border-bottom:1px solid #f0f0f0; }
+        .mp-fg-h span { font-size:11.5px; font-weight:400; color:#aaa; }
+        .mp-fg-h:hover { color:var(--mp-accent); }
+        .mp-fg ul { list-style:none; margin:0; padding:0; }
+        .mp-fg li a { display:block; padding:3px 0; font-size:13px; line-height:1.4; color:#555; text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .mp-fg li a:hover, .mp-fg li a:focus-visible { color:var(--mp-accent); }
+        .mp-fg-all { display:block; padding:3px 0; font-size:12.5px; color:#777; text-decoration:none; }
+        .mp-fg-all:hover { color:var(--mp-accent); }
+        .mp-fly-others { margin-top:18px; padding-top:12px; border-top:1px dashed #e6e6e6; font-size:12.5px; color:#999; line-height:1.9; }
+        .mp-fly-others a { color:#555; text-decoration:none; margin-left:12px; white-space:nowrap; }
+        .mp-fly-others a:hover { color:var(--mp-accent); }
         .mp-fly-empty { font-size:13px; color:#888; }
-        .mp-hero-col { min-width:0; border-radius:10px; overflow:hidden; }
+
+        .mp-hero-col { min-width:0; border-radius:8px; overflow:hidden; }
         .mp-hero-col .hero-carousel { height:100%; }
-        .mp-hero-col .hero-slide-inner { padding:24px 32px; }
-        .mp-hero-col .hero-slide-text h1, .mp-hero-col .hero-slide-text h2 { font-size:28px; }
-        .mp-hero-col .hero-slide-text p { font-size:14.5px; margin-bottom:20px; }
-        .mp-hero-col .hero-slide-visual { width:130px; height:130px; font-size:54px; }
-        .mp-side-right { display:flex; flex-direction:column; gap:12px; min-height:0; }
-        .mp-side-card { background:#fff; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,.06); padding:14px; }
-        .mp-welcome-t { font-size:14px; font-weight:700; color:#222; }
-        .mp-welcome-sub { font-size:12px; color:#888; margin:3px 0 12px; line-height:1.5; }
-        .mp-welcome-btns { display:flex; gap:8px; }
-        .mp-btn { flex:1; text-align:center; padding:9px 6px; border-radius:20px; font-size:13px; font-weight:600; text-decoration:none; border:1.5px solid var(--mp-accent); }
+        .mp-hero-col .hero-slide-inner { padding:24px 44px; gap:24px; }
+        .mp-hero-col .hero-slide-text { max-width:480px; }
+        .mp-hero-col .hero-slide-text h1, .mp-hero-col .hero-slide-text h2 { font-size:28px; line-height:1.25; margin-bottom:12px; text-wrap:balance; }
+        .mp-hero-col .hero-slide-text p { font-size:14.5px; line-height:1.6; margin-bottom:22px; max-width:420px; }
+        .mp-hero-col .hero-slide-btn { padding:11px 26px; font-size:14px; }
+        .mp-hero-col .hero-slide-visual { width:132px; height:132px; font-size:52px; }
+
+        .mp-side-right { display:flex; flex-direction:column; gap:14px; min-height:0; }
+        .mp-user, .mp-tiles { background:#fff; border:1px solid #e9e9e9; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+        .mp-user { padding:16px; flex:none; }
+        .mp-user-top { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+        .mp-avatar { width:40px; height:40px; border-radius:50%; background:#f2f2f2; color:#9a9a9a; display:flex; align-items:center; justify-content:center; flex:none; font-size:16px; font-weight:700; }
+        .mp-avatar svg { width:22px; height:22px; }
+        .mp-user-t { font-size:13.5px; font-weight:700; color:#222; line-height:1.3; }
+        .mp-user-s { font-size:11.5px; color:#888; line-height:1.4; margin-top:2px; }
+        .mp-user-btns { display:flex; gap:8px; }
+        .mp-btn { flex:1; text-align:center; padding:10px 4px; border-radius:999px; font-size:13px; font-weight:600; line-height:1; text-decoration:none; border:1.5px solid var(--mp-accent); }
         .mp-btn-fill { background:var(--mp-accent); color:#fff; }
         .mp-btn-line { background:#fff; color:var(--mp-accent); }
-        .mp-quick { flex:1; display:flex; flex-direction:column; }
-        .mp-quick a { display:flex; align-items:center; gap:10px; padding:9px 2px; font-size:13px; color:#444; text-decoration:none; border-bottom:1px solid #f3f3f3; }
-        .mp-quick a:last-child { border-bottom:0; }
-        .mp-quick a:hover { color:var(--mp-accent); }
-        .mp-quick i { width:18px; text-align:center; color:var(--mp-accent); }
+        .mp-tiles { flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; overflow:hidden; }
+        .mp-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:10px 6px; font-size:12.5px; font-weight:500; color:#333; text-decoration:none; text-align:center; line-height:1.25; }
+        .mp-tile:nth-child(odd) { border-right:1px solid #f0f0f0; }
+        .mp-tile:nth-child(-n+2) { border-bottom:1px solid #f0f0f0; }
+        .mp-tile:hover, .mp-tile:focus-visible { background:#fafafa; color:var(--mp-accent); outline:none; }
+        .mp-tile-ico { width:42px; height:42px; border-radius:50%; background:#fff1ef; color:var(--mp-accent); display:flex; align-items:center; justify-content:center; }
+        .mp-tile-ico svg { width:22px; height:22px; }
 
         .mp-card { background:#fff; border-radius:10px; overflow:hidden; cursor:pointer; display:flex; flex-direction:column; min-width:0; position:relative; box-shadow:0 1px 4px rgba(0,0,0,.06); transition:transform .2s ease, box-shadow .2s ease; animation:fadeInUp .35s ease both; }
         .mp-card:hover { transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,.12); }
@@ -308,7 +332,7 @@
         body.mp-lock #stzChatFab { display:none !important; }
 
         @media (max-width:1199px) {
-            .mp-top-inner { grid-template-columns:220px minmax(0,1fr); }
+            .mp-top-inner { --mp-side-w:216px; grid-template-columns:var(--mp-side-w) minmax(0,1fr); }
             .mp-side-right { display:none; }
             #product-list.mp-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
         }
@@ -354,7 +378,22 @@
         @media (max-width:576px) {
             #product-list.mp-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
         }
+        /* টাইপোগ্রাফি: Poppins-এ বাংলা গ্লিফ নেই, তাই বাংলা লেখা সিস্টেমের ছোট/পাতলা ফন্টে পড়ত — Hind Siliguri যোগ */
+        body.mp-home { font-family:'Poppins','Hind Siliguri','Noto Sans Bengali',Arial,sans-serif; }
+        .mp-home button, .mp-home input { font-family:inherit; }
+        /* বড় স্ক্রিনে নেভবারের লোগো/লগইন কিনারায় ছড়িয়ে না গিয়ে কনটেন্টের (১২৮০px) সাথে এক লাইনে থাকে */
+        @media (min-width:1000px) {
+            .mp-home .navbar { padding-left:max(30px, calc((100% - 1280px) / 2 + 20px)); padding-right:max(30px, calc((100% - 1280px) / 2 + 20px)); }
+        }
+        .mp-home .promo-strip { padding-top:16px; }
+        .mp-home .promo-strip .container { gap:14px; align-items:stretch; }
+        .mp-home .promo-card { padding:18px 22px; min-width:220px; }
+        .mp-home .promo-banner { flex:3; }
+        .mp-home .promo-banner h3 { font-size:17px; line-height:1.35; margin-bottom:5px; }
+        .mp-home .promo-banner p { font-size:12.5px; line-height:1.55; }
+        .mp-home .flash-sale-note, .mp-home .section-subtitle { line-height:1.6; }
         @media (prefers-reduced-motion: reduce) {
+            .mp-flyout { transition:none; }
             .mp-card, .mp-drawer, .mp-acc-btn .mp-cat-chev { transition:none; animation:none; }
         }
     </style>
@@ -394,10 +433,10 @@
         <div class="mp-top-inner">
             <div class="mp-menu" id="mpMenu">
                 <nav class="mp-sidebar" aria-label="Product categories">
-                    <div class="mp-side-title"><i class="fa-solid fa-bars"></i> All Categories</div>
+                    <div class="mp-side-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg> All Categories</div>
                     <ul class="mp-cat-list" id="mpCatList"><li class="mp-side-empty">লোড হচ্ছে...</li></ul>
                 </nav>
-                <div class="mp-flyout" id="mpFlyout"></div>
+                <div class="mp-flyout" id="mpFlyout" aria-label="Category menu"></div>
             </div>
             <div class="mp-hero-col">
     <section class="hero-carousel" id="heroCarousel">
@@ -460,20 +499,22 @@
         <div class="hero-dots" id="heroDots"></div>
     </section>
             </div>
-            <aside class="mp-side-right" aria-label="Quick links">
-                <div class="mp-side-card" id="mpWelcome">
-                    <div class="mp-welcome-t">স্বাগতম, Smart Tech Zone-এ</div>
-                    <div class="mp-welcome-sub">প্রতিটা অর্ডার ভিডিও প্রুফসহ প্যাক হয়</div>
-                    <div class="mp-welcome-btns">
-                        <a href="login.html" class="mp-btn mp-btn-fill">Login</a>
-                        <a href="register.html" class="mp-btn mp-btn-line">Register</a>
+            <aside class="mp-side-right" aria-label="Account and help">
+                <div class="mp-user" id="mpUser">
+                    <div class="mp-user-top">
+                        <span class="mp-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                        <div><div class="mp-user-t">Welcome to Smart Tech Zone</div><div class="mp-user-s">Mobile parts with video-proof delivery</div></div>
+                    </div>
+                    <div class="mp-user-btns">
+                        <a href="register.html" class="mp-btn mp-btn-fill">Register</a>
+                        <a href="login.html" class="mp-btn mp-btn-line">Sign in</a>
                     </div>
                 </div>
-                <div class="mp-side-card mp-quick">
-                    <a href="track.html"><i class="fa-solid fa-truck-fast"></i> Track Your Order</a>
-                    <a href="returns-refunds.html"><i class="fa-solid fa-rotate-left"></i> Returns &amp; Refunds</a>
-                    <a href="help-center.html"><i class="fa-solid fa-circle-question"></i> Help Center</a>
-                    <a href="https://wa.me/8801718381066" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp Support</a>
+                <div class="mp-tiles">
+                    <a href="track.html" class="mp-tile"><span class="mp-tile-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6h11v10H2zM13 9h4l4 4v3h-8z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>Track Order</a>
+                    <a href="help-center.html" class="mp-tile"><span class="mp-tile-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></svg></span>Help Center</a>
+                    <a href="returns-refunds.html" class="mp-tile"><span class="mp-tile-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></span>Returns</a>
+                    <a href="https://wa.me/8801718381066" target="_blank" rel="noopener" class="mp-tile"><span class="mp-tile-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8.5 8.5 0 0 1-12.4 7.5L3 21l1.6-5.3A8.5 8.5 0 1 1 21 12z"/><path d="M9 9.5c.5 2.5 2.5 4.5 5 5l1.2-1.2-1.8-1-.8.7a4 4 0 0 1-2-2l.7-.8-1-1.8z"/></svg></span>WhatsApp</a>
                 </div>
             </aside>
         </div>
@@ -649,6 +690,7 @@
         let totalPages = 1;
         let currentCategory = null;
         let currentBrand = null;
+        let currentModel = null;
         const PAGE_SIZE = 20;
 
         function esc(s) {
@@ -662,12 +704,13 @@
             applyCategoryFilterFromUrl();
         }
 
-        function goToFilter(catName, brandName) {
+        function goToFilter(catName, brandName, modelName) {
             const qs = new URLSearchParams();
             if (catName) qs.set('category', catName);
             if (catName && brandName) qs.set('phoneBrand', brandName);
+            if (catName && brandName && modelName) qs.set('model', modelName);
             const q = qs.toString();
-            history.pushState({ category: catName || null, phoneBrand: brandName || null }, '', 'index.html' + (q ? '?' + q : ''));
+            history.pushState({ category: catName || null, phoneBrand: brandName || null, model: modelName || null }, '', 'index.html' + (q ? '?' + q : ''));
             applyCategoryFilterFromUrl();
         }
 
@@ -686,10 +729,11 @@
             const params = new URLSearchParams(window.location.search);
             currentCategory = params.get('category');
             currentBrand = currentCategory ? params.get('phoneBrand') : null;
+            currentModel = (currentCategory && currentBrand) ? params.get('model') : null;
             const titleEl = document.getElementById('productsSectionTitle');
             const banner = document.getElementById('categoryBanner');
 
-            titleEl.textContent = currentCategory ? [currentCategory, currentBrand].filter(Boolean).join(' · ') : 'Latest Products';
+            titleEl.textContent = currentCategory ? [currentCategory, currentBrand, currentModel].filter(Boolean).join(' · ') : 'Latest Products';
             if (!currentCategory) banner.innerHTML = '';
 
             const listEl = document.getElementById('product-list');
@@ -714,13 +758,14 @@
                 const qs = new URLSearchParams({ status: 'published', fields: 'summary', sort: 'reviews', page: currentPage, limit: PAGE_SIZE });
                 if (currentCategory) qs.set('category', currentCategory);
                 if (currentBrand) qs.set('phoneBrand', currentBrand);
+                if (currentModel) qs.set('model', currentModel);
 
                 const res = await fetch(`${API_BASE}/api/products?${qs.toString()}`);
                 const data = await res.json();
                 totalPages = data.totalPages || 1;
 
                 if (currentCategory) {
-                    const label = [currentCategory, currentBrand].filter(Boolean).map(esc).join(' · ');
+                    const label = [currentCategory, currentBrand, currentModel].filter(Boolean).map(esc).join(' · ');
                     banner.innerHTML = `<div class="active-category-banner">
                         দেখাচ্ছে: <b>${label}</b> (${data.total}টি) — <a href="index.html" onclick="clearCategory(event)">সব প্রোডাক্ট দেখুন</a>
                     </div>`;
@@ -828,11 +873,46 @@
             renderDrawer();
         }
 
+        // লাইন-আইকন (ক্যাটাগরির নাম মিলিয়ে) — প্রোডাক্টের ছোট ছবির বদলে, যাতে সাইডবার পরিষ্কার ও দ্রুত লোড হয়
+        const MP_ICONS = {
+            camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+            shield: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>',
+            battery: '<rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 11v2M6 12h6"/>',
+            frame: '<rect x="3" y="3" width="18" height="18" rx="3"/><rect x="8" y="8" width="8" height="8" rx="1"/>',
+            display: '<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/>',
+            speaker: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11"/>',
+            mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+            key: '<rect x="2" y="8" width="20" height="8" rx="4"/><circle cx="8" cy="12" r="2"/>',
+            sim: '<path d="M6 2h8l4 4v16H6z"/><rect x="9" y="12" width="6" height="6" rx="1"/>',
+            wave: '<path d="M3 12c3-6 6 6 9 0s6 6 9 0"/>',
+            bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+            chip: '<rect x="6" y="6" width="12" height="12" rx="1.5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+            glass: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 16 16 8M12 17l5-5"/>',
+            vibrator: '<path d="M8 4v16M16 4v16M4 8v8M20 8v8"/>',
+            tools: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>',
+            pen: '<path d="M4 20l1-4L16 5l3 3L8 19z"/>',
+            box: '<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>'
+        };
+        const MP_ICON_RULES = [
+            [/camera/, 'camera'], [/protector/, 'shield'], [/battery/, 'battery'], [/frame|housing|back panel/, 'frame'],
+            [/lcd|display/, 'display'], [/speaker|earpiece|buzzer/, 'speaker'], [/microphone|\bmic\b/, 'mic'],
+            [/power volume|outside key|fingerprint|button/, 'key'], [/\bsim\b/, 'sim'], [/antenna|flex cable/, 'wave'],
+            [/charging/, 'bolt'], [/motherboard|integrated|\bic\b|logic/, 'chip'], [/glass|oca/, 'glass'],
+            [/vibrator/, 'vibrator'], [/tool/, 'tools'], [/stylus|\bpen\b/, 'pen']
+        ];
         function catIcon(c) {
-            return c.image ? `<img class="mp-cat-ico" src="${resolveImg(c.image, 48, 48)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<span class="mp-cat-ico"></span>';
+            const n = String((c && c.name) || '').toLowerCase();
+            const hit = MP_ICON_RULES.find(r => r[0].test(n));
+            return `<svg class="mp-cat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MP_ICONS[hit ? hit[1] : 'box']}</svg>`;
         }
-        function catHref(cat, brand) {
-            return 'index.html?category=' + encodeURIComponent(cat) + (brand ? '&phoneBrand=' + encodeURIComponent(brand) : '');
+        const MP_CHEV = '<svg class="mp-cat-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+
+        function catHref(cat, brand, model) {
+            return 'index.html?category=' + encodeURIComponent(cat) + (brand ? '&phoneBrand=' + encodeURIComponent(brand) : '') + (brand && model ? '&model=' + encodeURIComponent(model) : '');
+        }
+        // মেনু/ড্রয়ারের লিংকের data-* অ্যাট্রিবিউট (ক্লিকে goToFilter-এ যায়)
+        function catAttrs(cat, brand, model) {
+            return `data-cat="${esc(cat)}"${brand ? ` data-brand="${esc(brand)}"` : ''}${model ? ` data-model="${esc(model)}"` : ''}`;
         }
 
         function renderSidebar() {
@@ -840,54 +920,127 @@
             if (!list) return;
             if (!mpTree.length) { list.innerHTML = '<li class="mp-side-empty">ক্যাটাগরি লোড করা যায়নি</li>'; return; }
             list.innerHTML = mpTree.map((c, i) => `
-                <li class="mp-cat-item" data-i="${i}"><a href="${esc(catHref(c.name))}" data-cat="${esc(c.name)}">${catIcon(c)}<span class="mp-cat-name">${esc(c.name)}</span><i class="fa-solid fa-chevron-right mp-cat-chev" aria-hidden="true"></i></a></li>`).join('');
+                <li class="mp-cat-item" data-i="${i}"><a href="${esc(catHref(c.name))}" ${catAttrs(c.name)} aria-haspopup="true" aria-expanded="false">${catIcon(c)}<span class="mp-cat-name">${esc(c.name)}</span>${MP_CHEV}</a></li>`).join('');
         }
 
+        // মেগা-মেনু প্যানেল: ব্র্যান্ড = কলাম-শিরোনাম, তার নিচে ওই ব্র্যান্ডের সবচেয়ে বেশি প্রোডাক্টের মডেল।
+        // সর্বোচ্চ ১০টা ব্র্যান্ড কলাম, বাকিগুলো নিচে এক লাইনে "Other brands"।
+        const MP_MAX_BRANDS = 10, MP_MAX_MODELS = 5;
         function showFlyout(i) {
             const c = mpTree[i];
             const fly = document.getElementById('mpFlyout');
             if (!c || !fly) return;
             const brands = c.brands || [];
+            const main = brands.slice(0, MP_MAX_BRANDS), rest = brands.slice(MP_MAX_BRANDS);
+            const group = b => {
+                const models = (b.models || []).slice(0, MP_MAX_MODELS);
+                const body = models.length
+                    ? `<ul>${models.map(m => `<li><a href="${esc(catHref(c.name, b.name, m.name))}" ${catAttrs(c.name, b.name, m.name)} title="${esc(m.name)}">${esc(m.name)}</a></li>`).join('')}</ul>`
+                    : `<a class="mp-fg-all" href="${esc(catHref(c.name, b.name))}" ${catAttrs(c.name, b.name)}>All ${esc(b.name)} parts</a>`;
+                return `<div class="mp-fg"><a class="mp-fg-h" href="${esc(catHref(c.name, b.name))}" ${catAttrs(c.name, b.name)}>${esc(b.name)}<span>${b.count}</span></a>${body}</div>`;
+            };
             fly.innerHTML = `
                 <div class="mp-fly-head">
-                    <div><div class="mp-fly-title">${esc(c.name)}</div><div class="mp-fly-count">${c.count} items</div></div>
-                    <a class="mp-fly-all" href="${esc(catHref(c.name))}" data-cat="${esc(c.name)}">সব দেখুন →</a>
+                    <div class="mp-fly-title">${esc(c.name)}<span class="mp-fly-count">${c.count} items</span></div>
+                    <a class="mp-fly-all" href="${esc(catHref(c.name))}" ${catAttrs(c.name)}>View all →</a>
                 </div>
-                ${brands.length
-                    ? `<div class="mp-fly-sub">ফোন ব্র্যান্ড অনুযায়ী</div>
-                       <ul class="mp-fly-cols">${brands.map(b => `<li><a href="${esc(catHref(c.name, b.name))}" data-cat="${esc(c.name)}" data-brand="${esc(b.name)}">${esc(b.name)}<span>${b.count}</span></a></li>`).join('')}</ul>`
-                    : '<p class="mp-fly-empty">এই ক্যাটাগরির সব প্রোডাক্ট দেখতে উপরের লিংকে ক্লিক করুন।</p>'}`;
+                ${main.length
+                    ? `<div class="mp-fly-grid">${main.map(group).join('')}</div>
+                       ${rest.length ? `<div class="mp-fly-others">Other brands:${rest.map(b => `<a href="${esc(catHref(c.name, b.name))}" ${catAttrs(c.name, b.name)}>${esc(b.name)} (${b.count})</a>`).join('')}</div>` : ''}`
+                    : '<p class="mp-fly-empty">এই ক্যাটাগরির সব প্রোডাক্ট দেখতে উপরের "View all" লিংকে ক্লিক করুন।</p>'}`;
+            fly.scrollTop = 0;
             fly.classList.add('open');
-            document.querySelectorAll('#mpCatList .mp-cat-item').forEach(li => li.classList.toggle('active', li.dataset.i === String(i)));
+            fly.dataset.i = String(i);
+            document.querySelectorAll('#mpCatList .mp-cat-item').forEach(li => {
+                const on = li.dataset.i === String(i);
+                li.classList.toggle('active', on);
+                const a = li.firstElementChild; if (a) a.setAttribute('aria-expanded', on ? 'true' : 'false');
+            });
         }
 
         function closeFlyout() {
             clearTimeout(flyTimer);
+            clearTimeout(flyOpenTimer);
             const fly = document.getElementById('mpFlyout');
-            if (fly) fly.classList.remove('open');
-            document.querySelectorAll('#mpCatList .mp-cat-item.active').forEach(li => li.classList.remove('active'));
+            if (fly) { fly.classList.remove('open'); delete fly.dataset.i; }
+            document.querySelectorAll('#mpCatList .mp-cat-item.active').forEach(li => {
+                li.classList.remove('active');
+                const a = li.firstElementChild; if (a) a.setAttribute('aria-expanded', 'false');
+            });
         }
 
+        let flyOpenTimer = null;
         (function initMegaMenu() {
             const menu = document.getElementById('mpMenu');
             if (!menu) return;
+            const fly = document.getElementById('mpFlyout');
+            const isOpen = () => fly.classList.contains('open');
+            const canHover = () => window.matchMedia('(hover: hover)').matches;
+
+            // হোভার: প্রথমবার সাথে সাথে খোলে; এক ক্যাটাগরি থেকে আরেকটায় সরলে ৭০ms অপেক্ষা (তির্যকভাবে মাউস নিলে ঝিকমিক না করতে)
             menu.addEventListener('mouseover', e => {
-                const li = e.target.closest('.mp-cat-item');
+                if (!canHover()) return;
                 clearTimeout(flyTimer);
-                if (li) showFlyout(Number(li.dataset.i));
+                const li = e.target.closest('.mp-cat-item');
+                if (!li) return;
+                const i = Number(li.dataset.i);
+                clearTimeout(flyOpenTimer);
+                if (fly.dataset.i === String(i)) return;
+                if (!isOpen()) showFlyout(i);
+                else flyOpenTimer = setTimeout(() => showFlyout(i), 70);
             });
+            menu.addEventListener('mouseleave', () => { clearTimeout(flyOpenTimer); flyTimer = setTimeout(closeFlyout, 160); });
+            menu.addEventListener('mouseenter', () => clearTimeout(flyTimer));
+
             menu.addEventListener('focusin', e => {
+                if (!canHover()) return; // টাচে ট্যাপের ফোকাসই মেনু খুলে ফেললে দ্বিতীয় ট্যাপের লজিক ভেঙে যায়
                 const li = e.target.closest('.mp-cat-item');
                 if (li) showFlyout(Number(li.dataset.i));
             });
-            menu.addEventListener('mouseleave', () => { flyTimer = setTimeout(closeFlyout, 150); });
+
+            // ক্লিক: টাচ ডিভাইসে (hover নেই) ক্যাটাগরিতে প্রথম ট্যাপে মেনু খোলে, দ্বিতীয় ট্যাপে পেজ ফিল্টার হয়
             menu.addEventListener('click', e => {
                 const a = e.target.closest('a[data-cat]');
                 if (!a) return;
+                const li = a.closest('.mp-cat-item');
+                if (li && !canHover() && fly.dataset.i !== li.dataset.i) {
+                    e.preventDefault();
+                    showFlyout(Number(li.dataset.i));
+                    return;
+                }
                 e.preventDefault();
-                goToFilter(a.getAttribute('data-cat'), a.getAttribute('data-brand'));
+                goToFilter(a.getAttribute('data-cat'), a.getAttribute('data-brand'), a.getAttribute('data-model'));
             });
-            document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFlyout(); });
+
+            // কীবোর্ড: ↑/↓ ক্যাটাগরি বদল, → প্যানেলে ঢোকা, ←/Esc বন্ধ করে ক্যাটাগরিতে ফেরা
+            menu.addEventListener('keydown', e => {
+                const a = e.target.closest('a');
+                if (!a) return;
+                const li = a.closest('.mp-cat-item');
+                if (li) {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const sib = e.key === 'ArrowDown' ? li.nextElementSibling : li.previousElementSibling;
+                        if (sib) sib.firstElementChild.focus();
+                    } else if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        showFlyout(Number(li.dataset.i));
+                        const first = fly.querySelector('a');
+                        if (first) first.focus();
+                    }
+                } else if (fly.contains(a) && (e.key === 'ArrowLeft')) {
+                    const act = document.querySelector('#mpCatList .mp-cat-item.active > a');
+                    if (act) { e.preventDefault(); act.focus(); }
+                }
+            });
+            document.addEventListener('keydown', e => {
+                if (e.key !== 'Escape' || !isOpen()) return;
+                const act = document.querySelector('#mpCatList .mp-cat-item.active > a');
+                closeFlyout();
+                if (act && menu.contains(document.activeElement)) act.focus();
+            });
+            // মেনুর বাইরে (যেমন টাচে) ট্যাপ করলে বন্ধ
+            document.addEventListener('click', e => { if (isOpen() && !menu.contains(e.target)) closeFlyout(); });
         })();
 
         // মোবাইল ড্রয়ার (accordion): ক্যাটাগরি চাপলে ব্র্যান্ড-লিংক খোলে
@@ -898,13 +1051,13 @@
             body.innerHTML = mpTree.map((c, i) => {
                 const brands = c.brands || [];
                 if (!brands.length) {
-                    return `<a class="mp-acc-btn" href="${esc(catHref(c.name))}" data-cat="${esc(c.name)}">${catIcon(c)}<span class="mp-cat-name">${esc(c.name)}</span></a>`;
+                    return `<a class="mp-acc-btn" href="${esc(catHref(c.name))}" ${catAttrs(c.name)}>${catIcon(c)}<span class="mp-cat-name">${esc(c.name)}</span></a>`;
                 }
                 return `<div class="mp-acc">
-                    <button type="button" class="mp-acc-btn" aria-expanded="false" aria-controls="mpAcc${i}">${catIcon(c)}<span class="mp-cat-name">${esc(c.name)}</span><i class="fa-solid fa-chevron-right mp-cat-chev" aria-hidden="true"></i></button>
+                    <button type="button" class="mp-acc-btn" aria-expanded="false" aria-controls="mpAcc${i}">${catIcon(c)}<span class="mp-cat-name">${esc(c.name)}</span>${MP_CHEV}</button>
                     <div class="mp-acc-panel" id="mpAcc${i}" hidden>
-                        <a class="all" href="${esc(catHref(c.name))}" data-cat="${esc(c.name)}">সব দেখুন</a>
-                        ${brands.map(b => `<a href="${esc(catHref(c.name, b.name))}" data-cat="${esc(c.name)}" data-brand="${esc(b.name)}">${esc(b.name)}<span>${b.count}</span></a>`).join('')}
+                        <a class="all" href="${esc(catHref(c.name))}" ${catAttrs(c.name)}>সব দেখুন</a>
+                        ${brands.map(b => `<a href="${esc(catHref(c.name, b.name))}" ${catAttrs(c.name, b.name)}>${esc(b.name)}<span>${b.count}</span></a>`).join('')}
                     </div></div>`;
             }).join('');
         }
@@ -942,7 +1095,7 @@
                         return;
                     }
                     const a = e.target.closest('a[data-cat]');
-                    if (a) { e.preventDefault(); goToFilter(a.getAttribute('data-cat'), a.getAttribute('data-brand')); }
+                    if (a) { e.preventDefault(); goToFilter(a.getAttribute('data-cat'), a.getAttribute('data-brand'), a.getAttribute('data-model')); }
                 });
             }
             const catsBtn = document.getElementById('mpNavCats');
@@ -982,12 +1135,12 @@
             if (!(token && customer)) return;
             const acc = document.getElementById('mpNavAccount');
             if (acc) acc.setAttribute('href', 'account.html#profileSection');
-            const w = document.getElementById('mpWelcome');
+            const w = document.getElementById('mpUser');
             if (w) {
-                const first = esc(((customer.name || '').trim().split(' ')[0]) || 'অ্যাকাউন্ট');
-                w.innerHTML = `<div class="mp-welcome-t">স্বাগতম, ${first}</div>
-                    <div class="mp-welcome-sub">আপনার অর্ডার ও উইশলিস্ট এক জায়গায়</div>
-                    <div class="mp-welcome-btns"><a href="account.html#ordersSection" class="mp-btn mp-btn-fill">My Orders</a><a href="account.html#wishlistSection" class="mp-btn mp-btn-line">Wishlist</a></div>`;
+                const nm = ((customer.name || '').trim().split(' ')[0]) || 'Account';
+                w.innerHTML = `<div class="mp-user-top"><span class="mp-avatar">${esc(nm.charAt(0).toUpperCase())}</span>
+                        <div><div class="mp-user-t">Hi, ${esc(nm)}</div><div class="mp-user-s">Manage your orders and wishlist</div></div></div>
+                    <div class="mp-user-btns"><a href="account.html#ordersSection" class="mp-btn mp-btn-fill">My Orders</a><a href="account.html#wishlistSection" class="mp-btn mp-btn-line">Wishlist</a></div>`;
             }
         }
         window.addEventListener('storage', mpUpdateCartBadges);
