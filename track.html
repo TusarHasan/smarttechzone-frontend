@@ -12,48 +12,70 @@
     <title>অর্ডার ট্র্যাক করুন - Smart Tech Zone</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .track-container { max-width: 600px; margin: 40px auto; padding: 0 20px; }
-        .track-card { background: #fff; border-radius: 8px; padding: 26px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-        .track-card h2 { margin-top: 0; color: #333; }
+        .track-container { max-width: 640px; margin: 32px auto; padding: 0 16px; }
+        .track-card { background: #fff; border-radius: 12px; padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 16px; }
+        .track-card h2 { margin: 0 0 4px; color: #222; font-size: 21px; }
+        .track-sub { color: #777; font-size: 13px; margin: 0 0 6px; }
         .track-card label { display: block; margin-top: 14px; font-size: 13px; font-weight: bold; color: #333; }
         .track-card input {
-            width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ccc; border-radius: 4px;
-            box-sizing: border-box; font-family: Arial, sans-serif; font-size: 14px;
+            width: 100%; padding: 11px; margin-top: 6px; border: 1px solid #ccc; border-radius: 6px;
+            box-sizing: border-box; font-family: inherit; font-size: 15px;
         }
+        .track-card input:focus { outline: none; border-color: #e74c3c; box-shadow: 0 0 0 3px rgba(231,76,60,.12); }
         .track-btn {
             width: 100%; margin-top: 18px; background: #e74c3c; color: #fff; border: none; padding: 13px;
-            font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer;
+            font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer;
         }
         .track-btn:hover { background: #c0392b; }
-        .track-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        #trackMsg { margin-top: 12px; font-size: 14px; text-align: center; }
+        .track-btn:disabled { opacity: .6; cursor: wait; }
+        #trackMsg { margin-top: 12px; font-size: 14px; text-align: center; color: #c0392b; line-height: 1.5; }
 
-        .order-result { margin-top: 24px; }
-        .order-result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .order-status-badge {
-            display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; color: #fff;
-        }
-        .status-pending { background: #999; }
-        .status-processing { background: #f39c12; }
-        .status-shipped { background: #2980b9; }
-        .status-delivered { background: #27ae60; }
-        .status-cancelled { background: #e74c3c; }
-        .status-delivery_failed { background: #7c3aed; }
-        .pay-pending { color: #e67e22; }
-        .pay-paid { color: #27ae60; }
-        .pay-failed, .pay-cancelled { color: #e74c3c; }
+        .tr-status { border-left: 5px solid #2980b9; }
+        .tr-status.delivered { border-left-color: #27ae60; }
+        .tr-status.bad { border-left-color: #e74c3c; }
+        .tr-order-no { font-size: 13px; color: #888; }
+        .tr-order-no strong { color: #222; font-size: 15px; }
+        .tr-headline { font-size: 18px; font-weight: bold; color: #222; margin: 8px 0 4px; }
+        .tr-detail { font-size: 14px; color: #555; line-height: 1.6; }
+        .tr-latest { margin-top: 12px; background: #f8f9fb; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #444; line-height: 1.55; }
+        .tr-latest b { color: #222; }
+        .tr-courier { margin-top: 10px; font-size: 13px; color: #555; }
+        .tr-courier code { background: #f1f3f5; padding: 2px 7px; border-radius: 4px; font-size: 13px; color: #222; user-select: all; }
+        .tr-live { display: inline-block; margin-top: 8px; font-size: 11.5px; color: #27ae60; font-weight: bold; }
 
-        .order-item-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f5f5f5; }
+        .tl { list-style: none; margin: 4px 0 0; padding: 0; }
+        .tl li { position: relative; padding: 0 0 20px 36px; min-height: 22px; }
+        .tl li:last-child { padding-bottom: 0; }
+        .tl li::before { content: ''; position: absolute; left: 10px; top: 22px; bottom: -2px; width: 2px; background: #e3e6ea; }
+        .tl li:last-child::before { display: none; }
+        .tl .dot { position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 2px solid #cfd4da; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; }
+        .tl .t { font-size: 14px; color: #999; line-height: 1.3; }
+        .tl .en { display: block; font-size: 11.5px; color: #b5bac0; }
+        .tl li.done .dot { background: #27ae60; border-color: #27ae60; }
+        .tl li.done::before { background: #27ae60; }
+        .tl li.done .t { color: #333; }
+        .tl li.current .dot { border-color: #e74c3c; background: #fff; box-shadow: 0 0 0 4px rgba(231,76,60,.15); }
+        .tl li.current .dot::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #e74c3c; }
+        .tl li.current .t { color: #e74c3c; font-weight: bold; }
+        .tl-bad .tl li.todo { opacity: .55; }
+        .tr-bad-note { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: #fdecea; color: #b03a2e; font-size: 13.5px; line-height: 1.55; }
+
+        .tr-sec { font-size: 14px; font-weight: bold; color: #222; margin: 0 0 8px; }
+        .order-item-row { display: flex; gap: 10px; padding: 9px 0; font-size: 14px; border-bottom: 1px solid #f3f3f3; align-items: center; }
+        .order-item-row img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; background: #f5f5f5; flex-shrink: 0; }
+        .order-item-row .nm { flex: 1; min-width: 0; line-height: 1.4; }
+        .order-item-row .nm small { color: #888; display: block; }
         .order-summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; color: #555; }
-        .order-summary-row.total { font-size: 16px; font-weight: bold; color: #333; border-top: 1px solid #eee; margin-top: 8px; padding-top: 10px; }
+        .order-summary-row.total { font-size: 16px; font-weight: bold; color: #222; border-top: 1px solid #eee; margin-top: 8px; padding-top: 10px; }
+        .pay-line { font-size: 13px; font-weight: bold; margin-bottom: 8px; }
+        .pay-pending { color: #e67e22; } .pay-paid { color: #27ae60; } .pay-failed, .pay-cancelled { color: #e74c3c; }
         .track-address { font-size: 13px; color: #666; margin-top: 10px; line-height: 1.6; }
         .order-packaging-proof { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f0f0f0; }
-        .pp-toggle-btn {
-            background: none; border: 1px solid #e74c3c; color: #e74c3c; padding: 7px 14px;
-            border-radius: 20px; font-size: 12.5px; font-weight: bold; cursor: pointer;
-        }
+        .pp-toggle-btn { background: none; border: 1px solid #e74c3c; color: #e74c3c; padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: bold; cursor: pointer; }
         .pp-toggle-btn:hover { background: #fdf1f0; }
         .order-packaging-proof video { width: 100%; margin-top: 10px; border-radius: 8px; background: #000; }
+        .tr-help { text-align: center; font-size: 13px; color: #777; margin: 6px 0 0; }
+        .tr-help a { color: #e74c3c; font-weight: bold; text-decoration: none; }
     </style>
     <script src="config.js"></script>
     <script src="visitor-track.js" defer></script>
@@ -75,94 +97,90 @@
             <a href="cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
         </div>
     </nav>
-
     <div class="track-container">
-        <div class="track-card">
+        <form class="track-card" id="trackForm" novalidate>
             <h2>আপনার অর্ডার ট্র্যাক করুন</h2>
-            <label>ফোন নাম্বার</label>
-            <input type="text" id="trackPhone" placeholder="01XXXXXXXXX">
-            <label>অর্ডার নাম্বার</label>
-            <input type="text" id="trackOrderNumber" placeholder="যেমন: STZ-XXXXXXX">
-            <button class="track-btn" id="trackBtn" onclick="trackOrder()">ট্র্যাক করুন</button>
-            <div id="trackMsg"></div>
-        </div>
+            <p class="track-sub">লগইন ছাড়াই অর্ডারের সর্বশেষ অবস্থা জানুন।</p>
+            <label for="trackOrderNumber">অর্ডার নাম্বার</label>
+            <input type="text" id="trackOrderNumber" placeholder="যেমন: STZ-XXXXXXXXXXX" autocomplete="off">
+            <label for="trackPhone">ফোন নাম্বার (অর্ডারের সময় যেটা দিয়েছিলেন)</label>
+            <input type="tel" inputmode="tel" id="trackPhone" placeholder="01XXXXXXXXX" autocomplete="tel">
+            <button type="submit" class="track-btn" id="trackBtn">ট্র্যাক করুন</button>
+            <div id="trackMsg" aria-live="polite"></div>
+        </form>
 
-        <div class="order-result" id="orderResult"></div>
+        <div id="orderResult"></div>
+        <p class="tr-help">সাহায্য লাগলে <a href="help-center.html">Help Center</a> দেখুন।</p>
     </div>
 
     <div id="siteFooter"></div>
     <script src="footer.js"></script>
     <script src="search.js"></script>
-
     <script>
         const API_BASE = BACKEND_URL;
 
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
         function resolveImg(url) {
-            if (!url) return 'https://via.placeholder.com/100';
+            if (!url) return '';
             return url.startsWith('http') ? url : `${API_BASE}${url}`;
         }
-
-        function formatPrice(n) {
-            return Number(n).toLocaleString('en-IN');
+        function formatPrice(n) { return Number(n || 0).toLocaleString('en-IN'); }
+        function togglePackagingProof() {
+            const v = document.getElementById('ppVideo');
+            if (v) v.style.display = v.style.display === 'none' ? 'block' : 'none';
         }
 
-        function togglePackagingProof(orderId) {
-            const video = document.getElementById(`pp-video-${orderId}`);
-            if (!video) return;
-            video.style.display = video.style.display === 'none' ? 'block' : 'none';
-        }
+        const payLabels = { pending: 'পেমেন্ট বাকি', paid: 'পেমেন্ট সম্পন্ন', failed: 'পেমেন্ট ব্যর্থ', cancelled: 'পেমেন্ট বাতিল' };
 
-        const statusLabels = {
-            pending: 'পেন্ডিং', processing: 'প্রসেসিং হচ্ছে', shipped: 'শিপড',
-            delivered: 'ডেলিভারড', cancelled: 'বাতিল', delivery_failed: 'ডেলিভারি ব্যর্থ'
-        };
-        const payLabels = {
-            pending: 'পেমেন্ট বাকি', paid: 'পেমেন্ট সম্পন্ন', failed: 'পেমেন্ট ব্যর্থ', cancelled: 'পেমেন্ট বাতিল'
-        };
+        function renderOrder(o) {
+            const t = o.tracking || { steps: [], headline: '', detail: '' };
+            const cls = t.terminal ? 'bad' : (t.stageIndex === 6 ? 'delivered' : '');
+            const when = t.updatedAt ? new Date(t.updatedAt).toLocaleString('bn-BD') : '';
+            const steps = (t.steps || []).map(s => `
+                <li class="${esc(s.state)}"><span class="dot">${s.state === 'done' ? '&#10003;' : ''}</span>
+                    <span class="t">${esc(s.label)}<span class="en">${esc(s.en)}</span></span></li>`).join('');
 
-        function renderOrder(order) {
-            const resultBox = document.getElementById('orderResult');
-            resultBox.innerHTML = `
-                <div class="track-card">
-                    <div class="order-result-header">
-                        <div>
-                            <strong>${order.orderNumber}</strong>
-                            <div class="track-address" style="margin-top:4px;">${new Date(order.createdAt).toLocaleString('bn-BD')}</div>
-                        </div>
-                        <span class="order-status-badge status-${order.orderStatus}">${statusLabels[order.orderStatus] || order.orderStatus}</span>
-                    </div>
-                    <div class="pay-${order.paymentStatus}" style="font-size:13px; font-weight:bold; margin-bottom:10px;">
-                        ${payLabels[order.paymentStatus] || order.paymentStatus}
-                        <span style="color:#999; font-weight:normal;">— ${order.paymentMethod === 'cod' ? 'ক্যাশ অন ডেলিভারি' : 'অনলাইন পেমেন্ট'}</span>
-                    </div>
-
-                    ${order.items.map(item => `
-                        <div class="order-item-row">
-                            <span>${item.name}${item.variantLabel ? ` (${item.variantLabel})` : ''} × ${item.quantity}</span>
-                            <span>৳ ${formatPrice(item.price * item.quantity)}</span>
-                        </div>
-                    `).join('')}
-
-                    <div class="order-summary-row"><span>সাবটোটাল</span><span>৳ ${formatPrice(order.subtotal)}</span></div>
-                    <div class="order-summary-row"><span>ডেলিভারি চার্জ</span><span>৳ ${formatPrice(order.deliveryCharge)}</span></div>
-                    <div class="order-summary-row total"><span>মোট</span><span>৳ ${formatPrice(order.total)}</span></div>
-
-                    <div class="track-address">
-                        <strong>ডেলিভারি ঠিকানা:</strong><br>
-                        ${order.customer.name} — ${order.customer.phone}<br>
-                        ${order.customer.address}${order.customer.city ? ', ' + order.customer.city : ''}
-                    </div>
-
-                    ${order.packagingProofVideoUrl ? `
-                        <div class="order-packaging-proof">
-                            <button class="pp-toggle-btn" onclick="togglePackagingProof('${order._id}')">🎥 Packaging Proof ভিডিও দেখুন</button>
-                            <video id="pp-video-${order._id}" controls style="display:none;">
-                                <source src="${resolveImg(order.packagingProofVideoUrl)}">
-                            </video>
-                        </div>
-                    ` : ''}
+            document.getElementById('orderResult').innerHTML = `
+                <div class="track-card tr-status ${cls}">
+                    <div class="tr-order-no">অর্ডার নাম্বার: <strong>${esc(o.orderNumber)}</strong> &middot; ${esc(new Date(o.createdAt).toLocaleDateString('bn-BD'))}</div>
+                    <div class="tr-headline">${esc(t.headline)}</div>
+                    <div class="tr-detail">${esc(t.detail)}</div>
+                    ${t.latestUpdate ? `<div class="tr-latest"><b>সর্বশেষ আপডেট:</b> ${esc(t.latestUpdate)}${when ? `<br><span style="color:#999;font-size:12px;">${esc(when)}</span>` : ''}</div>` : ''}
+                    ${t.courierName ? `<div class="tr-courier">কুরিয়ার: <b>${esc(t.courierName)}</b>${t.trackingCode ? ` &middot; ট্র্যাকিং কোড: <code>${esc(t.trackingCode)}</code>` : ''}</div>` : ''}
+                    ${t.live ? '<span class="tr-live">&#9679; কুরিয়ার থেকে লাইভ স্ট্যাটাস</span>' : ''}
                 </div>
-            `;
+
+                <div class="track-card ${t.terminal ? 'tl-bad' : ''}">
+                    <div class="tr-sec">ডেলিভারির ধাপ</div>
+                    <ul class="tl">${steps}</ul>
+                    ${t.terminal ? `<div class="tr-bad-note">${esc(t.headline)}। ${esc(t.detail)}</div>` : ''}
+                </div>
+
+                <div class="track-card">
+                    <div class="tr-sec">অর্ডারের বিবরণ</div>
+                    <div class="pay-line pay-${esc(o.paymentStatus)}">${esc(payLabels[o.paymentStatus] || o.paymentStatus)}
+                        <span style="color:#999;font-weight:normal;">&mdash; ${o.paymentMethod === 'cod' ? 'ক্যাশ অন ডেলিভারি' : 'অনলাইন পেমেন্ট'}</span></div>
+                    ${(o.items || []).map(i => `
+                        <div class="order-item-row">
+                            ${resolveImg(i.image) ? `<img src="${esc(resolveImg(i.image))}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+                            <div class="nm">${esc(i.name)}${i.variantLabel ? `<small>${esc(i.variantLabel)}</small>` : ''}<small>পরিমাণ: ${esc(i.quantity)}</small></div>
+                            <div>৳ ${formatPrice(i.price * i.quantity)}</div>
+                        </div>`).join('')}
+                    <div class="order-summary-row"><span>সাবটোটাল</span><span>৳ ${formatPrice(o.subtotal)}</span></div>
+                    <div class="order-summary-row"><span>ডেলিভারি চার্জ</span><span>৳ ${formatPrice(o.deliveryCharge)}</span></div>
+                    <div class="order-summary-row total"><span>মোট</span><span>৳ ${formatPrice(o.total)}</span></div>
+                    <div class="track-address"><strong>ডেলিভারি ঠিকানা:</strong><br>
+                        ${esc(o.customer.name)} &mdash; ${esc(o.customer.phone)}<br>
+                        ${esc(o.customer.address)}${o.customer.city ? ', ' + esc(o.customer.city) : ''}</div>
+                    ${o.packagingProofVideoUrl ? `
+                        <div class="order-packaging-proof">
+                            <button type="button" class="pp-toggle-btn" onclick="togglePackagingProof()">&#127909; Packaging Proof ভিডিও দেখুন</button>
+                            <video id="ppVideo" controls preload="none" style="display:none;"><source src="${esc(resolveImg(o.packagingProofVideoUrl))}"></video>
+                        </div>` : ''}
+                </div>`;
+            document.getElementById('orderResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         async function trackOrder() {
@@ -170,41 +188,39 @@
             const orderNumber = document.getElementById('trackOrderNumber').value.trim();
             const msg = document.getElementById('trackMsg');
             const btn = document.getElementById('trackBtn');
-            const resultBox = document.getElementById('orderResult');
+            const box = document.getElementById('orderResult');
+            box.innerHTML = ''; msg.textContent = '';
 
-            resultBox.innerHTML = '';
-            msg.textContent = '';
+            if (!orderNumber || !phone) { msg.textContent = 'অর্ডার নাম্বার এবং ফোন নাম্বার দুটোই দিন।'; return; }
 
-            if (!phone || !orderNumber) {
-                msg.style.color = '#e74c3c';
-                msg.textContent = 'ফোন নাম্বার এবং অর্ডার নাম্বার দুটোই দিন।';
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = 'খোঁজা হচ্ছে...';
-
+            btn.disabled = true; btn.textContent = 'খোঁজা হচ্ছে...';
             try {
                 const res = await fetch(`${API_BASE}/api/orders/track?phone=${encodeURIComponent(phone)}&orderNumber=${encodeURIComponent(orderNumber)}`);
-                const data = await res.json();
-
-                if (!res.ok) throw new Error(data.error || 'অর্ডার খুঁজে পাওয়া যায়নি।');
-
-                msg.textContent = '';
+                let data = {};
+                try { data = await res.json(); } catch (e) {}
+                if (!res.ok) throw new Error(data.error || 'অর্ডার পাওয়া যায়নি। অর্ডার আইডি ও ফোন নাম্বার ঠিক আছে কিনা দেখুন।');
+                try { sessionStorage.setItem('stz_track_phone', phone); } catch (e) {}
                 renderOrder(data);
             } catch (err) {
-                msg.style.color = '#e74c3c';
-                msg.textContent = '❌ ' + err.message;
+                msg.textContent = (err instanceof TypeError)
+                    ? 'ইন্টারনেট সংযোগ বা সার্ভারে সমস্যা। একটু পরে আবার চেষ্টা করুন।'
+                    : '❌ ' + err.message;
             } finally {
-                btn.disabled = false;
-                btn.textContent = 'ট্র্যাক করুন';
+                btn.disabled = false; btn.textContent = 'ট্র্যাক করুন';
             }
         }
 
-        (function prefillFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            const orderNumber = params.get('order');
-            if (orderNumber) document.getElementById('trackOrderNumber').value = orderNumber;
+        document.getElementById('trackForm').addEventListener('submit', e => { e.preventDefault(); trackOrder(); });
+
+        // ?order=STZ-... লিংক (চ্যাট কার্ড/উইজেট থেকে) এলে অর্ডার নাম্বার বসে যায়; ফোন নাম্বার URL-এ না এসে
+        // sessionStorage থেকে নেওয়া হয় (প্রাইভেসি) — দুটোই পেলে নিজে থেকে সার্চ হয়ে যায়
+        (function prefill() {
+            const order = new URLSearchParams(window.location.search).get('order');
+            let phone = '';
+            try { phone = sessionStorage.getItem('stz_track_phone') || ''; } catch (e) {}
+            if (order) document.getElementById('trackOrderNumber').value = order;
+            if (phone) document.getElementById('trackPhone').value = phone;
+            if (order && phone) trackOrder();
         })();
     </script>
 </body>

@@ -123,6 +123,16 @@
         document.head.appendChild(link);
     }
 
+    // গ্লোবাল "অর্ডার ট্র্যাক" ফ্লোটিং উইজেট — footer.js যেখানে আছে সেখানেই (track-widget.js একই ফোল্ডারে)
+    (function loadTrackWidget() {
+        const self = document.currentScript || document.querySelector('script[src$="footer.js"]');
+        if (!self || !self.src) return;
+        const s = document.createElement('script');
+        s.src = self.src.replace(/footer\.js.*$/, 'track-widget.js');
+        s.defer = true;
+        document.head.appendChild(s);
+    })();
+
     document.addEventListener('DOMContentLoaded', function () {
         ensureFontAwesome();
         const target = document.getElementById('siteFooter');
