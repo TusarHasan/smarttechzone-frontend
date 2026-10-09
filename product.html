@@ -8,7 +8,7 @@
      <base href="/"> দিয়ে সব relative URL সবসময় ডোমেইনের রুট থেকেই resolve হবে, /product.html
      ইউআরএল থেকে অ্যাক্সেস করলে আগের মতোই কাজ করবে। -->
 <base href="/">
-<script src="analytics.js"></script>
+<script src="analytics.js" defer></script>
 <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="images/favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,6 +28,43 @@
     .product-layout { display: flex; gap: 30px; flex-wrap: wrap; }
     .image-section { flex: 1; min-width: 280px; }
     .main-image { width: 100%; border-radius: 8px; border: 1px solid #eee; }
+    /* দারাজের মতো হোভার-ম্যাগনিফায়ার — শুধু মাউস/ডেস্কটপে কাজ করে (টাচ ডিভাইসে স্বাভাবিক
+       পিঞ্চ-জুম ই থাকে, এখানে হাত দেওয়া হয়নি) */
+    .image-section { position: relative; }
+    .zoom-lens {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border: 1px solid rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+        pointer-events: none;
+        display: none;
+    }
+    /* দারাজের মতো — প্রোডাক্ট ছবির উপর হোভার করলে কাস্টম সার্কুলার ম্যাগনিফায়ার কার্সর
+       (সাদা ব্যাজ + গাঢ় ধূসর ম্যাগনিফাইং-গ্লাস আইকন) দেখানো হয় */
+    @media (hover: hover) and (pointer: fine) {
+        .main-image {
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18.5' fill='white' fill-opacity='0.95' stroke='%23555555' stroke-width='2'/%3E%3Ccircle cx='17' cy='17' r='7' fill='none' stroke='%23555555' stroke-width='2.3'/%3E%3Cline x1='22' y1='22' x2='28.5' y2='28.5' stroke='%23555555' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='17' y1='13.5' x2='17' y2='20.5' stroke='%23555555' stroke-width='1.8' stroke-linecap='round'/%3E%3Cline x1='13.5' y1='17' x2='20.5' y2='17' stroke='%23555555' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") 20 20, zoom-in;
+        }
+    }
+    .zoom-result {
+        position: absolute;
+        top: 0;
+        left: calc(100% + 16px);
+        width: 400px;
+        height: 400px;
+        background-color: #fff;
+        background-repeat: no-repeat;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        display: none;
+        z-index: 50;
+    }
+    @media (max-width: 1000px) {
+        .zoom-result { display: none !important; }
+    }
     /* Daraz-এর মতো — গ্যালারির প্রথম থাম্বনেইলে ভিডিও থাকলে ক্লিক করলে মেইন এরিয়াতে এমবেড হয়ে প্লে হয় */
     .main-video-wrap { width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; border: 1px solid #eee; background: #000; }
     .main-video-wrap iframe { width: 100%; height: 100%; display: block; }
@@ -47,6 +84,8 @@
     .original-price { font-size: 14px; color: #999; text-decoration: line-through; font-weight: normal; }
     .discount-badge { font-size: 13px; color: #e74c3c; background: #fdf1f0; padding: 1px 6px; border-radius: 3px; margin-left: 8px; font-weight: bold; }
     .meta { color: #666; font-size: 14px; margin-bottom: 6px; }
+    .meta a { color: #666; text-decoration: underline; text-decoration-color: #ccc; }
+    .meta a:hover { color: #e74c3c; text-decoration-color: #e74c3c; }
     .sold-by-row {
         display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #555;
         margin: 10px 0 6px; padding: 8px 10px; background: #fafafa; border-radius: 6px;
@@ -239,13 +278,124 @@
     #variantSheetBody .attr-group:last-child { margin-bottom: 0; }
     #variantSheetBody .attr-group-label { flex: none; padding-top: 0; margin-bottom: 10px; }
     #variantSheetBody .qty-row { margin-top: 20px; }
+
+    /* ============ মোবাইল প্রোডাক্ট পেজ — Daraz অ্যাপ স্টাইল (শুধু ≤768px; ডেস্কটপ অপরিবর্তিত) ============
+       নতুন এলিমেন্টগুলো (.m-*) ডেস্কটপে display:none। মোবাইলে: সোয়াইপযোগ্য ছবির গ্যালারি (1/N),
+       দাম → ছাড়ের ট্যাগ → নাম → ব্র্যান্ড/মডেল → রেটিং ও sold → রিটার্ন রো, আর নিচে ফিক্সড অ্যাকশন বার
+       (Store | Chat | Buy Now | Add to Cart)। Buy Now/Add to Cart আগের buyNow()/addToCartClick() ই কল
+       করে, তাই ভ্যারিয়েন্ট বটম-শীট, স্টক চেক, Pixel ইভেন্ট সব আগের মতোই কাজ করে। */
+    .m-gallery, .m-actionbar, .m-promo-row, .m-rating-row, .m-return-row { display: none; }
+    @media (max-width: 768px) {
+        html, body { overflow-x: hidden; max-width: 100%; }
+        body { background: #f2f2f2; padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+        .container { margin: 0; padding: 0; max-width: 100%; border-radius: 0; box-shadow: none; background: transparent; }
+        .product-layout { display: block; gap: 0; }
+        .image-section { min-width: 0; padding: 0; }
+        /* পুরনো একক ছবি + থাম্বনেইল সারি লুকানো (JS এখনো #mainImage ব্যবহার করে — DOM-এ থাকছে) */
+        .main-image, .thumb-row, .main-video-wrap { display: none !important; }
+
+        .m-gallery { display: block; position: relative; background: #fff; overflow: hidden; }
+        .m-gallery-track {
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+            -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+        }
+        .m-gallery-track::-webkit-scrollbar { display: none; }
+        .m-slide {
+            flex: 0 0 100%; width: 100%; aspect-ratio: 1 / 1; scroll-snap-align: center; scroll-snap-stop: always;
+            display: flex; align-items: center; justify-content: center; background: #fff; position: relative;
+        }
+        .m-slide img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .m-slide.m-video-slide { background: #000; }
+        .m-slide.m-video-slide img { object-fit: cover; opacity: .85; }
+        .m-slide.m-video-slide iframe { width: 100%; height: 100%; border: 0; display: block; }
+        .m-video-play {
+            position: absolute; inset: 0; margin: auto; width: 64px; height: 64px; border-radius: 50%;
+            background: rgba(0,0,0,.6); color: #fff; border: 2px solid #fff; font-size: 26px; line-height: 1; cursor: pointer;
+        }
+        .m-gallery-count {
+            position: absolute; right: 12px; bottom: 12px; background: rgba(0,0,0,.55); color: #fff;
+            font-size: 12.5px; padding: 3px 10px; border-radius: 3px; pointer-events: none;
+        }
+        .m-badges { position: absolute; left: 0; bottom: 12px; display: flex; max-width: calc(100% - 90px); pointer-events: none; }
+        .m-badge { font-size: 12px; font-weight: 700; color: #fff; padding: 5px 10px; background: #e74c3c; white-space: nowrap; }
+        .m-badge.m-badge-pack { background: #1f8a5b; }
+        .m-badge:first-child { border-radius: 0 0 0 0; }
+
+        .info-section { display: flex; flex-direction: column; min-width: 0; background: #fff; padding: 12px 14px 14px; }
+        .info-section > * { min-width: 0; }
+        .price-block { order: 1; margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+        .price { font-size: 30px; line-height: 1.1; }
+        #originalPriceWrap { display: inline-block; }
+        .original-price { font-size: 15px; }
+        .discount-badge { display: none; }
+        .m-promo-row { order: 2; display: none; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .m-promo-row.show { display: flex; }
+        .m-tag { font-size: 12.5px; font-weight: 700; padding: 3px 9px; border-radius: 3px; }
+        .m-tag-save { color: #e74c3c; background: #fdf1f0; }
+        .m-tag-pct { color: #c2185b; background: #fde7ef; }
+        h1 { order: 3; font-size: 17px; line-height: 1.4; font-weight: 600; margin: 12px 0 2px; overflow-wrap: anywhere; }
+        .product-name-bn { order: 4; font-size: 14px; margin-bottom: 4px; overflow-wrap: anywhere; }
+        .meta { order: 5; font-size: 13px; margin: 2px 0; overflow-wrap: anywhere; }
+        .m-rating-row { order: 6; display: none; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-top: 10px; font-size: 14px; color: #555; cursor: pointer; }
+        .m-rating-row.show { display: flex; }
+        .m-rating-row .m-stars { color: #f5a623; letter-spacing: 1px; font-size: 15px; }
+        .m-rating-row .m-sep { width: 1px; height: 14px; background: #ddd; }
+        .m-return-row {
+            order: 7; display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px;
+            background: #f7f7f9; border-radius: 6px; color: #333; font-size: 14px; text-decoration: none; min-height: 44px; box-sizing: border-box;
+        }
+        .m-return-row svg { flex: 0 0 auto; }
+        .m-return-row .m-chev { margin-left: auto; color: #999; font-size: 20px; line-height: 1; }
+        .sold-by-row { order: 8; }
+        .chat-seller-btn { display: none; }
+        #attrGroupsWrapper { order: 9; }
+        .stock-note { order: 10; }
+        .qty-row { order: 11; }
+        .action-row { order: 12; margin-top: 0; }
+        /* নিচের ফিক্সড বারে Buy Now/Add to Cart আছে, তাই পেজের ভেতরের বাটন দুটো লুকানো */
+        .action-row .btn-buy, .action-row .btn-cart { display: none !important; }
+        .action-row .btn-wishlist { margin-top: 14px; }
+
+        .lower-section { margin-top: 8px; border-top: 0; padding: 14px; background: #fff; overflow-wrap: anywhere; min-width: 0; }
+        .lower-section img, .lower-section video, .lower-section iframe { max-width: 100%; height: auto; }
+        .lower-section table { max-width: 100%; }
+        .description table { display: block; overflow-x: auto; }
+        .spec-table { width: 100%; table-layout: fixed; }
+        .spec-table td { overflow-wrap: anywhere; }
+
+        .m-actionbar {
+            display: flex; position: fixed; left: 0; bottom: 0; width: 100%; z-index: 999; box-sizing: border-box;
+            gap: 8px; align-items: stretch; background: #fff; border-top: 1px solid #eee;
+            padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); box-shadow: 0 -2px 10px rgba(0,0,0,.08);
+        }
+        .m-ab-icon {
+            flex: 0 0 54px; min-height: 48px; padding: 0; background: none; border: none; color: #555;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+            font-size: 11.5px; text-decoration: none; cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent;
+        }
+        .m-ab-btn {
+            flex: 1; min-height: 48px; border: none; border-radius: 4px; color: #fff; font-size: 15px; font-weight: 700;
+            cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; padding: 0 6px;
+        }
+        .m-ab-buy { background: #f29900; }
+        .m-ab-cart { background: #f57224; }
+        .m-ab-btn:active { opacity: .85; }
+        .m-ab-btn:disabled { background: #ccc; color: #777; cursor: not-allowed; }
+        /* চ্যাট ফ্লোটিং বাটন নিচের বারের উপরে তুলে রাখা (বারের বাটন ঢাকা না পড়ার জন্য) */
+        #stzChatFab { bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
+        #stzTwFab { bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
+        #stzTwPanel { bottom: calc(136px + env(safe-area-inset-bottom)) !important; }
+        /* ভ্যারিয়েন্ট শীট খোলা থাকলে ভাসমান বাটনগুলো শীটের উপর না এসে লুকানো থাকে */
+        body:has(.variant-sheet.open) #stzChatFab, body:has(.variant-sheet.open) #stzTwFab { display: none !important; }
+    }
 </style>
     <script src="config.js"></script>
+    <script src="visitor-track.js" defer></script>
     <script src="cart.js"></script>
     <script src="customer-auth.js"></script>
     <script src="wishlist.js"></script>
-    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
-    <script src="chat-widget.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" defer></script>
+    <script src="chat-widget.js" defer></script>
 </head>
 <body>
 
@@ -260,6 +410,7 @@
             <a href="cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
         </div>
     </nav>
+    <main>
 
 <div class="container">
     <div id="loadingMsg">লোড হচ্ছে...</div>
@@ -268,6 +419,12 @@
     <div id="productContent" style="display:none;">
         <div class="product-layout">
             <div class="image-section">
+                <!-- মোবাইল গ্যালারি (≤768px): JS এখানে স্লাইড বসায়; ডেস্কটপে display:none -->
+                <div class="m-gallery" id="mGallery" aria-label="প্রোডাক্ট ছবি">
+                    <div class="m-gallery-track" id="mGalleryTrack"></div>
+                    <div class="m-badges" id="mBadges"></div>
+                    <div class="m-gallery-count" id="mGalleryCount">1/1</div>
+                </div>
                 <img id="mainImage" class="main-image" src="" alt="" onerror="this.src='https://via.placeholder.com/400?text=No+Image'">
                 <div class="main-video-wrap" id="mainVideoWrap" style="display:none;">
                     <iframe id="mainVideoFrame" src="" title="Product Video" frameborder="0"
@@ -278,7 +435,7 @@
             <div class="info-section">
                 <h1 id="productName"></h1>
                 <div class="product-name-bn" id="productNameBn" style="display:none;"></div>
-                <div class="meta">Brand: <span id="productBrand"></span> | Model: <span id="productModel"></span></div>
+                <div class="meta">Brand: <a id="productBrand" href="#"></a> | Model: <a id="productModel" href="#"></a></div>
                 <div class="meta">Part Type: <span id="productPartType"></span></div>
                 <div class="sold-by-row">
                     Sold by <strong>Smart Tech Zone</strong>
@@ -292,6 +449,13 @@
                     </div>
                 </div>
 
+                <div class="m-promo-row" id="mPromoRow"></div>
+                <div class="m-rating-row" id="mRatingRow" onclick="document.querySelector('#reviewAvg').scrollIntoView({behavior:'smooth', block:'center'})"></div>
+                <a class="m-return-row" href="returns-refunds.html">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#6b7280" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3zm-1.2 14.2-3.5-3.5 1.4-1.4 2.1 2.1 4.6-4.6 1.4 1.4-6 6z"/></svg>
+                    <span>ডেলিভারির ১৪ দিনের মধ্যে সহজ রিটার্ন</span>
+                    <span class="m-chev">&rsaquo;</span>
+                </a>
                 <div id="attrGroupsWrapper"></div>
 
                 <div class="stock-note" id="stockNote"></div>
@@ -384,6 +548,20 @@
 
 <!-- মোবাইল ভ্যারিয়েন্ট বটম-শীট — ডিফল্টভাবে বন্ধ থাকে (CSS-এ display:none), JS দিয়ে খোলা/বন্ধ হয়।
      openVariantSheet()/closeVariantSheet() নিচের জাভাস্ক্রিপ্ট ব্লকে সংজ্ঞায়িত। -->
+<!-- মোবাইল ফিক্সড অ্যাকশন বার (≤768px) — Store | Chat | Buy Now | Add to Cart। ডেস্কটপে display:none -->
+<div class="m-actionbar" id="mActionBar">
+    <a class="m-ab-icon" href="index.html" aria-label="Store">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M10 20v-6h4v6"/></svg>
+        <span>Store</span>
+    </a>
+    <button type="button" class="m-ab-icon" aria-label="Chat" onclick="openVendorChat(productId, document.getElementById('productName').textContent)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01" stroke-width="2.4"/></svg>
+        <span>Chat</span>
+    </button>
+    <button type="button" class="m-ab-btn m-ab-buy" id="mBuyBtn" onclick="buyNow()">Buy Now</button>
+    <button type="button" class="m-ab-btn m-ab-cart" id="mCartBtn" onclick="addToCartClick()">Add to Cart</button>
+</div>
+
 <div class="variant-sheet-backdrop" id="variantSheetBackdrop" onclick="closeVariantSheet()"></div>
 <div class="variant-sheet" id="variantSheet" role="dialog" aria-modal="true" aria-label="ভ্যারিয়েন্ট বাছাই করুন">
     <div class="variant-sheet-header">
@@ -406,6 +584,45 @@
     function resolveImageUrl(url) {
         if (!url) return 'https://via.placeholder.com/400?text=No+Image';
         return url.startsWith('http') ? url : `${API_BASE}${url}`;
+    }
+
+    // ============ Product Description ফরম্যাটিং ============
+    // Add Products-এর রিচ-টেক্সট এডিটর থেকে আসা description আসলে HTML (<p>, <ul> ইত্যাদি) — সেটা যেমন আছে তেমনই
+    // দেখানো হয়। কিন্তু Daraz/AI/Excel ইমপোর্ট বা সাধারণ টেক্সটবক্স থেকে আসা description প্লেইন টেক্সট: HTML-এ
+    // লাইন-ব্রেক (\n) কোনো কাজ করে না, তাই পুরোটা একটা বড় অনুচ্ছেদ হয়ে যেত ("Key Features: • ... • ... Why Choose ...").
+    // এখানে প্লেইন টেক্সট হলে: লাইন-ব্রেক রাখা হয়, Key Features / Why Choose ...? / Conclusion: ইত্যাদি শিরোনাম
+    // আলাদা লাইনে বোল্ড করা হয়, আর • দিয়ে লেখা অংশগুলো বুলেট লিস্ট হয়। ডেটাবেজের কিছু বদলায় না।
+    function formatDescription(raw) {
+        if (!raw) return raw;
+        if (/<\/?[a-z][^>]*>/i.test(raw)) return raw; // আগে থেকেই HTML — হাত দেওয়া হয় না
+        const esc = String(raw).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const HEAD = "(?:Key Features:|Why Choose [^?:\\n]{1,60}\\?|Conclusion:|Highlights:|Specifications?:|What(?:'|’)s in the Box:?|Package Includes:?)";
+        let t = esc.replace(/\r\n?/g, '\n')
+            .replace(new RegExp('[ \\t]*(' + HEAD + ')', 'gi'), '\n$1')
+            .replace(/[ \t]*[•●▪]\s*/g, '\n• ');
+        const headRe = new RegExp('^(' + HEAD + ')\\s*(.*)$', 'i');
+        const lines = t.split('\n').map(l => l.trim()).filter(Boolean);
+        let out = '', inList = false;
+        const closeList = () => { if (inList) { out += '</ul>'; inList = false; } };
+        lines.forEach(line => {
+            const bullet = line.match(/^(?:•|[-*])\s+(.*)$/);
+            if (bullet) {
+                if (!inList) { out += '<ul>'; inList = true; }
+                const body = bullet[1].replace(/^([^:]{2,45}:)(\s|$)/, '<strong>$1</strong> ');
+                out += '<li>' + body + '</li>';
+                return;
+            }
+            closeList();
+            const h = line.match(headRe);
+            if (h) {
+                out += '<p style="margin:14px 0 6px"><strong>' + h[1] + '</strong></p>';
+                if (h[2]) out += '<p>' + h[2] + '</p>';
+            } else {
+                out += '<p>' + line + '</p>';
+            }
+        });
+        closeList();
+        return out;
     }
 
     // Add Products-এর রিচ-টেক্সট এডিটর থেকে আসা description-এ ছবি থাকলে সেগুলো রিলেটিভ পাথে সেভ
@@ -468,6 +685,7 @@
     }
 
     function updatePriceDisplay(price, originalPrice) {
+        updateMobilePromo(price, originalPrice);
         const wrap = document.getElementById('originalPriceWrap');
         if (originalPrice && originalPrice > price) {
             document.getElementById('originalPrice').textContent = formatPrice(originalPrice);
@@ -586,8 +804,27 @@
         } else {
             nameBnEl.style.display = 'none';
         }
-        document.getElementById('productBrand').textContent = product.brand || '-';
-        document.getElementById('productModel').textContent = product.model || '-';
+        // SEO (internal linking): আগে এখানে শুধু প্লেইন টেক্সট দেখানো হতো, আর অনির্ভরযোগ্য
+        // product.brand ফিল্ড (বেশিরভাগ প্রোডাক্টেই খালি/"No Brand") ব্যবহার হতো। এখন নির্ভরযোগ্য
+        // phoneBrand ফিল্ড দিয়ে Brand/Model-কে brands/brand.html ও models/model.html পেজের
+        // লিংকে পরিণত করা হলো — আগে এই পেজগুলো শুধু sitemap.xml দিয়েই খুঁজে পাওয়া যেতো, সাইটের
+        // ভেতরে কোনো লিংক ছিলো না, যা Google-এর কাছে এগুলোকে কম গুরুত্বপূর্ণ মনে করাতো। প্রতিটা
+        // প্রোডাক্ট পেজ থেকে এখন একটা করে আসল internal link তৈরি হচ্ছে।
+        const linkableBrand = (product.phoneBrand && product.phoneBrand !== 'Others') ? product.phoneBrand : '';
+        const brandEl = document.getElementById('productBrand');
+        brandEl.textContent = linkableBrand || product.brand || '-';
+        if (linkableBrand) {
+            brandEl.href = `brands/brand.html?name=${encodeURIComponent(linkableBrand)}`;
+        } else {
+            brandEl.removeAttribute('href');
+        }
+        const modelEl = document.getElementById('productModel');
+        modelEl.textContent = product.model || '-';
+        if (linkableBrand && product.model) {
+            modelEl.href = `models/model.html?brand=${encodeURIComponent(linkableBrand)}&model=${encodeURIComponent(product.model)}`;
+        } else {
+            modelEl.removeAttribute('href');
+        }
         document.getElementById('productPartType').textContent = product.partType || '-';
         document.getElementById('productPrice').textContent = formatPrice(product.price);
         updatePriceDisplay(product.price, product.originalPrice);
@@ -595,7 +832,7 @@
         const descBox = document.getElementById('productDescription');
         const viewMoreBtn = document.getElementById('viewMoreBtn');
         if (product.description) {
-            descBox.innerHTML = resolveDescriptionImages(product.description);
+            descBox.innerHTML = resolveDescriptionImages(formatDescription(product.description));
         } else {
             descBox.textContent = 'এই প্রোডাক্টের জন্য এখনো কোনো বিস্তারিত বিবরণ যোগ করা হয়নি।';
         }
@@ -674,6 +911,10 @@
         thumbRow.innerHTML = videoThumbHtml + images.map((url, i) =>
             `<img src="${url}" alt="${escapeAttr(product.name)} - ছবি ${i + 1}" ${i > 0 ? 'loading="lazy" decoding="async"' : ''} onerror="this.src='https://via.placeholder.com/100?text=No+Image'" onclick="showProductImage(this.src)">`
         ).join('');
+
+        buildMobileGallery(images, product);
+        mRatingState.sold = Number(product.soldCount) || 0;
+        renderMobileRatingRow();
 
         renderAttributeGroups(product);
         updateSeoTags(product, images);
@@ -791,13 +1032,40 @@
             if (first) selectedAttrs[name] = first.value;
         });
 
-        let thumbAlreadyShown = false;
-        attrNames.forEach(name => {
-            const values = [];
+        // কোন attribute-এ ছবির swatch দেখানো হবে — আগে "প্রথম যেটা ছবির যোগ্য" সেটাতেই দেখানো হতো। সমস্যা: প্রথম
+        // attribute যদি "Compatibility by Model"-এর মতো এমন কিছু হয় যার মাত্র একটাই মান (বাছাই করার কিছু নেই), তাও
+        // সেটাই ছবি পেয়ে যেত, আর আসল বাছাইয়ের attribute (যেমন Option: Gray/Green/Blue, প্রতিটার নিজস্ব ছবি আছে)
+        // শুধু টেক্সট বাটন হয়ে থাকত — বাকি ভ্যারিয়েন্টের থাম্বনেইল দেখা যেত না (রিপোর্ট করা বাগ)।
+        // এখন: একাধিক মান আছে এমন ছবির-যোগ্য attribute অগ্রাধিকার পায়; সেরকম কিছু না থাকলে আগের নিয়মই বহাল।
+        const attrValuesOf = (name) => {
+            const vals = [];
             variants.forEach(v => {
                 const found = (v.attributes || []).find(a => a.name === name);
-                if (found && !values.includes(found.value)) values.push(found.value);
+                if (found && !vals.includes(found.value)) vals.push(found.value);
             });
+            return vals;
+        };
+        const attrWantsThumb = (name) => {
+            const hasOwn = attrValuesOf(name).some(val => {
+                const mv = variants.find(v => (v.attributes || []).some(a => a.name === name && a.value === val));
+                return mv && mv.images && mv.images.length;
+            });
+            return hasOwn || name.toLowerCase().includes('option') || name.toLowerCase().includes('color');
+        };
+        const isOptionOrColor = (n) => n.toLowerCase().includes('option') || n.toLowerCase().includes('color');
+        const thumbAttrName =
+            attrNames.find(n => isOptionOrColor(n) && attrValuesOf(n).length > 1) ||
+            attrNames.find(n => attrWantsThumb(n) && attrValuesOf(n).length > 1) ||
+            attrNames.find(n => attrWantsThumb(n)) ||
+            null;
+
+        let thumbAlreadyShown = false;
+        // রং/Option (ছবি-সহ swatch) গ্রুপ সবার উপরে, বাকি গ্রুপ (যেমন Compatibility by Model) তার নিচে
+        const renderOrder = thumbAttrName
+            ? [thumbAttrName, ...attrNames.filter(n => n !== thumbAttrName)]
+            : attrNames;
+        renderOrder.forEach(name => {
+            const values = attrValuesOf(name);
 
             const group = document.createElement('div');
             group.className = 'attr-group';
@@ -812,12 +1080,7 @@
             // শুধু টেক্সট বাটন হিসেবে দেখাতো (রিপোর্ট করা বাগ — Oppo Reno2 Power Volume Flex Cable প্রোডাক্টে)।
             // এখন থেকে নাম যাই হোক না কেন, যদি এই attribute এর অন্তত একটা ভ্যালুর জন্য ম্যাচিং ভ্যারিয়েন্টে
             // নিজস্ব (আলাদা) ছবি আপলোড করা থাকে, তাহলে সেটাকে swatch হিসেবেই দেখানো হবে।
-            const hasOwnImages = values.some(val => {
-                const mv = variants.find(v => (v.attributes || []).some(a => a.name === name && a.value === val));
-                return mv && mv.images && mv.images.length;
-            });
-            const wantsThumb = hasOwnImages || name.toLowerCase().includes('option') || name.toLowerCase().includes('color');
-            const showThumb = wantsThumb && !thumbAlreadyShown;
+            const showThumb = name === thumbAttrName && !thumbAlreadyShown;
             if (showThumb) thumbAlreadyShown = true;
             const currentVal = selectedAttrs[name] || '';
             // "Option"-জাতীয় জেনেরিক attribute নামের (যেমন "Option", "Option 2") লেবেল আর দেখানো হবে না,
@@ -910,6 +1173,11 @@
         const qtyButtons = document.querySelectorAll('.qty-box button');
         if (buyBtn) buyBtn.disabled = isOutOfStock;
         if (cartBtn) cartBtn.disabled = isOutOfStock;
+        // মোবাইলের ফিক্সড অ্যাকশন বারের বাটনও একই স্টক-অবস্থা মানে
+        const mBuy = document.getElementById('mBuyBtn');
+        const mCart = document.getElementById('mCartBtn');
+        if (mBuy) { mBuy.disabled = isOutOfStock; mBuy.textContent = isOutOfStock ? 'স্টকে নেই' : 'Buy Now'; }
+        if (mCart) mCart.style.display = isOutOfStock ? 'none' : '';
         qtyButtons.forEach(btn => { btn.disabled = isOutOfStock; });
 
         // Daraz-এর মতো — স্টকে থাকা অবস্থায় Buy Now/Add to Cart এর পাশে উইশলিস্ট বাটন একসাথে
@@ -1001,7 +1269,7 @@
             image: imageUrl,
             quantity: quantity
         });
-        flyToCart(imageUrl, currentProduct.name, document.getElementById('mainImage'));
+        flyToCart(imageUrl, currentProduct.name, (window.innerWidth <= 768 && document.querySelector('#mGalleryTrack .m-slide img')) || document.getElementById('mainImage'));
     }
 
     // ============ Daraz-স্টাইল মোবাইল ভ্যারিয়েন্ট বটম-শীট ============
@@ -1136,6 +1404,113 @@
         addCurrentToCart();
     }
 
+
+    // ============ মোবাইল গ্যালারি/প্রোমো/রেটিং/Sold (Daraz অ্যাপ স্টাইল; ডেস্কটপে এগুলো লুকানো) ============
+    function mFormatSold(n) {
+        n = Number(n) || 0;
+        if (n >= 1000) return (Math.round(n / 100) / 10).toString().replace(/\.0$/, '') + 'K';
+        return String(n);
+    }
+
+    function buildMobileGallery(images, product) {
+        const track = document.getElementById('mGalleryTrack');
+        if (!track) return;
+        const slides = [];
+        const ytId = getYoutubeEmbedId(product.videoUrl);
+        if (ytId) {
+            slides.push(`<div class="m-slide m-video-slide" data-video="${ytId}">
+                <img src="https://img.youtube.com/vi/${ytId}/hqdefault.jpg" alt="${escapeAttr(product.name)} - video">
+                <button type="button" class="m-video-play" aria-label="ভিডিও চালান">&#9654;</button></div>`);
+        }
+        const list = images.length ? images : ['https://via.placeholder.com/400?text=No+Image'];
+        list.forEach((url, i) => {
+            slides.push(`<div class="m-slide" data-src="${escapeAttr(url)}"><img src="${escapeAttr(url)}" alt="${escapeAttr(product.name)} - ছবি ${i + 1}" ${i > 0 ? 'loading="lazy" decoding="async"' : ''} onerror="this.src='https://via.placeholder.com/400?text=No+Image'"></div>`);
+        });
+        track.innerHTML = slides.join('');
+        track.scrollLeft = 0;
+        updateMobileGalleryCount();
+
+        track.querySelectorAll('.m-video-play').forEach(btn => btn.addEventListener('click', () => {
+            const slide = btn.closest('.m-slide');
+            slide.innerHTML = `<iframe src="https://www.youtube.com/embed/${slide.dataset.video}?autoplay=1&playsinline=1" title="Product Video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+        }));
+        if (!track.dataset.bound) {
+            track.dataset.bound = '1';
+            let raf = null;
+            track.addEventListener('scroll', () => {
+                if (raf) return;
+                raf = requestAnimationFrame(() => { raf = null; updateMobileGalleryCount(); });
+            }, { passive: true });
+        }
+        // মূল #mainImage-এর src ভ্যারিয়েন্ট বদলালে JS পাল্টায় — গ্যালারিও সেই ছবিতে সরে যাবে
+        const mainImg = document.getElementById('mainImage');
+        if (mainImg && !mainImg.dataset.observed) {
+            mainImg.dataset.observed = '1';
+            new MutationObserver(() => syncMobileGalleryToSrc(mainImg.getAttribute('src'))).observe(mainImg, { attributes: true, attributeFilter: ['src'] });
+        }
+    }
+
+    function updateMobileGalleryCount() {
+        const track = document.getElementById('mGalleryTrack');
+        const el = document.getElementById('mGalleryCount');
+        if (!track || !el) return;
+        const total = track.children.length || 1;
+        const w = track.clientWidth || 1;
+        const idx = Math.min(total - 1, Math.max(0, Math.round(track.scrollLeft / w)));
+        el.textContent = `${idx + 1}/${total}`;
+        el.style.display = total > 1 ? '' : 'none';
+    }
+
+    function syncMobileGalleryToSrc(src) {
+        const track = document.getElementById('mGalleryTrack');
+        if (!track || !src) return;
+        const slides = [...track.querySelectorAll('.m-slide[data-src]')];
+        let target = slides.find(sl => sl.dataset.src === src);
+        if (!target && slides.length) {
+            // ভ্যারিয়েন্টের নিজস্ব ছবি গ্যালারির তালিকায় নেই — প্রথম স্লাইডের ছবি সেটা দিয়ে বদলানো হচ্ছে
+            target = slides[0];
+            target.dataset.src = src;
+            const im = target.querySelector('img');
+            if (im) im.src = src;
+        }
+        // পেজ লোডের সময় ডিফল্ট ভ্যারিয়েন্ট প্রথম ছবি সেট করে — ভিডিও স্লাইড প্রথমে থাকলে সেখান থেকে সরানো হবে না
+        if (target === slides[0] && track.scrollLeft < 5) return;
+        if (target) track.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+    }
+
+    function updateMobilePromo(price, originalPrice) {
+        const row = document.getElementById('mPromoRow');
+        const badges = document.getElementById('mBadges');
+        if (!row || !badges) return;
+        const hasDiscount = originalPrice && originalPrice > price;
+        if (hasDiscount) {
+            const pct = Math.round(((originalPrice - price) / originalPrice) * 100);
+            row.innerHTML = `<span class="m-tag m-tag-save">৳${formatPrice(originalPrice - price)} ছাড়</span><span class="m-tag m-tag-pct">-${pct}%</span>`;
+            row.classList.add('show');
+        } else {
+            row.innerHTML = '';
+            row.classList.remove('show');
+        }
+        badges.innerHTML = (hasDiscount ? `<span class="m-badge">-${Math.round(((originalPrice - price) / originalPrice) * 100)}% OFF</span>` : '')
+            + '<span class="m-badge m-badge-pack">ভিডিও রেকর্ড প্যাকিং</span>';
+    }
+
+    // রেটিং ও sold এক সারিতে — কোনোটারই ডেটা না থাকলে সারিটা পুরো লুকানো থাকে
+    let mRatingState = { avg: 0, total: 0, sold: 0 };
+    function renderMobileRatingRow() {
+        const row = document.getElementById('mRatingRow');
+        if (!row) return;
+        const parts = [];
+        if (mRatingState.total > 0) {
+            parts.push(`<span class="m-stars">${starsHtml(mRatingState.avg)}</span><span>${mRatingState.avg} (${mRatingState.total})</span>`);
+        }
+        if (mRatingState.sold > 0) {
+            parts.push(`<span>${mFormatSold(mRatingState.sold)} sold</span>`);
+        }
+        row.innerHTML = parts.join('<span class="m-sep"></span>');
+        row.classList.toggle('show', parts.length > 0);
+    }
+
     function starsHtml(rating) {
         const full = Math.round(rating);
         let html = '';
@@ -1159,6 +1534,9 @@
         document.getElementById('reviewAvg').textContent = data.average || 0;
         document.getElementById('reviewAvgStars').innerHTML = starsHtml(data.average || 0);
         document.getElementById('reviewCountText').textContent = `${data.total || 0} Ratings`;
+        mRatingState.avg = Number(data.average) || 0;
+        mRatingState.total = Number(data.total) || 0;
+        renderMobileRatingRow();
 
         // SEO: রিভিউ ডেটা এখন হাতে এসেছে — JSON-LD-তে স্টার রেটিং যোগ করে দেওয়া হচ্ছে (থাকলে)
         if (currentProduct) renderProductJsonLd(currentProduct, currentProductImages, data);
@@ -1363,9 +1741,58 @@
         document.getElementById('errorMsg').style.display = 'block';
     }
 
+    // দারাজের মতো হোভার-ম্যাগনিফায়ার: মাউস মূল ছবির উপর রাখলে পাশে বড় করে জুম করে দেখায়
+    function initImageZoom() {
+        const mainImg = document.getElementById('mainImage');
+        const section = document.querySelector('.image-section');
+        if (!mainImg || !section) return;
+        // টাচ ডিভাইসে hover থাকে না — সেখানে স্বাভাবিক পিঞ্চ-জুম আচরণই রাখা হলো, এখানে কিছু করা হয়নি
+        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+        const lens = document.createElement('div');
+        lens.className = 'zoom-lens';
+        const result = document.createElement('div');
+        result.className = 'zoom-result';
+        section.appendChild(lens);
+        section.appendChild(result);
+
+        function activate() {
+            if (window.innerWidth < 1000) return; // সরু স্ক্রিনে জুম প্যানেল রাখার জায়গা নেই
+            if (!mainImg.src || mainImg.style.display === 'none') return;
+            result.style.backgroundImage = `url('${mainImg.src}')`;
+            lens.style.display = 'block';
+            result.style.display = 'block';
+        }
+        function deactivate() {
+            lens.style.display = 'none';
+            result.style.display = 'none';
+        }
+        function move(e) {
+            if (lens.style.display === 'none') return;
+            const rect = mainImg.getBoundingClientRect();
+            const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
+            let x = e.clientX - rect.left - lensW / 2;
+            let y = e.clientY - rect.top - lensH / 2;
+            x = Math.max(0, Math.min(x, rect.width - lensW));
+            y = Math.max(0, Math.min(y, rect.height - lensH));
+            lens.style.left = x + 'px';
+            lens.style.top = y + 'px';
+            const resultW = result.offsetWidth, resultH = result.offsetHeight;
+            const ratioX = resultW / lensW;
+            const ratioY = resultH / lensH;
+            result.style.backgroundSize = `${rect.width * ratioX}px ${rect.height * ratioY}px`;
+            result.style.backgroundPosition = `-${x * ratioX}px -${y * ratioY}px`;
+        }
+        mainImg.addEventListener('mouseenter', activate);
+        mainImg.addEventListener('mousemove', move);
+        mainImg.addEventListener('mouseleave', deactivate);
+    }
+
     loadProduct();
+    initImageZoom();
 </script>
-<div id="siteFooter"></div>
+</main>
+    <div id="siteFooter"></div>
 <script src="footer.js"></script>
 <script src="search.js"></script>
 </body>
