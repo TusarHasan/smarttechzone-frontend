@@ -15,7 +15,13 @@ function setCustomerSession(token, customer) {
     localStorage.setItem(CUSTOMER_DATA_KEY, JSON.stringify(customer));
 }
 
-function customerLogout() {
+async function customerLogout() {
+    // চ্যাট উইজেট থাকলে এই ব্রাউজারের পুশ সাবস্ক্রিপশন আগে বাদ দেওয়া (টোকেন থাকতে থাকতেই), ১.৫ সেকেন্ডের বেশি আটকাবে না
+    try {
+        if (typeof window.stzChatBeforeLogout === 'function') {
+            await Promise.race([window.stzChatBeforeLogout(), new Promise(function (r) { setTimeout(r, 1500); })]);
+        }
+    } catch (e) { /* লগআউট কখনো আটকাবে না */ }
     localStorage.removeItem(CUSTOMER_TOKEN_KEY);
     localStorage.removeItem(CUSTOMER_DATA_KEY);
     window.location.href = getAuthBasePath() + 'index.html';

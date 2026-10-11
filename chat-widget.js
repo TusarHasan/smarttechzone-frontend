@@ -129,6 +129,11 @@
                 box-shadow: 0 3px 8px rgba(231,76,60,0.35);
             }
             #stzChatSend:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+            #stzChatNotif { display: none; flex-shrink: 0; padding: 8px 14px; background: #fff7f5; border-bottom: 1px solid #f3dcd8; font-size: 12px; color: #7a3b32; align-items: center; justify-content: space-between; gap: 8px; }
+            #stzChatNotif.show { display: flex; }
+            #stzChatNotif button { background: #e74c3c; color: #fff; border: none; border-radius: 14px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+            #stzChatNotif button.link { background: none; color: #b0382a; text-decoration: underline; padding: 0; font-weight: 600; }
+            #stzChatNotif button:disabled { opacity: .6; cursor: default; }
         `;
         document.head.appendChild(style);
     }
@@ -151,6 +156,7 @@
                 </div>
                 <button id="stzChatClose">×</button>
             </div>
+            <div id="stzChatNotif"></div>
             <div id="stzChatMessages"><div id="stzChatEmpty">মেসেজ লোড হচ্ছে...</div></div>
             <div id="stzChatInputRow">
                 <input type="text" id="stzChatInput" placeholder="মেসেজ লিখুন..." maxlength="2000">
@@ -170,6 +176,7 @@
         panelOpen = true;
         document.getElementById('stzChatPanel').classList.add('open');
         document.getElementById('stzChatDot').style.display = 'none';
+        refreshNotifStrip();
     }
     function closePanel() {
         panelOpen = false;
@@ -323,6 +330,92 @@
         input.focus();
     }
 
+    // ===================== Browser push notifications =====================
+    // কাস্টমার সাইটে না থাকলে (ট্যাব বন্ধ) অ্যাডমিনের রিপ্লাই ব্রাউজার নোটিফিকেশনে আসে। চ্যাট প্যানেলের ওপরে
+    // "Turn on notifications" বাটনে চাপলে তবেই ব্রাউজার Allow জিজ্ঞেস করে (জোর করে পপআপ আসে না)।
+    // সার্ভারে VAPID কী সেট না থাকলে এই স্ট্রিপ কিছুই দেখায় না।
+    let pushPublicKey = null;
+    function pushSupported() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+    function b64ToU8(b64) {
+        const pad = '='.repeat((4 - b64.length % 4) % 4);
+        const raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+        const out = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+        return out;
+    }
+    async function pushServerKey() {
+        if (pushPublicKey !== null) return pushPublicKey;
+        try {
+            const r = await fetch(`${BACKEND_URL}/api/chat/push/public-key`);
+            const d = await r.json();
+            pushPublicKey = d.enabled ? d.publicKey : '';
+        } catch (e) { pushPublicKey = ''; }
+        return pushPublicKey;
+    }
+    async function currentPushSub() {
+        try {
+            const reg = await navigator.serviceWorker.getRegistration('/');
+            return reg ? await reg.pushManager.getSubscription() : null;
+        } catch (e) { return null; }
+    }
+    async function savePushSub(sub) {
+        await customerAuthFetch(`${BACKEND_URL}/api/chat/push/subscribe`, { method: 'POST', body: JSON.stringify({ subscription: sub.toJSON() }) });
+    }
+    async function enablePush() {
+        const key = await pushServerKey();
+        if (!key) return;
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') return;
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
+        await savePushSub(sub);
+    }
+    async function disablePush() {
+        const sub = await currentPushSub();
+        if (!sub) return;
+        try { await customerAuthFetch(`${BACKEND_URL}/api/chat/push/unsubscribe`, { method: 'POST', body: JSON.stringify({ endpoint: sub.endpoint }) }); } catch (e) { /* নন-ক্রিটিক্যাল */ }
+        try { await sub.unsubscribe(); } catch (e) { /* নন-ক্রিটিক্যাল */ }
+    }
+    async function refreshNotifStrip() {
+        const box = document.getElementById('stzChatNotif');
+        if (!box) return;
+        box.classList.remove('show');
+        box.innerHTML = '';
+        if (!pushSupported() || !isLoggedIn()) return;
+        if (!(await pushServerKey())) return;
+        if (Notification.permission === 'denied') {
+            box.innerHTML = '<span>Notifications are blocked in your browser settings.</span>';
+            box.classList.add('show');
+            return;
+        }
+        const sub = Notification.permission === 'granted' ? await currentPushSub() : null;
+        if (sub) {
+            box.innerHTML = '<span>&#128276; Notifications are on</span><button type="button" class="link" id="stzNotifOff">Turn off</button>';
+            document.getElementById('stzNotifOff').onclick = async function () { this.disabled = true; await disablePush(); refreshNotifStrip(); };
+        } else {
+            box.innerHTML = '<span>Get notified when we reply</span><button type="button" id="stzNotifOn">Turn on notifications</button>';
+            document.getElementById('stzNotifOn').onclick = async function () {
+                this.disabled = true;
+                try { await enablePush(); } catch (e) { /* ব্যর্থ হলে বাটন আবার আসবে */ }
+                refreshNotifStrip();
+            };
+        }
+        box.classList.add('show');
+    }
+    // একই ব্রাউজারে অন্য কাস্টমার লগইন করলে (বা সাবস্ক্রিপশন বদলালে) সার্ভারের রেকর্ড ঠিক রাখা
+    async function syncPushSubscription() {
+        if (!pushSupported() || Notification.permission !== 'granted') return;
+        const sub = await currentPushSub();
+        if (sub) { try { await savePushSub(sub); } catch (e) { /* নন-ক্রিটিক্যাল */ } }
+    }
+    // লগআউটের আগে customer-auth.js এটা ডাকে — লগআউট করা ব্রাউজারে আর অন্যের মেসেজ প্রিভিউ আসবে না
+    window.stzChatBeforeLogout = async function () {
+        if (!pushSupported()) return;
+        await disablePush();
+    };
+
     // ===================== রিয়েল-টাইম (Socket.io) =====================
     function connectSocket() {
         if (typeof io === 'undefined') return; // CDN স্ক্রিপ্ট লোড না হলে চ্যাট প্যানেল তবু কাজ করবে (শুধু রিয়েল-টাইম পুশ ছাড়া)
@@ -359,6 +452,9 @@
         if (isLoggedIn()) {
             connectSocket();
             seedUnreadBadge();
+            syncPushSubscription();
+            // পুশ নোটিফিকেশনে ট্যাপ করলে /account.html?openChat=1 — সরাসরি সাপোর্ট চ্যাট খুলে দেয়
+            if (new URLSearchParams(window.location.search).get('openChat') === '1') openPlatformChat();
         }
     }
 
