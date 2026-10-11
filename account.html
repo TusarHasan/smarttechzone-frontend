@@ -417,7 +417,9 @@
         function togglePackagingProof(orderId) {
             const video = document.getElementById(`pp-video-${orderId}`);
             if (!video) return;
-            video.style.display = video.style.display === 'none' ? 'block' : 'none';
+            const show = video.style.display === 'none';
+            video.style.display = show ? 'block' : 'none';
+            if (window.STZProof) STZProof.toggle(orderId, show);
         }
 
         const statusLabels = {
@@ -807,6 +809,7 @@
                             <video id="pp-video-${order._id}" controls style="display:none;">
                                 <source src="${resolveImg(order.packagingProofVideoUrl)}">
                             </video>
+                            ${window.STZProof ? STZProof.html(order.packagingProofFrames, resolveImg, String(order._id)) : ''}
                         </div>
                     ` : ''}
                 </div>

@@ -78,6 +78,7 @@
         .tr-help a { color: #e74c3c; font-weight: bold; text-decoration: none; }
     </style>
     <script src="config.js"></script>
+    <script src="proof-gallery.js"></script>
     <script src="visitor-track.js" defer></script>
     <script src="customer-auth.js"></script>
     <script src="order-cancel.js"></script>
@@ -130,7 +131,11 @@
         function formatPrice(n) { return Number(n || 0).toLocaleString('en-IN'); }
         function togglePackagingProof() {
             const v = document.getElementById('ppVideo');
-            if (v) v.style.display = v.style.display === 'none' ? 'block' : 'none';
+            if (v) {
+                const show = v.style.display === 'none';
+                v.style.display = show ? 'block' : 'none';
+                if (window.STZProof) STZProof.toggle('track', show);
+            }
         }
 
         const payLabels = { pending: 'পেমেন্ট বাকি', paid: 'পেমেন্ট সম্পন্ন', failed: 'পেমেন্ট ব্যর্থ', cancelled: 'পেমেন্ট বাতিল' };
@@ -194,6 +199,7 @@
                         <div class="order-packaging-proof">
                             <button type="button" class="pp-toggle-btn" onclick="togglePackagingProof()">&#127909; Packaging Proof ভিডিও দেখুন</button>
                             <video id="ppVideo" controls preload="none" style="display:none;"><source src="${esc(resolveImg(o.packagingProofVideoUrl))}"></video>
+                            ${window.STZProof ? STZProof.html(o.packagingProofFrames, resolveImg, 'track') : ''}
                         </div>` : ''}
                 </div>`;
             document.getElementById('orderResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
