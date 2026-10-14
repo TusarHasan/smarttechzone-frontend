@@ -18,6 +18,15 @@
     const BASE_PATH = getBasePath();
 
     let socket = null;
+    let imgComposer = null; // ছবি পাঠানোর কম্পোজার (chat-images.js লোড হলে তৈরি হয়)
+    let imgBtn = null;
+    function loadImgLib(cb) {
+        if (window.STZChatImages) return cb();
+        const sc = document.createElement('script');
+        sc.src = BASE_PATH + 'chat-images.js';
+        sc.onload = cb;
+        document.head.appendChild(sc);
+    }
     let currentThread = null; // এখন প্যানেলে যে থ্রেড খোলা আছে
     let panelOpen = false;
 
@@ -158,6 +167,7 @@
             </div>
             <div id="stzChatNotif"></div>
             <div id="stzChatMessages"><div id="stzChatEmpty">মেসেজ লোড হচ্ছে...</div></div>
+            <div class="stzimg-strip" id="stzChatImgStrip"></div>
             <div id="stzChatInputRow">
                 <input type="text" id="stzChatInput" placeholder="মেসেজ লিখুন..." maxlength="2000">
                 <button id="stzChatSend">➤</button>
@@ -167,6 +177,25 @@
 
         document.getElementById('stzChatClose').onclick = closePanel;
         document.getElementById('stzChatSend').onclick = sendMessage;
+
+        // ছবি পাঠানোর বাটন (সর্বোচ্চ ৪টা) — শেয়ার্ড chat-images.js এই ফাইলের পাশ থেকেই নিজে লোড হয়, তাই
+        // যে পেজে চ্যাট উইজেট আছে সেখানে আলাদা script ট্যাগ বসাতে হয় না
+        loadImgLib(function () {
+            imgComposer = STZChatImages.create({
+                strip: document.getElementById('stzChatImgStrip'),
+                uploadUrl: `${BACKEND_URL}/api/chat/upload`,
+                fetcher: function (url, init) {
+                    const token = typeof getCustomerToken === 'function' ? getCustomerToken() : '';
+                    return fetch(url, Object.assign({}, init, { headers: token ? { Authorization: `Bearer ${token}` } : {} }));
+                }
+            });
+            const b = STZChatImages.buildButton(function (files) { imgComposer.add(files); });
+            imgBtn = b.btn;
+            const row = document.getElementById('stzChatInputRow');
+            row.insertBefore(b.btn, document.getElementById('stzChatInput'));
+            row.appendChild(b.input);
+            STZChatImages.bindLightbox(document.getElementById('stzChatMessages'));
+        });
         document.getElementById('stzChatInput').addEventListener('keydown', function (e) {
             if (e.key === 'Enter') sendMessage();
         });
@@ -224,7 +253,8 @@
                 <div class="stz-msg-time">${timeLabel(m.createdAt)}</div>
             `;
         }
-        return `<div>${escapeHtml(m.text)}</div><div class="stz-msg-time">${timeLabel(m.createdAt)}</div>`;
+        const grid = window.STZChatImages ? STZChatImages.gridHtml(m.images, resolveImgSrc) : '';
+        return `${grid}${m.text ? `<div>${escapeHtml(m.text)}</div>` : ''}<div class="stz-msg-time">${timeLabel(m.createdAt)}</div>`;
     }
     function messageBubbleClass(m) {
         return `stz-msg ${m.senderType}${m.type === 'order_card' ? ' order-card-bubble' : ''}`;
@@ -284,6 +314,7 @@
         document.getElementById('stzChatMessages').innerHTML = '<div id="stzChatEmpty">মেসেজ লোড হচ্ছে...</div>';
         try {
             currentThread = await openThread('platform');
+            if (imgComposer) imgComposer.clear();
             const messages = await loadMessages(currentThread._id);
             renderMessages(messages);
             markRead(currentThread._id);
@@ -301,6 +332,7 @@
         document.getElementById('stzChatMessages').innerHTML = '<div id="stzChatEmpty">মেসেজ লোড হচ্ছে...</div>';
         try {
             currentThread = await openThread('vendor', productId, productName);
+            if (imgComposer) imgComposer.clear();
             const messages = await loadMessages(currentThread._id);
             renderMessages(messages);
             markRead(currentThread._id);
@@ -312,21 +344,31 @@
     async function sendMessage() {
         const input = document.getElementById('stzChatInput');
         const text = input.value.trim();
-        if (!text || !currentThread) return;
+        const hasImages = !!(imgComposer && imgComposer.count() > 0);
+        if ((!text && !hasImages) || !currentThread) return;
         const sendBtn = document.getElementById('stzChatSend');
         sendBtn.disabled = true;
+        if (imgBtn) imgBtn.disabled = true;
         try {
+            const images = hasImages ? await imgComposer.upload() : [];
             const res = await customerAuthFetch(`${BACKEND_URL}/api/chat/threads/${currentThread._id}/messages`, {
                 method: 'POST',
-                body: JSON.stringify({ text })
+                body: JSON.stringify({ text, images })
             });
             if (res.ok) {
                 const data = await res.json();
                 appendMessage(data.message);
                 input.value = '';
+                if (imgComposer) imgComposer.clear();
+            } else if (imgComposer) {
+                const d = await res.json().catch(() => ({}));
+                imgComposer.setNote(d.error || 'মেসেজ পাঠানো যায়নি');
             }
-        } catch (e) { /* নেটওয়ার্ক সমস্যা হলে চুপচাপ — ইউজার আবার Send চাপতে পারবে */ }
+        } catch (e) {
+            if (imgComposer) imgComposer.setNote(e.message || 'মেসেজ পাঠানো যায়নি');
+        }
         sendBtn.disabled = false;
+        if (imgBtn) imgBtn.disabled = false;
         input.focus();
     }
 

@@ -105,6 +105,7 @@
                 <div class="msgc-conv-messages" id="msgcConvMessages">
                     <div class="msgc-conv-empty">লোড হচ্ছে...</div>
                 </div>
+                <div class="stzimg-strip" id="msgcImgStrip"></div>
                 <div class="msgc-input-row" id="msgcInputRow" style="display:none;">
                     <input type="text" id="msgcInput" placeholder="মেসেজ লিখুন..." maxlength="2000">
                     <button id="msgcSendBtn">➤</button>
@@ -117,6 +118,7 @@
     <script src="footer.js"></script>
     <script src="search.js"></script>
 
+    <script src="chat-images.js"></script>
     <script>
         // লগইন করা না থাকলে সরাসরি লগইন পেজে পাঠিয়ে দেওয়া হচ্ছে
         if (!getCustomerToken() || !getCustomerData()) {
@@ -183,7 +185,7 @@
                                 <span class="msgc-thread-name">${threadDisplayName(t)}</span>
                                 ${t.lastMessageAt ? `<span class="msgc-thread-time">${timeLabel(t.lastMessageAt)}</span>` : ''}
                             </div>
-                            <div class="msgc-thread-snippet">${t.lastMessageBy === 'admin' ? 'তারা: ' : (t.lastMessageBy === 'customer' ? 'আপনি: ' : '')}${escapeHtml(t.lastMessageSnippet || '')}</div>
+                            <div class="msgc-thread-snippet">${t.lastMessageBy === 'admin' ? 'তারা: ' : (t.lastMessageBy === 'customer' ? 'আপনি: ' : '')}${escapeHtml(t.lastMessageSnippet === 'Photo' ? 'ছবি' : (t.lastMessageSnippet || ''))}</div>
                         </div>
                         ${t.unreadByCustomer ? '<span class="msgc-thread-unread-badge"></span>' : ''}
                     </div>
@@ -213,7 +215,7 @@
                     <div class="msgc-bubble-time">${timeLabel(m.createdAt)}</div>
                 `;
             }
-            return `<div>${escapeHtml(m.text)}</div><div class="msgc-bubble-time">${timeLabel(m.createdAt)}</div>`;
+            return `${STZChatImages.gridHtml(m.images, resolveImgSrc)}${m.text ? `<div>${escapeHtml(m.text)}</div>` : ''}<div class="msgc-bubble-time">${timeLabel(m.createdAt)}</div>`;
         }
         function messageBubbleClass(m) {
             return `msgc-bubble ${m.senderType}${m.type === 'order_card' ? ' order-card-bubble' : ''}`;
@@ -245,6 +247,7 @@
         }
 
         window.msgcSelectThread = async function (id) {
+            if (activeThreadId !== id && typeof msgcImg !== 'undefined') msgcImg.clear();
             activeThreadId = id;
             activeIsPlaceholder = (id === PLATFORM_PLACEHOLDER_ID);
             renderThreadList();
@@ -291,32 +294,53 @@
             }
         };
 
+        // ছবি পাঠানো (সর্বোচ্চ ৪টা) — বিস্তারিত chat-images.js-এ
+        const msgcImg = STZChatImages.create({
+            strip: document.getElementById('msgcImgStrip'),
+            uploadUrl: `${API_BASE}/api/chat/upload`,
+            fetcher: function (url, init) {
+                return fetch(url, Object.assign({}, init, { headers: { Authorization: `Bearer ${getCustomerToken()}` } }));
+            }
+        });
+        const msgcImgBtn = STZChatImages.buildButton(function (files) { msgcImg.add(files); });
+        (function () {
+            const row = document.getElementById('msgcInputRow');
+            row.insertBefore(msgcImgBtn.btn, document.getElementById('msgcInput'));
+            row.appendChild(msgcImgBtn.input);
+        })();
+        STZChatImages.bindLightbox(document.getElementById('msgcConvMessages'));
+
         async function msgcSendMessage() {
             const input = document.getElementById('msgcInput');
             const text = input.value.trim();
-            if (!text || !activeThreadId || activeIsPlaceholder) return;
+            const hasImages = msgcImg.count() > 0;
+            if ((!text && !hasImages) || !activeThreadId || activeIsPlaceholder) return;
             const btn = document.getElementById('msgcSendBtn');
             btn.disabled = true;
+            msgcImgBtn.btn.disabled = true;
             try {
+                const images = hasImages ? await msgcImg.upload() : [];
                 const res = await customerAuthFetch(`${API_BASE}/api/chat/threads/${activeThreadId}/messages`, {
-                    method: 'POST', body: JSON.stringify({ text })
+                    method: 'POST', body: JSON.stringify({ text, images })
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'মেসেজ পাঠানো যায়নি।');
                 appendMessage(data.message);
                 input.value = '';
+                msgcImg.clear();
                 const t = threads.find(x => x._id === activeThreadId);
                 if (t) {
-                    t.lastMessageSnippet = text.length > 120 ? text.slice(0, 120) + '…' : text;
+                    t.lastMessageSnippet = text ? (text.length > 120 ? text.slice(0, 120) + '…' : text) : 'Photo';
                     t.lastMessageAt = data.message.createdAt;
                     t.lastMessageBy = 'customer';
                     threads.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
                     renderThreadList();
                 }
             } catch (err) {
-                alert('❌ ' + err.message);
+                msgcImg.setNote(err.message || 'মেসেজ পাঠানো যায়নি।');
             }
             btn.disabled = false;
+            msgcImgBtn.btn.disabled = false;
             input.focus();
         }
         document.getElementById('msgcSendBtn').onclick = msgcSendMessage;
