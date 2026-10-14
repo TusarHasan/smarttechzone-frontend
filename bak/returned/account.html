@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <script src="analytics.js" defer></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO: এটা প্রাইভেট/ইউটিলিটি পেজ (প্রতিটা ইউজারের জন্য আলাদা ডেটা বা কোনো নির্দিষ্ট
+         কনটেন্ট নেই) — তাই Google এটা ইনডেক্স না করুক, কিন্তু ভেতরের লিংকগুলো (যেমন প্রোডাক্ট
+         লিংক) অনুসরণ করুক, এই জন্য noindex, follow ব্যবহার করা হলো -->
+    <meta name="robots" content="noindex, follow">
+    <title>আমার অ্যাকাউন্ট - Smart Tech Zone</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .account-container { max-width: 700px; margin: 30px auto; padding: 0 20px; }
+        .account-card { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .account-card h3 { margin-top: 0; font-size: 16px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .account-card label { display: block; margin-top: 14px; font-size: 13px; font-weight: bold; color: #333; }
+        .account-card input, .account-card textarea, .account-card select {
+            width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ccc; border-radius: 4px;
+            box-sizing: border-box; font-family: Arial, sans-serif; font-size: 14px;
+        }
+        .account-card input:disabled { background: #f5f5f5; color: #888; }
+        .account-card textarea { min-height: 60px; resize: vertical; }
+        .save-btn {
+            margin-top: 16px; background: #e74c3c; color: #fff; border: none; padding: 11px 22px;
+            font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;
+        }
+        .save-btn:hover { background: #c0392b; }
+        .save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .logout-btn { background: none; border: 1px solid #ccc; color: #666; padding: 6px 14px; border-radius: 4px; font-size: 12.5px; cursor: pointer; }
+        .logout-btn:hover { border-color: #e74c3c; color: #e74c3c; }
+        #profileMsg, #addressMsg { margin-top: 10px; font-size: 13.5px; }
+
+        .order-item-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #f5f5f5; }
+        .order-result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .order-status-badge { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: 11.5px; font-weight: bold; color: #fff; }
+        .status-pending { background: #999; }
+        .status-processing { background: #f39c12; }
+        .status-shipped { background: #2980b9; }
+        .status-delivered { background: #27ae60; }
+        .status-cancelled { background: #e74c3c; }
+        .status-delivery_failed { background: #7c3aed; }
+        .order-mini-card { border: 1px solid #eee; border-radius: 6px; padding: 14px; margin-top: 14px; }
+        .order-mini-total { font-size: 14px; font-weight: bold; color: #333; margin-top: 8px; text-align: right; }
+        .order-packaging-proof { margin-top: 12px; padding-top: 12px; border-top: 1px solid #f5f5f5; }
+        .pp-toggle-btn {
+            background: none; border: 1px solid #e74c3c; color: #e74c3c; padding: 7px 14px;
+            border-radius: 20px; font-size: 12.5px; font-weight: bold; cursor: pointer;
+        }
+        .pp-toggle-btn:hover { background: #fdf1f0; }
+        .order-packaging-proof video { width: 100%; margin-top: 10px; border-radius: 8px; background: #000; }
+        .no-orders { text-align: center; color: #999; padding: 30px 0; font-size: 14px; }
+        .no-orders a { color: #e74c3c; font-weight: bold; text-decoration: none; }
+        .loading-hint { text-align: center; color: #999; padding: 20px 0; font-size: 13.5px; }
+
+        /* ===== Return / Refund রিকোয়েস্ট ===== */
+        .return-btn {
+            background: none; border: 1px solid #e74c3c; color: #e74c3c; padding: 6px 14px;
+            border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 8px;
+        }
+        .return-btn:hover { background: #fdf1f0; }
+        .return-requested-tag { display: inline-block; margin-top: 8px; font-size: 12px; color: #999; }
+
+        /* এই পেজে আগে কোনো মোডাল/পপআপ ছিল না — অ্যাডমিন প্যানেলে (style.css) ব্যবহৃত
+           .modal / .modal.open / classList.add('open') কনভেনশনটাই এখানে অনুসরণ করা হলো */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; }
+        .modal.open { display: flex; }
+        .modal-content { background: #fff; border-radius: 8px; padding: 24px; width: 90%; max-width: 400px; box-sizing: border-box; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-actions button { flex: 1; padding: 11px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .btn-cancel { background: #eee; color: #555; }
+        .btn-cancel:hover { background: #e2e2e2; }
+
+        .return-modal-content { max-width: 460px; max-height: 88vh; overflow-y: auto; text-align: left; }
+        .return-modal-content h3 { margin: 0 0 4px; font-size: 16px; color: #333; }
+        .return-item-preview { display: flex; gap: 10px; align-items: center; padding: 10px; background: #fafafa; border-radius: 6px; margin: 12px 0; }
+        .return-item-preview img { width: 46px; height: 46px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; background: #fff; }
+        .return-item-preview .rip-name { font-size: 13px; color: #333; }
+        .return-item-preview .rip-meta { font-size: 11.5px; color: #999; margin-top: 2px; }
+
+        .return-field-label { display: block; margin-top: 14px; font-size: 13px; font-weight: bold; color: #333; }
+        .return-modal-content select, .return-modal-content textarea, .return-modal-content input[type="text"] {
+            width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ccc; border-radius: 4px;
+            box-sizing: border-box; font-family: Arial, sans-serif; font-size: 14px;
+        }
+        .return-modal-content textarea { min-height: 60px; resize: vertical; }
+        .resolution-options { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .resolution-options label { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: normal; cursor: pointer; }
+        .rimg-previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .rimg-previews img { width: 58px; height: 58px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; }
+        #returnModalMsg { margin-top: 10px; font-size: 13.5px; }
+
+        /* ===== Return Tracking সেকশন ===== */
+        .return-track-card { border: 1px solid #eee; border-radius: 6px; padding: 14px; margin-top: 14px; }
+        .return-status-badge { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: 11.5px; font-weight: bold; color: #fff; }
+        .rstatus-pending { background: #999; }
+        .rstatus-approved { background: #2980b9; }
+        .rstatus-picked_up { background: #f39c12; }
+        .rstatus-completed { background: #27ae60; }
+        .rstatus-rejected { background: #e74c3c; }
+        .return-track-timeline { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; font-size: 11px; color: #999; }
+        .return-track-timeline span.done { color: #27ae60; font-weight: bold; }
+        .no-returns { text-align: center; color: #999; padding: 20px 0; font-size: 13.5px; }
+
+        /* ===== Write a Review (AliExpress-স্টাইল, ডেলিভারড আইটেমের পাশেই) ===== */
+        .review-btn {
+            background: none; border: 1px solid #f39c12; color: #d97706; padding: 6px 14px;
+            border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 8px; margin-left: 6px;
+        }
+        .review-btn:hover { background: #fff8ec; }
+        .reviewed-tag { display: inline-block; margin-top: 8px; margin-left: 6px; font-size: 12px; color: #999; }
+
+        .review-modal-content { max-width: 460px; max-height: 88vh; overflow-y: auto; text-align: left; }
+        .review-modal-content h3 { margin: 0 0 4px; font-size: 16px; color: #333; }
+
+        /* ক্লিকযোগ্য স্টার রেটিং — ইনপুট রেডিও/স্লাইডারের বদলে সরাসরি ইমোজি/ইউনিকোড স্টারে ক্লিক করে
+           রেটিং দেওয়া, AliExpress/Daraz-এর রিভিউ ফর্মে যেমন থাকে */
+        .star-rating-input { display: flex; gap: 6px; margin-top: 8px; font-size: 30px; }
+        .star-rating-input span { cursor: pointer; color: #ddd; transition: color .1s; }
+        .star-rating-input span.filled { color: #f5a623; }
+        #reviewModalMsg { margin-top: 10px; font-size: 13.5px; }
+
+        .pm-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f5f5f5; font-size: 13.5px; }
+        .pm-item:last-child { border-bottom: none; }
+        .pm-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; color: #fff; margin-right: 10px; }
+        .pm-bkash { background: #e2136e; }
+        .pm-nagad { background: #f6921e; }
+        .pm-rocket { background: #8a2be2; }
+        .pm-other { background: #555; }
+        .pm-remove-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 13px; padding: 4px; }
+        .pm-remove-btn:hover { text-decoration: underline; }
+        .no-payment-methods { color: #999; font-size: 13.5px; padding: 10px 0; }
+        .pm-add-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; align-items: flex-start; }
+        .pm-add-row select, .pm-add-row input {
+            flex: 1 1 130px; width: auto; margin-top: 0; padding: 10px; border: 1px solid #ccc;
+            border-radius: 4px; font-size: 13.5px; box-sizing: border-box; font-family: Arial, sans-serif;
+        }
+        .pm-add-row button { flex-shrink: 0; margin-top: 0; }
+        #paymentMsg { margin-top: 10px; font-size: 13.5px; }
+
+        /* ===== উইশলিস্ট ===== */
+        .wishlist-item-row {
+            display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f5f5;
+        }
+        .wishlist-item-row:last-child { border-bottom: none; }
+        .wishlist-item-row img { width: 54px; height: 54px; object-fit: contain; border: 1px solid #eee; border-radius: 6px; flex-shrink: 0; background: #fff; }
+        .wishlist-item-info { flex: 1; min-width: 0; }
+        .wishlist-item-info a { color: #333; text-decoration: none; font-size: 13.5px; font-weight: bold; }
+        .wishlist-item-info a:hover { color: #e74c3c; }
+        .wishlist-item-price { font-size: 13px; color: #e74c3c; font-weight: bold; margin-top: 3px; }
+        .wishlist-item-price .wip-old { color: #999; font-weight: 400; text-decoration: line-through; margin-right: 6px; }
+        .wishlist-item-unavailable { font-size: 12px; color: #999; margin-top: 3px; }
+        .wishlist-remove-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 13px; padding: 4px; flex-shrink: 0; }
+        .wishlist-remove-btn:hover { text-decoration: underline; }
+        .no-wishlist { text-align: center; color: #999; padding: 30px 0; font-size: 14px; }
+        .no-wishlist a { color: #e74c3c; font-weight: bold; text-decoration: none; }
+
+        /* ===== ডেলিভারি এলাকা (ঢাকার ভেতরে/বাইরে) — checkout.html এর মতোই, বিস্তারিত জেলা/উপজেলা
+           ড্রপডাউনের বদলে ===== */
+        .delivery-area-options { display: flex; gap: 10px; margin-top: 6px; }
+        .area-option {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            border: 1.5px solid #e2e2e2; border-radius: 4px; padding: 10px; margin-top: 0;
+            font-weight: normal; font-size: 14px; color: #333; cursor: pointer;
+            transition: border-color .15s, background .15s;
+        }
+        .area-option:hover { border-color: #f0a8a0; }
+        .area-option input { width: auto; margin: 0; padding: 0; }
+        .area-option.selected { border-color: #e74c3c; background: #fdf6f5; }
+    </style>
+    <script src="config.js"></script>
+    <script src="visitor-track.js" defer></script>
+    <script src="customer-auth.js"></script>
+    <script src="proof-gallery.js"></script>
+    <script src="order-cancel.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" defer></script>
+    <script src="chat-widget.js" defer></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
+            <a href="cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
+        </div>
+    </nav>
+
+    <div class="account-container">
+        <h2 style="color:#333;">আমার অ্যাকাউন্ট</h2>
+
+        <div class="account-card" id="profileSection">
+            <h3>প্রোফাইল <button class="logout-btn" onclick="customerLogout()">লগ আউট</button></h3>
+            <form id="profileForm" autocomplete="on" onsubmit="return false;">
+                <label>নাম</label>
+                <input type="text" id="acName" name="name" autocomplete="name" placeholder="আপনার পুরো নাম">
+                <label>ফোন নাম্বার</label>
+                <input type="text" id="acPhone" name="tel" autocomplete="tel" inputmode="tel" disabled>
+                <p id="acPhoneHint" style="display:none; font-size:12.5px; color:#999; margin:6px 0 0;">Google/Facebook দিয়ে লগইন করেছেন, তাই ফোন নাম্বার খালি। এখানে আপনার মোবাইল নাম্বার (01XXXXXXXXX) দিন। একবার সেভ করলে আর বদলানো যাবে না।</p>
+            </form>
+            <button class="save-btn" id="saveProfileBtn" onclick="saveProfile()">প্রোফাইল সেভ করুন</button>
+            <div id="profileMsg"></div>
+        </div>
+
+        <div class="account-card" id="addressSection">
+            <h3>সেভড ডেলিভারি ঠিকানা</h3>
+            <p style="font-size:12.5px; color:#999; margin:0;">এখানে ঠিকানা সেভ করলে পরের বার চেকআউট করার সময় এটা অটোমেটিক ভরে যাবে।</p>
+            <form id="addressForm" autocomplete="on" onsubmit="return false;">
+                <label>সম্পূর্ণ ঠিকানা</label>
+                <textarea id="acAddress" name="street-address" autocomplete="street-address" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
+                <label>ডেলিভারি এলাকা</label>
+                <div class="delivery-area-options">
+                    <label class="area-option" for="acAreaInside">
+                        <input type="radio" name="acDeliveryArea" id="acAreaInside" value="inside">
+                        <span>ঢাকার ভেতরে</span>
+                    </label>
+                    <label class="area-option" for="acAreaOutside">
+                        <input type="radio" name="acDeliveryArea" id="acAreaOutside" value="outside">
+                        <span>ঢাকার বাইরে</span>
+                    </label>
+                </div>
+            </form>
+            <button class="save-btn" id="saveAddressBtn" onclick="saveAddress()">ঠিকানা সেভ করুন</button>
+            <div id="addressMsg"></div>
+        </div>
+
+        <div class="account-card" id="paymentSection">
+            <h3>সেভড পেমেন্ট মেথড</h3>
+            <p style="font-size:12.5px; color:#999; margin:0 0 4px;">bKash, Nagad, Rocket বা অন্য যেকোনো পেমেন্ট নাম্বার এখানে সেভ করে রাখতে পারেন — এটা শুধু আপনার নিজের রেফারেন্সের জন্য, সরাসরি পেমেন্ট প্রসেস করে না।</p>
+            <div id="paymentMethodsList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+
+            <div class="pm-add-row">
+                <select id="pmType">
+                    <option value="bkash">bKash</option>
+                    <option value="nagad">Nagad</option>
+                    <option value="rocket">Rocket</option>
+                    <option value="other">অন্যান্য</option>
+                </select>
+                <input type="text" id="pmLabel" placeholder="নাম (যেমন: Bank Card)" style="display:none;">
+                <input type="tel" id="pmNumber" placeholder="01XXXXXXXXX">
+                <button class="save-btn" id="addPaymentBtn" onclick="addPaymentMethod()">যোগ করুন</button>
+            </div>
+            <div id="paymentMsg"></div>
+        </div>
+
+        <div class="account-card" id="ordersSection">
+            <h3>আমার অর্ডারসমূহ</h3>
+            <div id="ordersList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+        </div>
+
+        <div class="account-card" id="wishlistSection">
+            <h3>আমার উইশলিস্ট</h3>
+            <div id="wishlistList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+        </div>
+
+        <div class="account-card" id="returnTrackingSection">
+            <h3>রিটার্ন ট্র্যাকিং</h3>
+            <p style="font-size:12.5px; color:#999; margin:0;">আপনার রিটার্ন/রিফান্ড রিকোয়েস্টের সর্বশেষ অবস্থা এখানে দেখা যাবে।</p>
+            <div id="returnTrackingList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+        </div>
+    </div>
+
+    <!-- ===== রিটার্ন রিকোয়েস্ট মোডাল ===== -->
+    <div class="modal" id="returnModal">
+        <div class="modal-content return-modal-content">
+            <h3>রিটার্ন রিকোয়েস্ট</h3>
+            <p style="font-size:12px; color:#999; margin:0;">ডেলিভারির ১৪ দিনের মধ্যে রিটার্ন রিকোয়েস্ট করা যায়।</p>
+
+            <div class="return-item-preview" id="returnItemPreview"></div>
+
+            <label class="return-field-label">রিটার্নের কারণ</label>
+            <select id="returnReason">
+                <option value="defective">ত্রুটিপূর্ণ প্রোডাক্ট (Defective)</option>
+                <option value="wrong_item">ভুল প্রোডাক্ট এসেছে (Wrong item)</option>
+                <option value="quality_issue">কোয়ালিটি সমস্যা (Quality issue)</option>
+                <option value="missing_parts">বক্সে কিছু জিনিস কম ছিল (Missing parts)</option>
+                <option value="changed_mind">মন পরিবর্তন হয়েছে (Changed mind)</option>
+                <option value="other">অন্যান্য</option>
+            </select>
+
+            <label class="return-field-label">বিস্তারিত লিখুন</label>
+            <textarea id="returnComment" placeholder="সমস্যাটি বিস্তারিত লিখুন..."></textarea>
+
+            <label class="return-field-label">প্রমাণ হিসেবে ছবি (সর্বোচ্চ ৪টি)</label>
+            <input type="file" id="returnImages" accept="image/jpeg,image/png,image/webp" multiple>
+            <div class="rimg-previews" id="rimgPreviews"></div>
+
+            <label class="return-field-label">আপনি কী চান?</label>
+            <div class="resolution-options">
+                <label><input type="radio" name="returnResolution" value="refund" checked onchange="toggleRefundFields()"> রিফান্ড</label>
+                <label><input type="radio" name="returnResolution" value="replacement" onchange="toggleRefundFields()"> রিপ্লেসমেন্ট (একই প্রোডাক্ট বদলে দেওয়া)</label>
+            </div>
+
+            <div id="refundFields">
+                <label class="return-field-label">রিফান্ড মেথড</label>
+                <select id="returnRefundMethod">
+                    <option value="bkash">bKash</option>
+                    <option value="nagad">Nagad</option>
+                    <option value="rocket">Rocket</option>
+                    <option value="bank">ব্যাংক অ্যাকাউন্ট</option>
+                </select>
+                <label class="return-field-label">নাম্বার / অ্যাকাউন্ট</label>
+                <input type="text" id="returnRefundNumber" placeholder="01XXXXXXXXX বা অ্যাকাউন্ট নাম্বার">
+            </div>
+
+            <div id="returnModalMsg"></div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeReturnModal()">বাতিল</button>
+                <button class="save-btn" id="returnSubmitBtn" onclick="submitReturnRequest()">রিকোয়েস্ট পাঠান</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== রিভিউ লেখার মোডাল ===== -->
+    <div class="modal" id="reviewModal">
+        <div class="modal-content review-modal-content">
+            <h3>রিভিউ দিন</h3>
+            <p style="font-size:12px; color:#999; margin:0;">শুধুমাত্র যারা প্রোডাক্টটি অর্ডার করে ডেলিভারি পেয়েছেন, তারাই রিভিউ দিতে পারবেন।</p>
+
+            <div class="return-item-preview" id="reviewItemPreview"></div>
+
+            <label class="return-field-label">রেটিং</label>
+            <div class="star-rating-input" id="reviewStarInput">
+                <span data-value="1" onclick="setReviewRating(1)">★</span>
+                <span data-value="2" onclick="setReviewRating(2)">★</span>
+                <span data-value="3" onclick="setReviewRating(3)">★</span>
+                <span data-value="4" onclick="setReviewRating(4)">★</span>
+                <span data-value="5" onclick="setReviewRating(5)">★</span>
+            </div>
+
+            <label class="return-field-label">মতামত (ঐচ্ছিক)</label>
+            <textarea id="reviewComment" placeholder="প্রোডাক্ট নিয়ে আপনার মতামত লিখুন..."></textarea>
+
+            <label class="return-field-label">ছবি যোগ করুন (ঐচ্ছিক, সর্বোচ্চ ৪টি)</label>
+            <input type="file" id="reviewImages" accept="image/jpeg,image/png,image/webp" multiple>
+            <div class="rimg-previews" id="reviewImgPreviews"></div>
+
+            <div id="reviewModalMsg"></div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeReviewModal()">বাতিল</button>
+                <button class="save-btn" id="reviewSubmitBtn" onclick="submitReviewRequest()">রিভিউ জমা দিন</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+
+    <script>
+        const API_BASE = BACKEND_URL;
+
+        // লগইন করা না থাকলে সরাসরি লগইন পেজে পাঠিয়ে দেওয়া হচ্ছে
+        if (!getCustomerToken() || !getCustomerData()) {
+            window.location.href = 'login.html?redirect=account.html';
+        }
+
+        // নেভবারের প্রোফাইল ড্রপডাউন থেকে #profileSection/#ordersSection দিয়ে এলে শুধু প্রাসঙ্গিক
+        // সেকশনটুকু দেখানো হয় — বাকিগুলো লুকিয়ে রাখা হয়। এই ফাংশনটা শুধু পেজ লোডের সময় না, বরং
+        // 'hashchange' ইভেন্টেও কল করা হয় (নিচে দেখুন) — কারণ account.html এর মধ্যেই একটা লিংক
+        // থেকে আরেকটায় (যেমন #profileSection → #ordersSection) ক্লিক করলে ব্রাউজার পুরো পেজ রিলোড
+        // করে না (শুধু URL-এর hash বদলায়), তাই আগে এই লজিকটা একবারই রান হতো আর "My Orders"-এ ক্লিক
+        // করলেও Orders সেকশন লুকানোই থেকে যেত — অর্ডার ডেটা ঠিকই লোড হতো, শুধু দেখানো হতো না।
+        function applyHashSection() {
+            // প্রতিবার শুরুতে সব সেকশন আবার দৃশ্যমান করে দেওয়া হচ্ছে, নাহলে আগের hash-এ লুকানো
+            // সেকশন পরের hash-এ আর কখনো ফিরে আসত না
+            document.getElementById('profileSection').style.display = '';
+            document.getElementById('addressSection').style.display = '';
+            document.getElementById('paymentSection').style.display = '';
+            document.getElementById('ordersSection').style.display = '';
+            document.getElementById('wishlistSection').style.display = '';
+            document.getElementById('returnTrackingSection').style.display = '';
+            document.querySelector('.account-container h2').textContent = 'আমার অ্যাকাউন্ট';
+
+            if (window.location.hash === '#ordersSection') {
+                document.getElementById('profileSection').style.display = 'none';
+                document.getElementById('addressSection').style.display = 'none';
+                document.getElementById('paymentSection').style.display = 'none';
+                document.getElementById('wishlistSection').style.display = 'none';
+                document.querySelector('.account-container h2').textContent = 'আমার অর্ডারসমূহ';
+            } else if (window.location.hash === '#profileSection') {
+                document.getElementById('addressSection').style.display = 'none';
+                document.getElementById('paymentSection').style.display = 'none';
+                document.getElementById('ordersSection').style.display = 'none';
+                document.getElementById('wishlistSection').style.display = 'none';
+                document.getElementById('returnTrackingSection').style.display = 'none';
+                document.querySelector('.account-container h2').textContent = 'প্রোফাইল';
+            } else if (window.location.hash === '#wishlistSection') {
+                document.getElementById('profileSection').style.display = 'none';
+                document.getElementById('addressSection').style.display = 'none';
+                document.getElementById('paymentSection').style.display = 'none';
+                document.getElementById('ordersSection').style.display = 'none';
+                document.getElementById('returnTrackingSection').style.display = 'none';
+                document.querySelector('.account-container h2').textContent = 'আমার উইশলিস্ট';
+            }
+        }
+        applyHashSection();
+        window.addEventListener('hashchange', applyHashSection);
+
+        function formatPrice(n) {
+            return Number(n).toLocaleString('en-IN');
+        }
+
+        // প্রোডাক্ট ইমেজের মতো প্যাকেজিং ভিডিওর URL-ও ব্যাকএন্ডে "/uploads/xxx.mp4" হিসেবে সেভ থাকে —
+        // এই পেজ ভিন্ন (Netlify) ডোমেইনে থাকায় BACKEND_URL জুড়ে পূর্ণ URL বানাতে হয়
+        function resolveImg(url) {
+            if (!url) return '';
+            return url.startsWith('http') ? url : `${API_BASE}${url}`;
+        }
+
+        function togglePackagingProof(orderId) {
+            const video = document.getElementById(`pp-video-${orderId}`);
+            if (!video) return;
+            const show = video.style.display === 'none';
+            video.style.display = show ? 'block' : 'none';
+            if (window.STZProof) STZProof.toggle(orderId, show);
+        }
+
+        const statusLabels = {
+            pending: 'পেন্ডিং', processing: 'প্রসেসিং হচ্ছে', shipped: 'শিপড',
+            delivered: 'ডেলিভারড', cancelled: 'বাতিল', delivery_failed: 'ডেলিভারি ব্যর্থ'
+        };
+
+        // ===== রিটার্ন/রিফান্ড রিকোয়েস্ট =====
+        const RETURN_WINDOW_MS = 14 * 24 * 60 * 60 * 1000; // backend/routes/returns.js এর RETURN_WINDOW_DAYS এর সাথে মিল রেখে
+        const reasonLabels = {
+            defective: 'ত্রুটিপূর্ণ প্রোডাক্ট', wrong_item: 'ভুল প্রোডাক্ট এসেছে',
+            quality_issue: 'কোয়ালিটি সমস্যা', missing_parts: 'বক্সে কিছু জিনিস কম ছিল',
+            changed_mind: 'মন পরিবর্তন হয়েছে', other: 'অন্যান্য'
+        };
+        const returnStatusLabels = {
+            pending: 'পেন্ডিং', approved: 'অনুমোদিত', picked_up: 'পিকআপ হয়েছে',
+            completed: 'সম্পন্ন', rejected: 'বাতিল'
+        };
+        let lastOrders = [];
+        let myReturns = [];
+        let activeReturnOrderId = null;
+        let activeReturnItemIndex = null;
+
+        function findActiveReturn(orderId, itemIndex) {
+            return myReturns.find(r => r.orderId === orderId && r.itemIndex === itemIndex && r.status !== 'rejected');
+        }
+
+        function isReturnEligible(order, itemIndex) {
+            if (order.orderStatus !== 'delivered' || !order.deliveredAt) return false;
+            if (Date.now() - new Date(order.deliveredAt).getTime() > RETURN_WINDOW_MS) return false;
+            return !findActiveReturn(order._id, itemIndex);
+        }
+
+        // ===== রিভিউ (Write a Review) — backend/models/Review.js তে (productId, customerId) ইউনিক,
+        // মানে একটা প্রোডাক্টে একবারই রিভিউ দেওয়া যায় (কোন অর্ডার থেকে দিয়েছেন সেটা গুরুত্বপূর্ণ না) —
+        // তাই myReviewedProductIds একটা productId-ভিত্তিক Set, itemIndex-ভিত্তিক না
+        let myReviewedProductIds = new Set();
+        let activeReviewProductId = null;
+        let activeReviewOrderId = null;
+        let activeReviewItemIndex = null;
+        let selectedReviewRating = 0;
+
+        function isReviewEligible(order, item) {
+            // অর্ডার ডেলিভারড থাকতে হবে, আইটেমের সাথে productId থাকতে হবে (পুরনো/ম্যানুয়াল অর্ডারে
+            // না-ও থাকতে পারে), আর একই প্রোডাক্টে আগে থেকে রিভিউ দেওয়া না থাকতে হবে
+            if (order.orderStatus !== 'delivered' || !item.product) return false;
+            return !myReviewedProductIds.has(String(item.product));
+        }
+
+        // ===== ডেলিভারি এলাকা (ঢাকার ভেতরে/বাইরে) — checkout.html এর মতোই =====
+        const AREA_LABEL = { inside: 'ঢাকার ভেতরে', outside: 'ঢাকার বাইরে' };
+
+        function getSelectedArea() {
+            const checked = document.querySelector('input[name="acDeliveryArea"]:checked');
+            return checked ? checked.value : '';
+        }
+
+        function setSelectedArea(area) {
+            const input = document.getElementById(area === 'inside' ? 'acAreaInside' : 'acAreaOutside');
+            if (!input) return;
+            input.checked = true;
+            document.querySelectorAll('#addressForm .area-option').forEach(el => el.classList.remove('selected'));
+            input.closest('.area-option').classList.add('selected');
+        }
+
+        // পুরনো (আগের জেলা/উপজেলা সিস্টেমের) সেভড city ভ্যালু থাকলেও যেন প্রোফাইল লোডে ভেঙে না পড়ে
+        function areaFromCityValue(city) {
+            if (!city) return '';
+            const c = city.trim().toLowerCase();
+            if (c === AREA_LABEL.inside || c === 'dhaka city' || c === 'dhaka') return 'inside';
+            if (c === AREA_LABEL.outside) return 'outside';
+            return '';
+        }
+
+        document.querySelectorAll('input[name="acDeliveryArea"]').forEach(radio => {
+            radio.addEventListener('change', function () { setSelectedArea(this.value); });
+        });
+
+        // ===== প্রোফাইল ও ঠিকানা লোড =====
+        async function loadProfile() {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/me`);
+                if (res.status === 401 || res.status === 403) {
+                    customerLogout();
+                    return;
+                }
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'প্রোফাইল লোড করা যায়নি।');
+
+                document.getElementById('acName').value = data.name || '';
+                applyPhoneField(data.phone);
+                document.getElementById('acAddress').value = data.address || '';
+
+                const savedArea = areaFromCityValue(data.city);
+                if (savedArea) setSelectedArea(savedArea);
+
+                // সবচেয়ে আপডেটেড নাম localStorage-এও রেখে দেওয়া হচ্ছে (নেভবারে দেখানোর জন্য)
+                setCustomerSession(getCustomerToken(), data);
+                renderNavAuth();
+            } catch (err) {
+                document.getElementById('profileMsg').style.color = '#e74c3c';
+                document.getElementById('profileMsg').textContent = '❌ ' + err.message;
+            }
+        }
+
+        // ফোন থাকলে লক (বদলানো যায় না); না থাকলে (Google/Facebook অ্যাকাউন্ট) লিখে সেভ করা যায়
+        function applyPhoneField(phone) {
+            const input = document.getElementById('acPhone');
+            const hint = document.getElementById('acPhoneHint');
+            input.value = phone || '';
+            input.disabled = Boolean(phone);
+            input.placeholder = phone ? '' : '01XXXXXXXXX';
+            hint.style.display = phone ? 'none' : 'block';
+        }
+
+        async function saveProfile() {
+            const name = document.getElementById('acName').value.trim();
+            const msg = document.getElementById('profileMsg');
+            const btn = document.getElementById('saveProfileBtn');
+
+            if (!name) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = 'নাম খালি রাখা যাবে না।';
+                return;
+            }
+
+            // ফোন ঘর খোলা থাকলে (অ্যাকাউন্টে এখনো ফোন নেই) এবং কিছু লেখা থাকলে সেটাও সেভ হবে
+            const phoneInput = document.getElementById('acPhone');
+            const phoneToSave = (!phoneInput.disabled && phoneInput.value.trim()) ? phoneInput.value.trim() : '';
+
+            btn.disabled = true;
+            msg.textContent = '';
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/me`, {
+                    method: 'PUT',
+                    body: JSON.stringify(phoneToSave ? { name, phone: phoneToSave } : { name })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'সেভ করা যায়নি।');
+
+                setCustomerSession(getCustomerToken(), data);
+                renderNavAuth();
+                applyPhoneField(data.phone);
+                msg.style.color = '#16a34a';
+                msg.textContent = '✅ প্রোফাইল সেভ হয়েছে।';
+            } catch (err) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = '❌ ' + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function saveAddress() {
+            const address = document.getElementById('acAddress').value.trim();
+            const area = getSelectedArea();
+            const msg = document.getElementById('addressMsg');
+            const btn = document.getElementById('saveAddressBtn');
+
+            btn.disabled = true;
+            msg.textContent = '';
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/me`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ address, city: area ? AREA_LABEL[area] : '', district: '', thana: '' })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'সেভ করা যায়নি।');
+
+                setCustomerSession(getCustomerToken(), data);
+                msg.style.color = '#16a34a';
+                msg.textContent = '✅ ঠিকানা সেভ হয়েছে — পরের চেকআউটে এটা অটোমেটিক ভরে যাবে।';
+            } catch (err) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = '❌ ' + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ===== সেভড পেমেন্ট মেথড (bKash/Nagad/Rocket/অন্যান্য) =====
+        const paymentTypeLabels = { bkash: 'bKash', nagad: 'Nagad', rocket: 'Rocket', other: 'অন্যান্য' };
+        const paymentBadgeClass = { bkash: 'pm-bkash', nagad: 'pm-nagad', rocket: 'pm-rocket', other: 'pm-other' };
+
+        function escapeHtmlPm(s) {
+            return (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        document.getElementById('pmType').addEventListener('change', function () {
+            const isOther = this.value === 'other';
+            document.getElementById('pmLabel').style.display = isOther ? 'block' : 'none';
+            document.getElementById('pmNumber').placeholder = isOther ? 'নাম্বার/তথ্য' : '01XXXXXXXXX';
+        });
+
+        function renderPaymentMethods(methods) {
+            const box = document.getElementById('paymentMethodsList');
+            if (!methods || !methods.length) {
+                box.innerHTML = '<div class="no-payment-methods">এখনো কোনো পেমেন্ট মেথড সেভ করা হয়নি।</div>';
+                return;
+            }
+            box.innerHTML = methods.map(pm => `
+                <div class="pm-item">
+                    <div>
+                        <span class="pm-badge ${paymentBadgeClass[pm.type] || 'pm-other'}">${paymentTypeLabels[pm.type] || pm.type}</span>
+                        ${pm.type === 'other' && pm.label ? escapeHtmlPm(pm.label) + ' — ' : ''}${escapeHtmlPm(pm.number)}
+                    </div>
+                    <button class="pm-remove-btn" onclick="removePaymentMethod('${pm.id}')">সরান</button>
+                </div>
+            `).join('');
+        }
+
+        async function loadPaymentMethods() {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/payment-methods`);
+                if (!res.ok) { renderPaymentMethods([]); return; }
+                const data = await res.json();
+                renderPaymentMethods(data);
+            } catch (err) {
+                renderPaymentMethods([]);
+            }
+        }
+
+        async function addPaymentMethod() {
+            const type = document.getElementById('pmType').value;
+            const label = document.getElementById('pmLabel').value.trim();
+            const number = document.getElementById('pmNumber').value.trim();
+            const msg = document.getElementById('paymentMsg');
+            const btn = document.getElementById('addPaymentBtn');
+
+            msg.textContent = '';
+            if (!number) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = 'নাম্বার দিন।';
+                return;
+            }
+            if (type === 'other' && !label) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = 'এই পেমেন্ট মেথডের একটা নাম দিন (যেমন: Bank Card)।';
+                return;
+            }
+
+            btn.disabled = true;
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/payment-methods`, {
+                    method: 'POST',
+                    body: JSON.stringify({ type, number, label })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'যোগ করা যায়নি।');
+
+                renderPaymentMethods(data);
+                document.getElementById('pmNumber').value = '';
+                document.getElementById('pmLabel').value = '';
+                msg.style.color = '#16a34a';
+                msg.textContent = '✅ পেমেন্ট মেথড যোগ হয়েছে।';
+            } catch (err) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = '❌ ' + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function removePaymentMethod(id) {
+            if (!confirm('এই পেমেন্ট মেথডটি মুছে ফেলতে চান?')) return;
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/payment-methods/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'মুছে ফেলা যায়নি।');
+                renderPaymentMethods(data);
+            } catch (err) {
+                alert('❌ ' + err.message);
+            }
+        }
+
+        // ===== উইশলিস্ট =====
+        // ইনডেক্স/সার্চ/ব্র্যান্ড/মডেল পেজের মতো একই কনভেনশনে প্রোডাক্ট পেজের লিংক বানানো হচ্ছে —
+        // account.html এ আগে কোনো প্রোডাক্ট লিংক ছিল না (অর্ডার আইটেম শুধু স্ন্যাপশট টেক্সট),
+        // তাই এই দুইটা হেল্পার ফাংশন এখানেই নতুন করে যোগ করা হলো (index.html এর buildProductPath
+        // এর সাথে হুবহু মিল রেখে, যাতে একই স্লাগ/URL তৈরি হয়)
+        function wlSlugify(name) {
+            let s = (name || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            if (s.length > 70) {
+                const cut = s.slice(0, 70);
+                const lastDash = cut.lastIndexOf('-');
+                s = lastDash > 20 ? cut.slice(0, lastDash) : cut;
+            }
+            return s || 'product';
+        }
+        function wlBuildProductPath(name, id) {
+            return `/product/${wlSlugify(name)}-i${id}`;
+        }
+
+        function renderWishlist(items) {
+            const box = document.getElementById('wishlistList');
+            if (!items || !items.length) {
+                box.innerHTML = `<div class="no-wishlist">এখনো কোনো প্রোডাক্ট উইশলিস্টে যোগ করা হয়নি।<br><br><a href="index.html">কেনাকাটা শুরু করুন →</a></div>`;
+                return;
+            }
+            box.innerHTML = items.map(p => `
+                <div class="wishlist-item-row">
+                    <img src="${resolveImg(p.image) || 'https://via.placeholder.com/80'}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/80'">
+                    <div class="wishlist-item-info">
+                        <a href="${wlBuildProductPath(p.name, p.id)}">${p.name}</a>
+                        ${p.unavailable
+                            ? `<div class="wishlist-item-unavailable">এই প্রোডাক্টটি এখন আর পাওয়া যাচ্ছে না</div>`
+                            : `<div class="wishlist-item-price">${p.originalPrice && p.originalPrice > p.price ? `<span class="wip-old">৳ ${formatPrice(p.originalPrice)}</span>` : ''}৳ ${formatPrice(p.price)}</div>`
+                        }
+                    </div>
+                    <button class="wishlist-remove-btn" onclick="removeFromWishlist('${p.id}')">সরান</button>
+                </div>
+            `).join('');
+        }
+
+        async function loadWishlist() {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/wishlist`);
+                if (!res.ok) { renderWishlist([]); return; }
+                const data = await res.json();
+                renderWishlist(data);
+            } catch (err) {
+                renderWishlist([]);
+            }
+        }
+
+        async function removeFromWishlist(id) {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/wishlist/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'সরানো যায়নি।');
+                renderWishlist(data);
+            } catch (err) {
+                alert('❌ ' + err.message);
+            }
+        }
+
+        // ===== অর্ডার হিস্টরি =====
+        function renderOrders(orders) {
+            lastOrders = orders;
+            const box = document.getElementById('ordersList');
+            if (!orders.length) {
+                box.innerHTML = `<div class="no-orders">এখনো কোনো অর্ডার নেই।<br><br><a href="index.html">কেনাকাটা শুরু করুন →</a></div>`;
+                return;
+            }
+            box.innerHTML = orders.map(order => `
+                <div class="order-mini-card">
+                    <div class="order-result-header">
+                        <div>
+                            <strong>${order.orderNumber}</strong>
+                            <div style="font-size:12px; color:#999; margin-top:2px;">${new Date(order.createdAt).toLocaleDateString('bn-BD')}</div>
+                        </div>
+                        <span class="order-status-badge status-${order.orderStatus}">${statusLabels[order.orderStatus] || order.orderStatus}</span>
+                    </div>
+                    ${order.items.map((item, idx) => `
+                        <div class="order-item-row">
+                            <span>${item.name}${item.variantLabel ? ` (${item.variantLabel})` : ''} × ${item.quantity}</span>
+                            <span>৳ ${formatPrice(item.price * item.quantity)}</span>
+                        </div>
+                        ${(() => {
+                            const activeReturn = findActiveReturn(order._id, idx);
+                            if (activeReturn) {
+                                return `<div class="return-requested-tag">↩️ রিটার্ন রিকোয়েস্ট করা হয়েছে — স্ট্যাটাস: ${returnStatusLabels[activeReturn.status] || activeReturn.status}</div>`;
+                            }
+                            if (isReturnEligible(order, idx)) {
+                                return `<button class="return-btn" onclick="openReturnModal('${order._id}', ${idx})">↩️ রিটার্ন করুন</button>`;
+                            }
+                            return '';
+                        })()}
+                        ${(() => {
+                            if (item.product && myReviewedProductIds.has(String(item.product))) {
+                                return `<span class="reviewed-tag">⭐ রিভিউ দেওয়া হয়েছে</span>`;
+                            }
+                            if (isReviewEligible(order, item)) {
+                                return `<button class="review-btn" onclick="openReviewModal('${order._id}', ${idx})">✍️ রিভিউ দিন</button>`;
+                            }
+                            return '';
+                        })()}
+                    `).join('')}
+                    <div class="order-mini-total">মোট: ৳ ${formatPrice(order.total)}</div>
+                    ${order.canCancel ? `<button type="button" class="order-cancel-btn" onclick="openCancelOrder('${order._id}')">অর্ডার ক্যান্সেল করুন</button>` : ''}
+                    ${order.packagingProofVideoUrl ? `
+                        <div class="order-packaging-proof">
+                            <button class="pp-toggle-btn" onclick="togglePackagingProof('${order._id}')">🎥 Packaging Proof ভিডিও দেখুন</button>
+                            <video id="pp-video-${order._id}" controls style="display:none;">
+                                <source src="${resolveImg(order.packagingProofVideoUrl)}">
+                            </video>
+                            ${window.STZProof ? STZProof.html(order.packagingProofFrames, resolveImg, String(order._id)) : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Daraz-স্টাইল ক্যান্সেল: শুধু Pending + COD অর্ডারে সার্ভার canCancel দেয় (order-cancel.js পপআপ খোলে)
+        function openCancelOrder(orderId) {
+            const order = (lastOrders || []).find(o => String(o._id) === String(orderId));
+            if (!order || !window.STZCancel) return;
+            STZCancel.open({
+                mode: 'account',
+                orderId: order._id,
+                orderNumber: order.orderNumber,
+                items: order.items,
+                onDone: loadOrders
+            });
+        }
+
+        async function loadOrders() {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/orders/my`);
+                if (res.status === 401 || res.status === 403) {
+                    customerLogout();
+                    return;
+                }
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'অর্ডার লোড করা যায়নি।');
+                renderOrders(data);
+            } catch (err) {
+                document.getElementById('ordersList').innerHTML = `<div class="no-orders">❌ ${err.message}</div>`;
+            }
+        }
+
+        // ===== রিটার্ন মোডাল খোলা/বন্ধ করা =====
+        function openReturnModal(orderId, itemIndex) {
+            const order = lastOrders.find(o => o._id === orderId);
+            if (!order) return;
+            const item = order.items[itemIndex];
+            if (!item) return;
+
+            activeReturnOrderId = orderId;
+            activeReturnItemIndex = itemIndex;
+
+            document.getElementById('returnItemPreview').innerHTML = `
+                <img src="${resolveImg(item.image)}" alt="${item.name}">
+                <div>
+                    <div class="rip-name">${item.name}${item.variantLabel ? ` (${item.variantLabel})` : ''}</div>
+                    <div class="rip-meta">অর্ডার: ${order.orderNumber} · সংখ্যা: ${item.quantity}</div>
+                </div>
+            `;
+
+            document.getElementById('returnReason').value = 'defective';
+            document.getElementById('returnComment').value = '';
+            document.getElementById('returnImages').value = '';
+            document.getElementById('rimgPreviews').innerHTML = '';
+            document.querySelector('input[name="returnResolution"][value="refund"]').checked = true;
+            document.getElementById('returnRefundMethod').value = 'bkash';
+            document.getElementById('returnRefundNumber').value = '';
+            document.getElementById('returnModalMsg').textContent = '';
+            toggleRefundFields();
+
+            document.getElementById('returnModal').classList.add('open');
+        }
+
+        function closeReturnModal() {
+            document.getElementById('returnModal').classList.remove('open');
+        }
+
+        function toggleRefundFields() {
+            const resolution = document.querySelector('input[name="returnResolution"]:checked').value;
+            document.getElementById('refundFields').style.display = resolution === 'refund' ? 'block' : 'none';
+        }
+
+        // ছবি সিলেক্ট করলে টাইপ/সাইজ ভ্যালিডেট করে প্রিভিউ দেখানো হয় (আপলোড হয় সাবমিটের সময়)
+        document.getElementById('returnImages').addEventListener('change', function () {
+            const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+            const maxSize = 5 * 1024 * 1024; // 5MB প্রতি ছবি
+            const files = Array.from(this.files || []);
+            const preview = document.getElementById('rimgPreviews');
+            const msg = document.getElementById('returnModalMsg');
+            msg.textContent = '';
+            preview.innerHTML = '';
+
+            if (files.length > 4) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = 'সর্বোচ্চ ৪টি ছবি আপলোড করা যাবে।';
+                this.value = '';
+                return;
+            }
+            for (const f of files) {
+                if (!allowed.includes(f.type)) {
+                    msg.style.color = '#e74c3c';
+                    msg.textContent = 'শুধু jpg, png, webp ছবি আপলোড করা যাবে।';
+                    this.value = '';
+                    preview.innerHTML = '';
+                    return;
+                }
+                if (f.size > maxSize) {
+                    msg.style.color = '#e74c3c';
+                    msg.textContent = 'প্রতিটি ছবি সর্বোচ্চ ৫MB হতে পারবে।';
+                    this.value = '';
+                    preview.innerHTML = '';
+                    return;
+                }
+            }
+            files.forEach(f => {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(f);
+                preview.appendChild(img);
+            });
+        });
+
+        // customerAuthFetch() ডিফল্টভাবে Content-Type: application/json পাঠায়, যেটা multipart/FormData
+        // আপলোডের জন্য উপযুক্ত না (boundary ভেঙে যায়) — তাই এখানে শুধু Authorization হেডার দিয়ে raw fetch()
+        // ব্যবহার করা হলো, ব্রাউজার নিজেই সঠিক multipart Content-Type বসিয়ে দেবে
+        async function uploadReturnImages(files) {
+            if (!files || !files.length) return [];
+            const formData = new FormData();
+            files.forEach(f => formData.append('images', f));
+            const res = await fetch(`${API_BASE}/api/returns/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${getCustomerToken()}` },
+                body: formData
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'ছবি আপলোড করা যায়নি।');
+            return data.urls || [];
+        }
+
+        async function submitReturnRequest() {
+            const reason = document.getElementById('returnReason').value;
+            const comment = document.getElementById('returnComment').value.trim();
+            const resolution = document.querySelector('input[name="returnResolution"]:checked').value;
+            const refundMethod = document.getElementById('returnRefundMethod').value;
+            const refundNumber = document.getElementById('returnRefundNumber').value.trim();
+            const files = Array.from(document.getElementById('returnImages').files || []);
+            const msg = document.getElementById('returnModalMsg');
+            const btn = document.getElementById('returnSubmitBtn');
+
+            msg.textContent = '';
+            if (resolution === 'refund' && !refundNumber) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = 'রিফান্ডের জন্য নাম্বার/অ্যাকাউন্ট দিন।';
+                return;
+            }
+
+            btn.disabled = true;
+            try {
+                const images = await uploadReturnImages(files);
+                const res = await customerAuthFetch(`${API_BASE}/api/returns`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        orderId: activeReturnOrderId,
+                        itemIndex: activeReturnItemIndex,
+                        reason, comment, images, resolution,
+                        refundMethod: resolution === 'refund' ? refundMethod : '',
+                        refundNumber: resolution === 'refund' ? refundNumber : ''
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'রিকোয়েস্ট পাঠানো যায়নি।');
+
+                closeReturnModal();
+                await loadReturns();
+                renderOrders(lastOrders);
+                alert('✅ আপনার রিটার্ন রিকোয়েস্ট জমা হয়েছে — নিচে "রিটার্ন ট্র্যাকিং" সেকশনে অবস্থা দেখতে পারবেন।');
+            } catch (err) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = '❌ ' + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ===== রিভিউ মোডাল খোলা/বন্ধ করা =====
+        function openReviewModal(orderId, itemIndex) {
+            const order = lastOrders.find(o => o._id === orderId);
+            if (!order) return;
+            const item = order.items[itemIndex];
+            if (!item || !item.product) return;
+
+            activeReviewOrderId = orderId;
+            activeReviewItemIndex = itemIndex;
+            activeReviewProductId = item.product;
+
+            document.getElementById('reviewItemPreview').innerHTML = `
+                <img src="${resolveImg(item.image)}" alt="${item.name}">
+                <div>
+                    <div class="rip-name">${item.name}${item.variantLabel ? ` (${item.variantLabel})` : ''}</div>
+                    <div class="rip-meta">অর্ডার: ${order.orderNumber}</div>
+                </div>
+            `;
+
+            document.getElementById('reviewComment').value = '';
+            document.getElementById('reviewImages').value = '';
+            document.getElementById('reviewImgPreviews').innerHTML = '';
+            document.getElementById('reviewModalMsg').textContent = '';
+            setReviewRating(0);
+
+            document.getElementById('reviewModal').classList.add('open');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.remove('open');
+        }
+
+        // স্টারে ক্লিক করলে সিলেক্টেড রেটিং পর্যন্ত সব স্টার ভরাট (filled) দেখানো হয়
+        function setReviewRating(n) {
+            selectedReviewRating = n;
+            document.querySelectorAll('#reviewStarInput span').forEach(span => {
+                span.classList.toggle('filled', Number(span.dataset.value) <= n);
+            });
+        }
+
+        // returnImages এর ভ্যালিডেশন লজিকের সাথে হুবহু মিল রেখে (সর্বোচ্চ ৪টা, jpg/png/webp, ৫MB/ছবি)
+        document.getElementById('reviewImages').addEventListener('change', function () {
+            const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+            const maxSize = 5 * 1024 * 1024;
+            const files = Array.from(this.files || []);
+            const preview = document.getElementById('reviewImgPreviews');
+            const msg = document.getElementById('reviewModalMsg');
+            msg.textContent = '';
+            preview.innerHTML = '';
+
+            if (files.length > 4) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = 'সর্বোচ্চ ৪টি ছবি আপলোড করা যাবে।';
+                this.value = '';
+                return;
+            }
+            for (const f of files) {
+                if (!allowed.includes(f.type)) {
+                    msg.style.color = '#e74c3c';
+                    msg.textContent = 'শুধু jpg, png, webp ছবি আপলোড করা যাবে।';
+                    this.value = '';
+                    preview.innerHTML = '';
+                    return;
+                }
+                if (f.size > maxSize) {
+                    msg.style.color = '#e74c3c';
+                    msg.textContent = 'প্রতিটি ছবি সর্বোচ্চ ৫MB হতে পারবে।';
+                    this.value = '';
+                    preview.innerHTML = '';
+                    return;
+                }
+            }
+            files.forEach(f => {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(f);
+                preview.appendChild(img);
+            });
+        });
+
+        // uploadReturnImages() এর মতোই — customerAuthFetch() এর ডিফল্ট JSON Content-Type এড়াতে
+        // raw fetch() ব্যবহার করা হলো, শুধু Authorization হেডার দিয়ে
+        async function uploadReviewImages(files) {
+            if (!files || !files.length) return [];
+            const formData = new FormData();
+            files.forEach(f => formData.append('images', f));
+            const res = await fetch(`${API_BASE}/api/products/${activeReviewProductId}/reviews/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${getCustomerToken()}` },
+                body: formData
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'ছবি আপলোড করা যায়নি।');
+            return data.urls || [];
+        }
+
+        async function submitReviewRequest() {
+            const comment = document.getElementById('reviewComment').value.trim();
+            const files = Array.from(document.getElementById('reviewImages').files || []);
+            const msg = document.getElementById('reviewModalMsg');
+            const btn = document.getElementById('reviewSubmitBtn');
+
+            msg.textContent = '';
+            if (!selectedReviewRating) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = 'রেটিং (স্টার) দিন।';
+                return;
+            }
+
+            btn.disabled = true;
+            try {
+                const images = await uploadReviewImages(files);
+                const res = await customerAuthFetch(`${API_BASE}/api/products/${activeReviewProductId}/reviews`, {
+                    method: 'POST',
+                    body: JSON.stringify({ rating: selectedReviewRating, comment, images })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'রিভিউ জমা দেওয়া যায়নি।');
+
+                myReviewedProductIds.add(String(activeReviewProductId));
+                closeReviewModal();
+                renderOrders(lastOrders);
+                alert('✅ আপনার রিভিউ জমা হয়েছে। ধন্যবাদ!');
+            } catch (err) {
+                msg.style.color = '#e74c3c';
+                msg.textContent = '❌ ' + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // account.html লোড হওয়ার সময় কাস্টমার আগে কোন কোন প্রোডাক্টে রিভিউ দিয়েছেন সেটা একবারেই
+        // লোড করা হয় (প্রতিটা অর্ডার-আইটেমের জন্য আলাদা eligibility API কল করার বদলে)
+        async function loadMyReviews() {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/products/my-reviews`);
+                if (res.status === 401 || res.status === 403) {
+                    customerLogout();
+                    return;
+                }
+                const data = await res.json();
+                if (!res.ok) return; // নন-ক্রিটিক্যাল — ব্যর্থ হলেও অর্ডার লিস্ট দেখাতে বাধা দেওয়া হচ্ছে না
+                myReviewedProductIds = new Set(data.map(r => String(r.productId)));
+            } catch (err) {
+                // নন-ক্রিটিক্যাল — রিভিউ-স্ট্যাটাস লোড না হলেও বাটন দেখাবে, শুধু ভুলবশত আগে-রিভিউ-করা
+                // প্রোডাক্টেও বাটন দেখাতে পারে (সাবমিট করলে ব্যাকএন্ড এমনিতেও 409 দিয়ে আটকাবে)
+            }
+        }
+
+        // ===== রিটার্ন ট্র্যাকিং (Daraz-স্টাইল টাইমলাইন) =====
+        function renderReturnTracking(returns) {
+            const box = document.getElementById('returnTrackingList');
+            if (!returns.length) {
+                box.innerHTML = `<div class="no-returns">এখনো কোনো রিটার্ন রিকোয়েস্ট নেই।</div>`;
+                return;
+            }
+            const steps = ['pending', 'approved', 'picked_up', 'completed'];
+            box.innerHTML = returns.map(r => `
+                <div class="return-track-card">
+                    <div class="order-result-header">
+                        <div>
+                            <strong>${r.item?.name || 'প্রোডাক্ট'}${r.item?.variantLabel ? ` (${r.item.variantLabel})` : ''}</strong>
+                            <div style="font-size:12px; color:#999; margin-top:2px;">অর্ডার: ${r.orderNumber} · ${new Date(r.createdAt).toLocaleDateString('bn-BD')}</div>
+                        </div>
+                        <span class="return-status-badge rstatus-${r.status}">${returnStatusLabels[r.status] || r.status}</span>
+                    </div>
+                    <div style="font-size:12.5px; color:#666; margin-top:8px;">কারণ: ${reasonLabels[r.reason] || r.reason}</div>
+                    ${r.status === 'rejected'
+                        ? `<div style="font-size:12.5px; color:#e74c3c; margin-top:8px;">❌ রিকোয়েস্ট বাতিল করা হয়েছে${r.adminNote ? ' — ' + r.adminNote : ''}</div>`
+                        : `<div class="return-track-timeline">
+                            ${steps.map(s => `<span class="${steps.indexOf(s) <= steps.indexOf(r.status) ? 'done' : ''}">${returnStatusLabels[s]}${steps.indexOf(s) < steps.length - 1 ? ' →' : ''}</span>`).join('')}
+                        </div>`
+                    }
+                </div>
+            `).join('');
+        }
+
+        async function loadReturns() {
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/returns/my`);
+                if (res.status === 401 || res.status === 403) {
+                    customerLogout();
+                    return;
+                }
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'রিটার্ন তথ্য লোড করা যায়নি।');
+                myReturns = data;
+                renderReturnTracking(data);
+            } catch (err) {
+                document.getElementById('returnTrackingList').innerHTML = `<div class="no-returns">❌ ${err.message}</div>`;
+            }
+        }
+
+        // অর্ডার রেন্ডার করার আগে myReturns ও myReviewedProductIds লোড হয়ে থাকা দরকার, নাহলে
+        // প্রথমবার রেন্ডারে "রিটার্ন করুন"/"রিভিউ দিন" বাটন বা স্ট্যাটাস ট্যাগ সঠিকভাবে দেখাবে না
+        async function loadOrdersAndReturns() {
+            await Promise.all([loadReturns(), loadMyReviews()]);
+            await loadOrders();
+        }
+
+        loadProfile();
+        loadPaymentMethods();
+        loadWishlist();
+        loadOrdersAndReturns();
+    </script>
+</body>
+</html>
