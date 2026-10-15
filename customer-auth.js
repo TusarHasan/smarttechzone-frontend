@@ -74,6 +74,33 @@ async function loadNavUnreadCount() {
     } catch (e) { /* নন-ক্রিটিক্যাল — ব্যাজ না দেখালেও সমস্যা নেই */ }
 }
 
+// নাম/অ্যাভাটারে ক্লিক করলে Daraz-স্টাইল ফ্লোটিং মেনু খোলে/বন্ধ হয় (মোবাইলে হোভার নেই, তাই ক্লিকই ভরসা)।
+// ডেস্কটপে হোভারও আগের মতো কাজ করে। বাইরে ক্লিক বা Esc চাপলে বন্ধ হয়।
+let stzProfileMenuDocBound = false;
+function bindProfileMenu(root) {
+    const wrap = root.querySelector('.stz-profile-wrap');
+    const trigger = root.querySelector('.stz-profile-trigger');
+    if (!wrap || !trigger) return;
+    trigger.addEventListener('click', function (e) {
+        e.preventDefault();
+        const open = !wrap.classList.contains('open');
+        wrap.classList.toggle('open', open);
+        trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    if (!stzProfileMenuDocBound) {
+        stzProfileMenuDocBound = true;
+        const closeAll = function () {
+            document.querySelectorAll('.stz-profile-wrap.open').forEach(function (w) {
+                w.classList.remove('open');
+                const t = w.querySelector('.stz-profile-trigger');
+                if (t) t.setAttribute('aria-expanded', 'false');
+            });
+        };
+        document.addEventListener('click', function (e) { if (!e.target.closest('.stz-profile-wrap')) closeAll(); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
+    }
+}
+
 // প্রতিটা পেজের নেভবারে #navAuthArea থাকলে সেটা লগইন স্টেট অনুযায়ী আপডেট করে —
 // লগইন করা থাকলে হোভার করলে ড্রপডাউন (Sign Out, My Orders, Message Center, Payment),
 // না থাকলে একটা Login আইকন বাটন → login.html
@@ -88,9 +115,9 @@ function renderNavAuth() {
         const initial = firstName.charAt(0).toUpperCase();
         el.innerHTML = `
             <div class="stz-profile-wrap">
-                <a href="${base}account.html#profileSection" class="stz-profile-trigger">${firstName} <span class="stz-caret">&#9662;</span></a>
+                <a href="${base}account.html" class="stz-profile-trigger" aria-haspopup="true" aria-expanded="false">${firstName} <span class="stz-caret">&#9662;</span></a>
                 <div class="stz-profile-dropdown">
-                    <a href="${base}account.html#profileSection" class="stz-profile-header">
+                    <a href="${base}account.html" class="stz-profile-header">
                         <div class="stz-profile-avatar">${initial}</div>
                         <div class="stz-profile-welcome">স্বাগতম,<br><strong>${firstName}</strong></div>
                     </a>
@@ -104,6 +131,7 @@ function renderNavAuth() {
             </div>
         `;
         loadNavUnreadCount();
+        bindProfileMenu(el);
     } else {
         // আগে এখানে একটা glossy/3D "LOGIN" স্টক আইকন ছবি (images/login-icon.png) দেখানো হতো,
         // দেখতে দাগযুক্ত/পুরনো ধাঁচের লাগছিল। এখন একটা ক্লিন, মডার্ন pill-বাটন — ইউজার-আইকন +

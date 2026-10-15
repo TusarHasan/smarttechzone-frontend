@@ -245,10 +245,13 @@ body {
 .stz-profile-dropdown::before {
     content: ''; position: absolute; top: -10px; left: 0; right: 0; height: 10px;
 }
-.stz-profile-wrap:hover .stz-profile-dropdown {
+.stz-profile-wrap:hover .stz-profile-dropdown,
+.stz-profile-wrap.open .stz-profile-dropdown {
     opacity: 1; visibility: visible; transform: translateY(0);
     transition: opacity .18s ease, transform .18s ease, visibility 0s;
 }
+.stz-profile-wrap.open .stz-caret { transform: rotate(180deg); }
+.stz-profile-wrap.open .stz-profile-trigger { color: #e74c3c; }
 .stz-profile-header {
     display: flex; align-items: center; gap: 12px; padding: 0 18px 12px;
     text-decoration: none; cursor: pointer;

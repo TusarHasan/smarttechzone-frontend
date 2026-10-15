@@ -41,6 +41,16 @@
         .payment-option.selected { border-color: #e74c3c; background: #fdf6f5; }
         .payment-option input { width: auto; margin: 3px 0 0; padding: 0; }
         .payment-option .po-text strong { display: block; font-size: 14px; color: #333; }
+        /* STZ Wallet ব্যালেন্স ব্যবহার (লগইন + ব্যালেন্স থাকলে দেখায়) */
+        .wallet-box { display: none; margin-top: 12px; border: 1.5px dashed #e74c3c; border-radius: 6px; padding: 12px 14px; background: #fff8f7; }
+        .wallet-box.show { display: block; }
+        .wallet-box label { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; margin: 0; }
+        .wallet-box input { width: auto; margin: 3px 0 0; }
+        .wallet-box strong { display: block; font-size: 14px; color: #333; }
+        .wallet-box span.wb-sub { display: block; font-size: 12.5px; color: #888; margin-top: 2px; }
+        .wallet-box.disabled { opacity: .55; }
+        .wallet-box.disabled label { cursor: not-allowed; }
+        .order-summary-row.wallet-line span:last-child { color: #16a34a; font-weight: bold; }
         .payment-option .po-text span { font-size: 12.5px; color: #888; }
         #statusMsg { margin-top: 12px; font-size: 14px; text-align: center; }
         .empty-cart { text-align: center; padding: 60px 20px; color: #888; }
@@ -174,6 +184,15 @@
                 </div>
             </label>
             <div id="sameDayPaymentNote" style="display:none; font-size:12.5px; color:#888; margin-top:8px;">সেইম ডে ডেলিভারিতে শুধুমাত্র ক্যাশ অন ডেলিভারি সুবিধা রয়েছে।</div>
+            <div class="wallet-box" id="walletBox">
+                <label for="useWallet">
+                    <input type="checkbox" id="useWallet">
+                    <div>
+                        <strong>STZ Wallet ব্যালেন্স ব্যবহার করুন (৳ <span id="walletBalText">0</span>)</strong>
+                        <span class="wb-sub" id="walletHint">ব্যালেন্স থেকে বিল কাটা হবে, বাকিটা ডেলিভারির সময় দিতে হবে।</span>
+                    </div>
+                </label>
+            </div>
         </div>
 
         <div class="checkout-card">
@@ -239,6 +258,7 @@
                 setSelectedArea(this.value);
                 updateSameDayAvailability();
                 updateSummaryTotals();
+                updatePlaceOrderBtnText();
                 scheduleIncompleteDraftSave();
             });
         });
@@ -292,10 +312,53 @@
             if (el) el.addEventListener('input', scheduleIncompleteDraftSave);
         });
 
+        // ===== STZ Wallet =====
+        // Wallet শুধু লগইন করা কাস্টমারের, শুধু COD + স্ট্যান্ডার্ড ডেলিভারির সাথে (সার্ভারও এটাই চেক করে)।
+        // ব্যালেন্স এখানে শুধু দেখানো/হিসাবের জন্য — আসল কাটা সার্ভারে অ্যাটমিকভাবে হয়।
+        let walletBalance = 0;
+
+        function walletAllowedNow() {
+            return walletBalance > 0 && document.getElementById('payCod').checked && !isSameDaySelected();
+        }
+
+        function walletUseAmount() {
+            const cb = document.getElementById('useWallet');
+            if (!cb || !cb.checked || !walletAllowedNow()) return 0;
+            const total = getCartTotal() + estimateDelivery(getSelectedArea());
+            return Math.min(walletBalance, total);
+        }
+
+        function walletCoversAll() {
+            const use = walletUseAmount();
+            return use > 0 && use >= getCartTotal() + estimateDelivery(getSelectedArea());
+        }
+
+        function syncWalletBox() {
+            const box = document.getElementById('walletBox');
+            const cb = document.getElementById('useWallet');
+            if (!box || !cb) return;
+            if (!(walletBalance > 0)) { box.classList.remove('show'); cb.checked = false; return; }
+            box.classList.add('show');
+            document.getElementById('walletBalText').textContent = formatPrice(walletBalance);
+            const allowed = document.getElementById('payCod').checked && !isSameDaySelected();
+            cb.disabled = !allowed;
+            box.classList.toggle('disabled', !allowed);
+            if (!allowed) cb.checked = false;
+            document.getElementById('walletHint').textContent = allowed
+                ? 'ব্যালেন্স থেকে বিল কাটা হবে, বাকিটা ডেলিভারির সময় দিতে হবে।'
+                : 'Wallet শুধু ক্যাশ অন ডেলিভারি (স্ট্যান্ডার্ড ডেলিভারি) অর্ডারের সাথে ব্যবহার করা যায়।';
+        }
+
+        document.getElementById('useWallet').addEventListener('change', function () {
+            updatePlaceOrderBtnText();
+            updateSummaryTotals();
+        });
+
         // ===== পেমেন্ট পদ্ধতি বাছাই =====
         function updatePlaceOrderBtnText() {
             const isCod = document.getElementById('payCod').checked;
             const btn = document.getElementById('placeOrderBtn');
+            if (walletCoversAll()) { btn.textContent = 'অর্ডার কনফার্ম করুন (Wallet দিয়ে পরিশোধ)'; return; }
             btn.textContent = isCod ? 'অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)' : 'অর্ডার করুন — পেমেন্টে যান';
         }
 
@@ -305,7 +368,9 @@
                     if (el.querySelector('input[name="paymentMethod"]')) el.classList.remove('selected');
                 });
                 this.closest('.payment-option').classList.add('selected');
+                syncWalletBox();
                 updatePlaceOrderBtnText();
+                updateSummaryTotals();
                 scheduleIncompleteDraftSave();
             });
         });
@@ -363,6 +428,7 @@
                     sameDayNote.style.display = 'none';
                 }
 
+                syncWalletBox();
                 updatePlaceOrderBtnText();
                 updateSummaryTotals();
                 scheduleIncompleteDraftSave();
@@ -431,11 +497,15 @@
 
             const delivery = estimateDelivery(getSelectedArea());
             const total = subtotal + delivery;
+            const wUse = walletUseAmount();
 
             document.getElementById('orderSummary').innerHTML = `
                 <div class="order-summary-row"><span>সাবটোটাল</span><span>৳ ${formatPrice(subtotal)}</span></div>
                 <div class="order-summary-row"><span>ডেলিভারি চার্জ</span><span>৳ ${formatPrice(delivery)}</span></div>
                 <div class="order-summary-row total"><span>মোট</span><span>৳ ${formatPrice(total)}</span></div>
+                ${wUse > 0 ? `
+                <div class="order-summary-row wallet-line"><span>STZ Wallet থেকে কাটা হবে</span><span>− ৳ ${formatPrice(wUse)}</span></div>
+                <div class="order-summary-row total"><span>${wUse >= total ? 'ডেলিভারিতে দিতে হবে না' : 'ডেলিভারির সময় দিতে হবে'}</span><span>৳ ${formatPrice(total - wUse)}</span></div>` : ''}
             `;
         }
 
@@ -454,8 +524,11 @@
 
                 const savedArea = areaFromCityValue(data.city);
                 if (savedArea) setSelectedArea(savedArea);
+                walletBalance = Number(data.walletBalance) || 0;
+                syncWalletBox();
                 updateSameDayAvailability();
                 updateSummaryTotals();
+                updatePlaceOrderBtnText();
             } catch (err) {
                 // নেটওয়ার্ক এরর হলেও guest checkout হিসেবে এগিয়ে যেতে দেওয়া হচ্ছে
             }
@@ -508,6 +581,7 @@
                         customer: { name, phone, email, address: fullAddress, city: AREA_LABEL[area], district: '', thana: '', notes },
                         paymentMethod: isCod ? 'cod' : 'online',
                         deliveryType: sameDay ? 'sameday' : 'standard',
+                        useWallet: walletUseAmount() > 0,
                         items: cart.map(item => ({
                             productId: item.productId,
                             variantLabel: item.variantLabel,

@@ -1,0 +1,886 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+/* ===== সাধারণ কনটেন্ট কনটেইনার — Daraz-এর মতো বড় স্ক্রিনে দুই পাশে ফাঁকা রেখে কনটেন্ট
+   মাঝখানে সীমাবদ্ধ রাখে। আগে এই ক্লাসের কোনো বেস রুল ছিল না — শুধু .category-section
+   .container / .model-section .container / .product-section .container-এর মতো নির্দিষ্ট
+   সেকশনের ভেতরে max-width কাজ করত। ফলে হোমপেজের promo-strip/flash-sale-section/
+   part-categories-section-এর মতো নতুন সেকশনের .container পুরো স্ক্রিন জুড়ে (edge-to-edge)
+   ছড়িয়ে যাচ্ছিল, বড় মনিটরে খুব বেশি "প্রসারিত" দেখাত। এখন এই বেস রুলটা সব জায়গায়
+   একইভাবে কাজ করবে (নির্দিষ্ট সেকশনের রুলগুলো এখনো আছে, একই মান হওয়ায় কনফ্লিক্ট নেই)। */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ===== Navbar ===== */
+.navbar {
+    background-color: #ffffff;
+    padding: 14px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo img {
+    height: 42px;
+    width: auto;
+    display: block;
+}
+
+.search-bar {
+    display: flex;
+    flex: 1;
+    max-width: 500px;
+    margin: 0 30px;
+    position: relative;
+}
+
+.search-bar input {
+    padding: 10px 16px;
+    width: 100%;
+    border: 1px solid #e5e5e5;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    font-size: 14px;
+    font-family: 'Poppins', Arial, sans-serif;
+    outline: none;
+}
+
+.search-bar input:focus {
+    border-color: #e74c3c;
+}
+
+.search-bar button {
+    padding: 10px 22px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 0 6px 6px 0;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+.search-bar button:hover {
+    background-color: #c0392b;
+}
+
+/* ===== সার্চ হিস্ট্রি ড্রপডাউন (Daraz-এর মতো) — সার্চ বক্সে ফোকাস করলে ঠিক নিচে দেখায় ===== */
+.stz-search-history-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+    z-index: 200;
+    max-height: 320px;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.stz-sh-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #999;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.stz-sh-clear {
+    color: #e74c3c;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.stz-sh-clear:hover {
+    text-decoration: underline;
+}
+
+.stz-sh-item {
+    padding: 10px 16px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stz-sh-item:hover {
+    background-color: #f7f7f7;
+    color: #e74c3c;
+}
+
+.nav-icons a {
+    color: #333;
+    text-decoration: none;
+    margin-left: 22px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.nav-icons a:hover {
+    color: #e74c3c;
+}
+
+/* ===== লগইন বাটন — লগইন করা না থাকলে navAuthArea-তে এই pill-বাটনটা দেখা যায়
+   (customer-auth.js এর renderNavAuth())। আগে একটা glossy/3D স্টক "LOGIN" ছবি (images/login-icon.png)
+   ব্যবহার হতো যেটা দেখতে পুরনো/বেমানান লাগছিল — এখন ইউজার-আইকন (ইনলাইন SVG) + টেক্সট, সাইটের
+   accent কালারে (#e74c3c), হোভারে ফিল হয়ে যায় ===== */
+/* নোট: .nav-icons a { color: #333 } রুলটা (class+tag = specificity বেশি) প্লেইন .stz-login-btn
+   ক্লাসকে override করে টেক্সট ধূসর দেখাতো — .product-card img বনাম .quick-add-icon-এর মতো একই
+   ধরনের specificity সমস্যা। তাই এখানে .nav-icons .stz-login-btn (2 ক্লাস) ব্যবহার করা হলো,
+   যাতে সবসময় জিতে যায়। */
+.nav-icons .stz-login-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-left: 18px;
+    padding: 7px 16px;
+    border: 1.5px solid #e74c3c;
+    border-radius: 20px;
+    color: #e74c3c;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+.nav-icons .stz-login-btn:hover { background-color: #e74c3c; color: #fff; transform: scale(1.04); }
+.stz-login-icon-svg { width: 17px; height: 17px; flex-shrink: 0; }
+@media (max-width: 768px) {
+    .nav-icons .stz-login-btn { margin-left: 12px; padding: 6px 12px; font-size: 12.5px; gap: 5px; }
+    .stz-login-icon-svg { width: 15px; height: 15px; }
+}
+
+/* ===== নেভবারের Cart আইকন — আগে শুধু প্লেইন টেক্সট "Cart (0)" থাকতো, এখন Daraz-এর মতো
+   ব্যাগ-আইকন (ইনলাইন SVG) + লাল ব্যাজে আইটেম-সংখ্যা। cartCount id-টা অপরিবর্তিত রাখা হয়েছে
+   কারণ cart.js এখনো এই id ধরেই সংখ্যা আপডেট করে (document.getElementById('cartCount')) ===== */
+.nav-icons .stz-cart-link {
+    position: relative;
+    display: inline-flex; align-items: center;
+    margin-left: 18px;
+    color: #333;
+    transition: color 0.2s ease, transform 0.15s ease;
+}
+.nav-icons .stz-cart-link:hover { color: #e74c3c; transform: scale(1.06); }
+.stz-cart-icon-svg { width: 25px; height: 25px; display: block; flex-shrink: 0; }
+.stz-cart-badge {
+    position: absolute; top: -7px; right: -9px;
+    background-color: #e74c3c;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 18px; height: 18px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 4px;
+    line-height: 1;
+    border: 2px solid #fff;
+}
+@media (max-width: 768px) {
+    .stz-cart-link { margin-left: 12px; }
+    .stz-cart-icon-svg { width: 22px; height: 22px; }
+    .stz-cart-badge { top: -6px; right: -7px; min-width: 16px; height: 16px; font-size: 10px; }
+}
+
+/* ===== আগে এখানে "Add to Cart" বাটনের ভেতরে একটা কার্ট-আইকন (<img>) থাকতো, কিন্তু সেই <img>
+   .product-card এর ভেতরে থাকায় .product-card img { width:100%; height:100px; ... } রুলটা
+   (বেশি specificity থাকায়) এই ছোট আইকন-সাইজের রুলকে override করে ফেলতো — ফলে মোবাইলে আইকনটা
+   বিশাল/বিদঘুটে দেখাতো। এখন Daraz-এর নিজের Buy Now/Add to Cart বাটনের হুবহু স্টাইল অনুসরণ করে
+   (কালার #2ABBE8/#F57224, border-radius 2px, কোনো আইকন ছাড়া ক্লিন ফ্ল্যাট বাটন) বাটন থেকে
+   আইকনটা সম্পূর্ণ বাদ দেওয়া হয়েছে (product.html, search.html, brands/brand.html) —
+   তাই এই রুলটারও আর প্রয়োজন নেই। ===== */
+
+/* ===== প্রোফাইল হোভার ড্রপডাউন — লগইন করা থাকলে নেভবারে নামের উপর মাউস নিলে দেখা যায়
+   (customer-auth.js এর renderNavAuth()) ===== */
+.stz-profile-wrap {
+    position: relative; display: inline-block; margin-left: 18px;
+}
+.stz-profile-trigger {
+    display: inline-flex; align-items: center; gap: 3px;
+    color: #333; text-decoration: none; font-size: 14px; font-weight: 500;
+}
+.stz-profile-wrap:hover .stz-profile-trigger { color: #e74c3c; }
+.stz-caret { font-size: 10px; transition: transform .2s ease; display: inline-block; }
+.stz-profile-wrap:hover .stz-caret { transform: rotate(180deg); }
+
+.stz-profile-dropdown {
+    position: absolute; top: 100%; right: 0; margin-top: 6px; width: 240px;
+    background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.06);
+    padding: 16px 0 8px; z-index: 200;
+    opacity: 0; visibility: hidden; transform: translateY(-8px);
+    transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+}
+/* মাউস trigger আর dropdown এর মাঝে ছোট্ট একটা অদৃশ্য প্যাডিং-ব্রিজ, যাতে মাঝখানে মাউস
+   সরানোর সময় হোভার স্টেট হারিয়ে ড্রপডাউন হঠাৎ বন্ধ হয়ে না যায় */
+.stz-profile-dropdown::before {
+    content: ''; position: absolute; top: -10px; left: 0; right: 0; height: 10px;
+}
+.stz-profile-wrap:hover .stz-profile-dropdown {
+    opacity: 1; visibility: visible; transform: translateY(0);
+    transition: opacity .18s ease, transform .18s ease, visibility 0s;
+}
+.stz-profile-header {
+    display: flex; align-items: center; gap: 12px; padding: 0 18px 12px;
+    text-decoration: none; cursor: pointer;
+}
+.stz-profile-header:hover .stz-profile-welcome strong { color: #e74c3c; }
+.stz-profile-avatar {
+    width: 42px; height: 42px; border-radius: 50%; background: #fdf1f0; color: #e74c3c;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px;
+    flex-shrink: 0;
+}
+.stz-profile-welcome { font-size: 13px; color: #666; line-height: 1.4; }
+.stz-profile-welcome strong { color: #222; font-size: 14.5px; }
+.stz-signout-link {
+    display: block; margin: 0 18px 12px; color: #e74c3c; font-size: 13.5px; font-weight: 600;
+    text-decoration: none; cursor: pointer;
+}
+.stz-signout-link:hover { text-decoration: underline; }
+.stz-dropdown-divider { height: 1px; background: #f0f0f0; margin: 0 0 6px; }
+.stz-dropdown-item {
+    display: flex; align-items: center; gap: 8px; padding: 11px 18px; font-size: 13.5px;
+    color: #333; text-decoration: none; cursor: pointer; transition: background .12s ease;
+}
+.stz-dropdown-item:hover { background: #fafafa; color: #e74c3c; }
+.stz-unread-badge { color: #e74c3c; font-weight: 700; font-size: 12.5px; }
+@media (max-width: 480px) {
+    .stz-profile-dropdown { width: 210px; }
+    .stz-profile-wrap { margin-left: 10px; }
+}
+
+/* ===== Navbar — Mobile Responsive =====
+   ছোট স্ক্রিনে লোগো + সার্চ বার + নাম আইকন একই লাইনে আটার চেষ্টা করলে সার্চ বক্স/বাটন
+   একদম চিপে/অদৃশ্য হয়ে যাচ্ছিল। তাই মোবাইলে সার্চ বারকে আলাদা, পূর্ণ-প্রস্থ দ্বিতীয় লাইনে
+   নামিয়ে আনা হলো — Daraz/অন্যান্য ই-কমার্স সাইটের মতো। */
+@media (max-width: 768px) {
+    .navbar {
+        flex-wrap: wrap;
+        padding: 10px 16px;
+        row-gap: 10px;
+    }
+
+    .logo img {
+        height: 32px;
+    }
+
+    .nav-icons a {
+        margin-left: 14px;
+        font-size: 13px;
+    }
+
+    .search-bar {
+        order: 3;
+        flex: 1 1 100%;
+        max-width: 100%;
+        margin: 0;
+    }
+}
+
+/* ===== Hero Banner — কালো লোগোর সাথে মানানসই ডার্ক থিম, লাল শুধু accent এ ===== */
+.hero {
+    background: linear-gradient(135deg, #161616 0%, #2b2b2b 60%, #3a3a3a 100%);
+    color: white;
+    text-align: center;
+    padding: 70px 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 450px;
+    height: 450px;
+    background: radial-gradient(circle, rgba(231, 76, 60, 0.20) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60%;
+    left: -10%;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.hero h1 {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.hero p {
+    font-size: 18px;
+    margin-bottom: 30px;
+    opacity: 0.85;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-btn {
+    display: inline-block;
+    background-color: #e74c3c;
+    color: white;
+    padding: 15px 42px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 6px 18px rgba(231, 76, 60, 0.35);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.hero-btn:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+
+/* ===== Category Section (Homepage) ===== */
+.category-section {
+    padding: 60px 30px;
+    background-color: #f5f5f5;
+}
+
+.category-section .container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #222;
+}
+
+.section-subtitle {
+    text-align: center;
+    color: #777;
+    margin-bottom: 40px;
+    font-size: 15px;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.category-card {
+    background: white;
+    border-radius: 10px;
+    padding: 24px 16px;
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    min-width: 0; /* .product-card এর মতো একই কারণে — গ্রিড কলাম যাতে কনটেন্টের কারণে জোর করে চওড়া না হয় */
+}
+
+.category-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(231, 76, 60, 0.15);
+}
+
+.category-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fdecea;
+    border-radius: 50%;
+}
+
+.category-icon img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+
+.category-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+    color: #333;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* ===== Brand Header + Breadcrumb (Model list pages) ===== */
+.brand-header {
+    background: linear-gradient(135deg, #161616 0%, #2b2b2b 60%, #3a3a3a 100%);
+    color: white;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.breadcrumb {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-bottom: 12px;
+}
+
+.breadcrumb a {
+    color: white;
+    text-decoration: underline;
+}
+
+.brand-header h1 {
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.brand-header p {
+    font-size: 15px;
+    opacity: 0.85;
+}
+
+/* ===== Model Grid (Brand pages) ===== */
+.model-section {
+    padding: 50px 30px;
+    background-color: #f5f5f5;
+}
+
+.model-section .container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.model-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.model-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px 15px;
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    min-width: 0; /* .product-card এর মতো একই কারণে — গ্রিড কলাম যাতে কনটেন্টের কারণে জোর করে চওড়া না হয় */
+}
+
+.model-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(231, 76, 60, 0.15);
+}
+
+.model-card img {
+    width: 100%;
+    max-width: 110px;
+    height: 110px;
+    object-fit: contain;
+    margin-bottom: 12px;
+}
+
+.model-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* ===== Footer ===== */
+.footer {
+    background-color: #161616;
+    color: #ccc;
+    padding: 50px 30px 0;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.2fr;
+    gap: 30px;
+    padding-bottom: 40px;
+}
+
+.footer-col h3.footer-logo {
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.footer-col h4 {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.footer-col p {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.footer-col ul {
+    list-style: none;
+}
+
+.footer-col ul li {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.footer-col ul li a {
+    color: #ccc;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-col ul li a:hover {
+    color: #e74c3c;
+}
+
+.contact-list li i {
+    color: #e74c3c;
+    margin-right: 8px;
+    width: 16px;
+}
+
+.social-icons a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: #2b2b2b;
+    color: white;
+    border-radius: 50%;
+    margin-right: 10px;
+    text-decoration: none;
+    transition: background-color 0.25s ease;
+}
+
+.social-icons a:hover {
+    background-color: #e74c3c;
+}
+
+.footer-bottom {
+    border-top: 1px solid #2b2b2b;
+    text-align: center;
+    padding: 18px 0;
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .footer-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== Product Grid (Parts pages) ===== */
+.product-section {
+    padding: 50px 30px;
+    background-color: #f5f5f5;
+}
+
+.product-section .container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.product-card {
+    background: white;
+    border-radius: 10px;
+    padding: 18px 14px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    /* CSS Grid-এর ডিফল্ট আচরণে "1fr" কলামের একটা অদৃশ্য min-width:auto থাকে, যেটা কার্ডের
+       ভেতরের কনটেন্টের (যেমন লম্বা প্রোডাক্ট নাম) সর্বনিম্ন প্রস্থ অনুযায়ী কলামকে জোর করে চওড়া
+       করে দেয় — ফলে ছোট স্ক্রিনে পুরো গ্রিড ভিউপোর্টের বাইরে চলে গিয়ে পুরো পেজটাই zoom-out হয়ে
+       দেখাতো (ডান পাশে ফাঁকা জায়গা)। min-width: 0 দিয়ে এই অটোমেটিক মিনিমাম বন্ধ করে দেওয়া হলো,
+       যাতে কার্ড সবসময় নিজের কলামের আসল প্রস্থেই থাকে এবং লেখা প্রয়োজনে wrap করে। */
+    min-width: 0;
+    /* উইশলিস্ট হার্ট বাটন (.wishlist-heart-btn) কার্ডের উপরে ওভারলে হিসেবে বসানোর জন্য —
+       নিচে দেখুন */
+    position: relative;
+}
+
+/* ===== উইশলিস্ট হার্ট বাটন — প্রোডাক্ট কার্ডের উপরে ডান কোণায় ওভারলে (index/search/brand/model
+   পেজের প্রোডাক্ট গ্রিড) — wishlist.js এর stzWishlistHeartHtml() থেকে বসানো হয় ===== */
+.wishlist-heart-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0;
+    z-index: 2;
+    color: #999;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.15s ease;
+}
+.wishlist-heart-btn:hover { transform: scale(1.12); }
+.wishlist-heart-btn.active { border-color: #e74c3c; color: #e74c3c; }
+
+/* প্রোডাক্ট ডিটেইল পেজের (product.html) বড়, লেবেলসহ উইশলিস্ট বাটন — Buy Now/Add to Cart এর
+   পাশে বসে, কার্ড ওভারলে হার্ট বাটনের চেয়ে আলাদা স্টাইল দরকার */
+.btn-wishlist {
+    flex: 1;
+    background: #fff;
+    border: 1.5px solid #e74c3c;
+    color: #e74c3c;
+    padding: 12px 18px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.btn-wishlist.active { background: #fdf1f0; }
+
+.product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(231, 76, 60, 0.15);
+}
+
+.product-card img {
+    width: 100%;
+    max-width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 12px;
+}
+
+.product-card h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    min-height: 34px;
+    /* কিছু প্রোডাক্টের নাম অনেক লম্বা এবং মাঝে স্পেস ছাড়া অংশ থাকে (যেমন মডেল নাম্বার) —
+       আগের সেটিংসে ব্রাউজার এই অংশটা ভাঙতে না পেরে কার্ডের বাইরে উপচে পড়ে পুরো গ্রিডকে ছোট
+       স্ক্রিনে সামান্য বাইরে ঠেলে দিতো। overflow-wrap দিয়ে প্রয়োজনে সেই অংশও ভেঙে কার্ডের
+       ভেতরেই রাখা হচ্ছে এখন। */
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.product-card .price {
+    color: #e74c3c;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+/* Daraz-এর মতো — originalPrice থাকা প্রোডাক্টে কাটা দাম + আসল দাম + ছাড়ের ব্যাজ একসাথে দেখানোর জন্য
+   (index.html/brand.html/search.html-এর প্রোডাক্ট কার্ডে ব্যবহৃত)। */
+.product-card .price-block-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.product-card .price-block-row .price {
+    margin-bottom: 0;
+}
+
+.product-card .price-old {
+    color: #999;
+    font-size: 12px;
+    font-weight: 400;
+    text-decoration: line-through;
+}
+
+.product-card .discount-tag {
+    display: inline-block;
+    background: #fdf1f0;
+    color: #e74c3c;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+}
+
+/* Daraz-এর নিজের "Add to Cart" বাটনের হুবহু কালার/স্টাইল (#F57224, radius 2px, ফ্ল্যাট) */
+.add-cart-btn {
+    width: 100%;
+    background-color: #F57224;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 2px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.add-cart-btn:hover {
+    opacity: 0.9;
+}
+
+.add-cart-btn:disabled {
+    background-color: #ccc;
+    color: #888;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+@media (max-width: 992px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}
+
+/* .category-grid এর জন্য কোনো mobile breakpoint ছিলো না — ৪ কলাম ফিক্সড থাকায়
+   ছোট স্ক্রিনে পুরো পেজ পাশাপাশি স্ক্রল হয়ে যাচ্ছিল। .product-grid এর মতো একই প্যাটার্নে ঠিক করা হলো। */
+@media (max-width: 992px) {
+    .category-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}
+
+/* ===== হোমপেজ কার্ডের Daraz-স্টাইল দাম/ছাড়/রিভিউ ব্লক (index.html priceBlockHtml) =====
+   brand.html/search.html এখনো পুরনো .price-block-row ব্যবহার করে, তাই ওগুলোর রুল অপরিবর্তিত রাখা হয়েছে */
+.product-card .stz-price-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.product-card .stz-price {
+    color: #e74c3c;
+    font-weight: 700;
+    font-size: 17px;
+}
+.product-card .stz-pct {
+    color: #777;
+    font-size: 12px;
+    font-weight: 500;
+}
+.product-card .stz-old-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 3px;
+}
+.product-card .stz-old {
+    color: #999;
+    font-size: 12px;
+    text-decoration: line-through;
+}
+.product-card .stz-rating-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 4px;
+    font-size: 12px;
+}
+/* তারা: নিচে ফ্যাকাশে ধূসর ৫টা, উপরে দামের রঙের ৫টা — গড় রেটিং অনুযায়ী width কেটে আংশিক ভরাট */
+.product-card .stz-stars {
+    position: relative;
+    display: inline-block;
+    color: #ddd;
+    letter-spacing: 1px;
+    line-height: 1;
+    font-size: 13px;
+}
+.product-card .stz-stars-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    color: #e74c3c;
+}
+.product-card .stz-rating-count {
+    color: #222;
+    font-size: 12px;
+}
+
+.product-card .stz-price-block { margin-bottom: 12px; }

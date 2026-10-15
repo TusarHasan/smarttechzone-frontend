@@ -12,7 +12,6 @@
     <title>আমার অ্যাকাউন্ট - Smart Tech Zone</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .account-container { max-width: 700px; margin: 30px auto; padding: 0 20px; }
         .account-card { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
         .account-card h3 { margin-top: 0; font-size: 16px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .account-card label { display: block; margin-top: 14px; font-size: 13px; font-weight: bold; color: #333; }
@@ -169,6 +168,124 @@
         .area-option:hover { border-color: #f0a8a0; }
         .area-option input { width: auto; margin: 0; padding: 0; }
         .area-option.selected { border-color: #e74c3c; background: #fdf6f5; }
+
+        /* ===== Daraz-স্টাইল "Manage My Account" লেআউট (বাম সাইডবার + ডান কনটেন্ট) ===== */
+        :root { --ac-teal: #0f8b8d; --ac-red: #e74c3c; --ac-line: #eee; --ac-bg: #f5f5f5; }
+        body { background: var(--ac-bg); }
+        .account-container { max-width: 1180px; margin: 24px auto 40px; padding: 0 16px; display: flex; gap: 24px; align-items: flex-start; }
+        .ac-side { width: 250px; flex-shrink: 0; position: sticky; top: 12px; }
+        .ac-main { flex: 1; min-width: 0; }
+        .ac-hello { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .ac-avatar { width: 44px; height: 44px; border-radius: 50%; background: #fdf1f0; color: var(--ac-red); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0; }
+        .ac-hello-t { font-size: 13.5px; color: #333; font-weight: 600; word-break: break-word; }
+        .ac-verified { display: inline-block; margin-top: 4px; background: #e6f6ec; color: #16a34a; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
+        .ac-menu { background: #fff; border-radius: 8px; padding: 8px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .ac-group { padding: 8px 0; }
+        .ac-group + .ac-group { border-top: 1px solid var(--ac-line); }
+        .ac-gtitle { display: block; padding: 6px 18px; font-size: 15px; font-weight: 700; color: #333; text-decoration: none; }
+        .ac-gtitle.active { color: var(--ac-red); }
+        .ac-sub { display: flex; align-items: center; justify-content: space-between; padding: 6px 18px 6px 30px; font-size: 13.5px; color: #666; text-decoration: none; border-left: 3px solid transparent; }
+        .ac-sub:hover { color: var(--ac-red); background: #fafafa; }
+        .ac-sub.active { color: var(--ac-red); font-weight: 700; border-left-color: var(--ac-red); background: #fff6f5; }
+        .ac-wmini { font-size: 11.5px; font-weight: 700; color: var(--ac-teal); }
+        .ac-title { font-size: 22px; font-weight: 400; color: #333; margin: 0 0 14px; }
+        .ac-row { display: flex; gap: 16px; align-items: stretch; margin-bottom: 16px; }
+        .ac-row > .account-card { flex: 1; margin-bottom: 0; min-width: 0; }
+        .ac-row .ac-card-split { display: flex; gap: 0; }
+        .ac-card-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px; font-size: 16px; color: #333; }
+        .ac-card-head .sep { color: #ccc; }
+        .ac-edit { font-size: 12px; color: var(--ac-teal); text-decoration: none; font-weight: 600; letter-spacing: .3px; }
+        .ac-edit:hover { text-decoration: underline; }
+        .ac-kv-name { font-size: 14px; color: #333; margin-bottom: 4px; }
+        .ac-kv { font-size: 13.5px; color: #555; margin-bottom: 8px; word-break: break-word; }
+        .account-card label.ac-check { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: #444; font-weight: normal; cursor: pointer; }
+        .account-card .ac-check input { width: auto; margin: 0; padding: 0; }
+        .ac-mk-msg { font-size: 12px; color: #16a34a; min-height: 16px; margin-top: 6px; }
+        .ac-addr-cols { display: flex; gap: 0; }
+        .ac-addr-col { flex: 1; padding-right: 16px; min-width: 0; }
+        .ac-addr-col + .ac-addr-col { padding-left: 16px; padding-right: 0; border-left: 1px solid var(--ac-line); }
+        .ac-addr-label { font-size: 11px; color: #999; letter-spacing: .5px; margin-bottom: 8px; }
+        .ac-addr-name { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 4px; }
+        .ac-addr-line { font-size: 12.5px; color: #555; line-height: 1.55; word-break: break-word; }
+        .ac-empty-addr { font-size: 13px; color: #999; }
+        .ac-table-wrap { overflow-x: auto; }
+        .ac-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        .ac-table th { text-align: left; background: #fafafa; color: #666; font-weight: 600; padding: 12px 16px; white-space: nowrap; }
+        .ac-table td { padding: 16px; border-top: 1px solid var(--ac-line); vertical-align: middle; }
+        .ac-table td.num, .ac-table th.num { text-align: right; }
+        .ac-table a.ac-ord { color: var(--ac-teal); text-decoration: none; font-weight: 600; white-space: nowrap; }
+        .ac-table a.ac-ord:hover { text-decoration: underline; }
+        .ac-manage { color: var(--ac-teal); font-weight: 700; font-size: 13px; text-decoration: none; letter-spacing: .3px; }
+        .ac-manage:hover { text-decoration: underline; }
+        .ac-thumbs { display: flex; align-items: center; gap: 4px; }
+        .ac-thumbs img { width: 38px; height: 38px; object-fit: cover; border-radius: 4px; border: 1px solid var(--ac-line); background: #fff; }
+        .ac-thumbs .more { font-size: 12px; color: #666; font-weight: 600; margin-left: 2px; }
+        .ac-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+        .ac-chip { border: 1px solid #ddd; background: #fff; color: #555; padding: 6px 14px; border-radius: 20px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+        .ac-chip:hover { border-color: var(--ac-red); color: var(--ac-red); }
+        .ac-chip.active { background: var(--ac-red); border-color: var(--ac-red); color: #fff; font-weight: 700; }
+        .ac-back { display: inline-block; margin-bottom: 12px; color: var(--ac-teal); text-decoration: none; font-size: 13.5px; font-weight: 600; }
+        .ac-back:hover { text-decoration: underline; }
+        .order-wallet-line { font-size: 12.5px; color: #16a34a; text-align: right; margin-top: 6px; font-weight: 600; }
+        .order-due-line { font-size: 12.5px; color: #555; text-align: right; margin-top: 3px; }
+        .order-steps { display: flex; margin: 14px 0 4px; font-size: 11.5px; color: #aaa; }
+        .order-steps .st { flex: 1; text-align: center; position: relative; padding-top: 22px; }
+        .order-steps .st::before { content: ''; position: absolute; top: 5px; left: 50%; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: #ddd; z-index: 1; }
+        .order-steps .st::after { content: ''; position: absolute; top: 10px; left: -50%; width: 100%; height: 2px; background: #ddd; }
+        .order-steps .st:first-child::after { display: none; }
+        .order-steps .st.done { color: #16a34a; font-weight: 700; }
+        .order-steps .st.done::before, .order-steps .st.done::after { background: #16a34a; }
+        .order-logistics { margin-top: 10px; padding: 10px 12px; background: #fafafa; border-radius: 6px; font-size: 12.5px; color: #555; line-height: 1.6; }
+        /* STZ Wallet */
+        .wallet-hero { background: linear-gradient(135deg, #0f8b8d, #0b6e70); color: #fff; border-radius: 10px; padding: 22px 24px; margin-bottom: 16px; }
+        .wallet-hero .wh-label { font-size: 13px; opacity: .85; }
+        .wallet-hero .wh-amount { font-size: 34px; font-weight: 800; margin: 4px 0 6px; }
+        .wallet-hero .wh-note { font-size: 12.5px; opacity: .85; line-height: 1.5; }
+        .wtx-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+        .wtx-row:last-child { border-bottom: none; }
+        .wtx-title { font-size: 13.5px; color: #333; font-weight: 600; }
+        .wtx-sub { font-size: 12px; color: #999; margin-top: 2px; }
+        .wtx-amt { font-size: 14px; font-weight: 800; white-space: nowrap; text-align: right; }
+        .wtx-amt.cr { color: #16a34a; }
+        .wtx-amt.db { color: #e74c3c; }
+        .wtx-bal { font-size: 11.5px; color: #999; font-weight: 400; margin-top: 2px; }
+        /* Reviews */
+        .rv-row { display: flex; gap: 12px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid #f5f5f5; }
+        .rv-row:last-child { border-bottom: none; }
+        .rv-row img { width: 54px; height: 54px; object-fit: cover; border: 1px solid var(--ac-line); border-radius: 6px; flex-shrink: 0; background: #fff; }
+        .rv-info { flex: 1; min-width: 0; }
+        .rv-name { font-size: 13.5px; font-weight: 700; color: #333; }
+        .rv-meta { font-size: 12px; color: #999; margin-top: 2px; }
+        .rv-stars { color: #f5a623; font-size: 15px; letter-spacing: 1px; margin-top: 4px; }
+        .rv-stars .off { color: #ddd; }
+        .rv-comment { font-size: 13px; color: #555; margin-top: 4px; white-space: pre-wrap; }
+        .rv-imgs { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+        .rv-imgs img { width: 46px; height: 46px; }
+        /* Coming soon */
+        .ac-soon { text-align: center; padding: 34px 16px; color: #777; }
+        .ac-soon .ico { font-size: 38px; }
+        .ac-soon h4 { margin: 10px 0 6px; font-size: 16px; color: #333; }
+        .ac-soon p { margin: 0 auto; font-size: 13.5px; max-width: 420px; line-height: 1.6; }
+        .ac-soon .tag { display: inline-block; margin-top: 12px; background: #fff3e0; color: #e08c00; font-size: 11.5px; font-weight: 700; padding: 3px 12px; border-radius: 20px; }
+        .ac-cancel-meta { font-size: 12.5px; color: #666; margin-top: 8px; line-height: 1.6; }
+        @media (max-width: 860px) {
+            .account-container { flex-direction: column; align-items: stretch; gap: 14px; margin-top: 14px; }
+            .ac-main { width: 100%; }
+            .ac-side { width: 100%; position: static; }
+            .ac-menu { display: flex; overflow-x: auto; padding: 6px; gap: 6px; scrollbar-width: none; }
+            .ac-menu::-webkit-scrollbar { display: none; }
+            .ac-group { display: flex; padding: 0; gap: 6px; flex-shrink: 0; }
+            .ac-group + .ac-group { border-top: none; }
+            .ac-gtitle, .ac-sub { padding: 8px 14px; border: 1px solid #ddd; border-radius: 20px; font-size: 13px; white-space: nowrap; font-weight: 600; color: #555; border-left-width: 1px; }
+            .ac-gtitle.active, .ac-sub.active { background: var(--ac-red); border-color: var(--ac-red); color: #fff; }
+            .ac-gtitle:not(a) { display: none; }
+            .ac-row { flex-direction: column; }
+            .ac-addr-cols { flex-direction: column; }
+            .ac-addr-col { padding: 0 0 12px; }
+            .ac-addr-col + .ac-addr-col { padding: 12px 0 0; border-left: none; border-top: 1px solid var(--ac-line); }
+            .account-card { padding: 16px; }
+            .ac-table th, .ac-table td { padding: 12px 10px; }
+        }
     </style>
     <script src="config.js"></script>
     <script src="visitor-track.js" defer></script>
@@ -193,77 +310,224 @@
     </nav>
 
     <div class="account-container">
-        <h2 style="color:#333;">আমার অ্যাকাউন্ট</h2>
-
-        <div class="account-card" id="profileSection">
-            <h3>প্রোফাইল <button class="logout-btn" onclick="customerLogout()">লগ আউট</button></h3>
-            <form id="profileForm" autocomplete="on" onsubmit="return false;">
-                <label>নাম</label>
-                <input type="text" id="acName" name="name" autocomplete="name" placeholder="আপনার পুরো নাম">
-                <label>ফোন নাম্বার</label>
-                <input type="text" id="acPhone" name="tel" autocomplete="tel" inputmode="tel" disabled>
-                <p id="acPhoneHint" style="display:none; font-size:12.5px; color:#999; margin:6px 0 0;">Google/Facebook দিয়ে লগইন করেছেন, তাই ফোন নাম্বার খালি। এখানে আপনার মোবাইল নাম্বার (01XXXXXXXXX) দিন। একবার সেভ করলে আর বদলানো যাবে না।</p>
-            </form>
-            <button class="save-btn" id="saveProfileBtn" onclick="saveProfile()">প্রোফাইল সেভ করুন</button>
-            <div id="profileMsg"></div>
-        </div>
-
-        <div class="account-card" id="addressSection">
-            <h3>সেভড ডেলিভারি ঠিকানা</h3>
-            <p style="font-size:12.5px; color:#999; margin:0;">এখানে ঠিকানা সেভ করলে পরের বার চেকআউট করার সময় এটা অটোমেটিক ভরে যাবে।</p>
-            <form id="addressForm" autocomplete="on" onsubmit="return false;">
-                <label>সম্পূর্ণ ঠিকানা</label>
-                <textarea id="acAddress" name="street-address" autocomplete="street-address" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
-                <label>ডেলিভারি এলাকা</label>
-                <div class="delivery-area-options">
-                    <label class="area-option" for="acAreaInside">
-                        <input type="radio" name="acDeliveryArea" id="acAreaInside" value="inside">
-                        <span>ঢাকার ভেতরে</span>
-                    </label>
-                    <label class="area-option" for="acAreaOutside">
-                        <input type="radio" name="acDeliveryArea" id="acAreaOutside" value="outside">
-                        <span>ঢাকার বাইরে</span>
-                    </label>
+        <aside class="ac-side">
+            <div class="ac-hello">
+                <div class="ac-avatar" id="acAvatar">?</div>
+                <div>
+                    <div class="ac-hello-t">Hello, <span id="acHelloName"></span></div>
+                    <span class="ac-verified" id="acVerified" style="display:none;">&#10003; Verified Account</span>
                 </div>
-            </form>
-            <button class="save-btn" id="saveAddressBtn" onclick="saveAddress()">ঠিকানা সেভ করুন</button>
-            <div id="addressMsg"></div>
-        </div>
-
-        <div class="account-card" id="paymentSection">
-            <h3>সেভড পেমেন্ট মেথড</h3>
-            <p style="font-size:12.5px; color:#999; margin:0 0 4px;">bKash, Nagad, Rocket বা অন্য যেকোনো পেমেন্ট নাম্বার এখানে সেভ করে রাখতে পারেন — এটা শুধু আপনার নিজের রেফারেন্সের জন্য, সরাসরি পেমেন্ট প্রসেস করে না।</p>
-            <div id="paymentMethodsList"><div class="loading-hint">লোড হচ্ছে...</div></div>
-
-            <div class="pm-add-row">
-                <select id="pmType">
-                    <option value="bkash">bKash</option>
-                    <option value="nagad">Nagad</option>
-                    <option value="rocket">Rocket</option>
-                    <option value="other">অন্যান্য</option>
-                </select>
-                <input type="text" id="pmLabel" placeholder="নাম (যেমন: Bank Card)" style="display:none;">
-                <input type="tel" id="pmNumber" placeholder="01XXXXXXXXX">
-                <button class="save-btn" id="addPaymentBtn" onclick="addPaymentMethod()">যোগ করুন</button>
             </div>
-            <div id="paymentMsg"></div>
-        </div>
+            <nav class="ac-menu" aria-label="Account menu">
+                <div class="ac-group">
+                    <a class="ac-gtitle" href="#account" data-route="overview">Manage My Account</a>
+                    <a class="ac-sub" href="#profileSection" data-route="profile">My Profile</a>
+                    <a class="ac-sub" href="#addressSection" data-route="address">Address Book</a>
+                    <a class="ac-sub" href="#paymentSection" data-route="payment">My Payment Options</a>
+                    <a class="ac-sub" href="#walletSection" data-route="wallet">STZ Wallet <span class="ac-wmini" id="acWalletMini"></span></a>
+                </div>
+                <div class="ac-group">
+                    <div class="ac-gtitle">My Orders</div>
+                    <a class="ac-sub" href="#ordersSection" data-route="orders">All Orders</a>
+                    <a class="ac-sub" href="#returnTrackingSection" data-route="returns">My Returns</a>
+                    <a class="ac-sub" href="#cancellationsSection" data-route="cancellations">My Cancellations</a>
+                </div>
+                <div class="ac-group">
+                    <a class="ac-gtitle" href="#reviewsSection" data-route="reviews">My Reviews</a>
+                </div>
+                <div class="ac-group">
+                    <a class="ac-gtitle" href="#wishlistSection" data-route="wishlist">My Wishlist &amp; Followed Stores</a>
+                </div>
+                <div class="ac-group">
+                    <a class="ac-gtitle" href="#sellSection" data-route="sell">Sell On STZ</a>
+                </div>
+            </nav>
+        </aside>
 
-        <div class="account-card" id="ordersSection">
-            <h3>আমার অর্ডারসমূহ</h3>
-            <div id="ordersList"><div class="loading-hint">লোড হচ্ছে...</div></div>
-        </div>
+        <main class="ac-main">
+            <h2 class="ac-title" id="acTitle">Manage My Account</h2>
 
-        <div class="account-card" id="wishlistSection">
-            <h3>আমার উইশলিস্ট</h3>
-            <div id="wishlistList"><div class="loading-hint">লোড হচ্ছে...</div></div>
-        </div>
+            <!-- ===== Manage My Account (Overview) ===== -->
+            <section class="acv" id="view-overview">
+                <div class="ac-row">
+                    <div class="account-card">
+                        <div class="ac-card-head"><span>Personal Profile</span><span class="sep">|</span><a class="ac-edit" href="#profileSection">EDIT</a></div>
+                        <div class="ac-kv-name" id="ovName">-</div>
+                        <div class="ac-kv" id="ovContact">-</div>
+                        <label class="ac-check"><input type="checkbox" class="mk-sms"> Receive marketing SMS</label>
+                        <label class="ac-check"><input type="checkbox" class="mk-email"> Receive marketing emails</label>
+                        <div class="ac-mk-msg" id="mkMsgOv"></div>
+                    </div>
+                    <div class="account-card">
+                        <div class="ac-card-head"><span>Address Book</span><span class="sep">|</span><a class="ac-edit" href="#addressSection">EDIT</a></div>
+                        <div id="ovAddress"></div>
+                    </div>
+                </div>
+                <div class="account-card" style="padding:0;">
+                    <div style="padding:20px 24px 12px; font-size:16px; color:#333;">Recent Orders</div>
+                    <div id="ovOrders"><div class="loading-hint">লোড হচ্ছে...</div></div>
+                </div>
+            </section>
 
-        <div class="account-card" id="returnTrackingSection">
-            <h3>রিটার্ন ট্র্যাকিং</h3>
-            <p style="font-size:12.5px; color:#999; margin:0;">আপনার রিটার্ন/রিফান্ড রিকোয়েস্টের সর্বশেষ অবস্থা এখানে দেখা যাবে।</p>
-            <div id="returnTrackingList"><div class="loading-hint">লোড হচ্ছে...</div></div>
-        </div>
+            <!-- ===== My Profile ===== -->
+            <section class="acv" id="view-profile" style="display:none;">
+                <div class="account-card" id="profileSection">
+                    <h3>My Profile <button class="logout-btn" onclick="customerLogout()">লগ আউট</button></h3>
+                    <form id="profileForm" autocomplete="on" onsubmit="return false;">
+                        <label>নাম</label>
+                        <input type="text" id="acName" name="name" autocomplete="name" placeholder="আপনার পুরো নাম">
+                        <label>Email</label>
+                        <input type="text" id="acEmail" disabled placeholder="ইমেইল দেওয়া নেই">
+                        <label>ফোন নাম্বার</label>
+                        <input type="text" id="acPhone" name="tel" autocomplete="tel" inputmode="tel" disabled>
+                        <p id="acPhoneHint" style="display:none; font-size:12.5px; color:#999; margin:6px 0 0;">Google/Facebook দিয়ে লগইন করেছেন, তাই ফোন নাম্বার খালি। এখানে আপনার মোবাইল নাম্বার (01XXXXXXXXX) দিন। একবার সেভ করলে আর বদলানো যাবে না।</p>
+                    </form>
+                    <label style="margin-top:18px;">Marketing Preferences</label>
+                    <label class="ac-check"><input type="checkbox" class="mk-sms"> Receive marketing SMS</label>
+                    <label class="ac-check"><input type="checkbox" class="mk-email"> Receive marketing emails</label>
+                    <div class="ac-mk-msg" id="mkMsgPr"></div>
+                    <button class="save-btn" id="saveProfileBtn" onclick="saveProfile()">প্রোফাইল সেভ করুন</button>
+                    <div id="profileMsg"></div>
+                </div>
+            </section>
+
+            <!-- ===== Address Book ===== -->
+            <section class="acv" id="view-address" style="display:none;">
+                <div class="account-card" id="addressSection">
+                    <h3>Address Book</h3>
+                    <div class="ac-addr-cols" style="margin-bottom:6px;">
+                        <div class="ac-addr-col"><div class="ac-addr-label">DEFAULT SHIPPING ADDRESS</div><div id="abShip"></div></div>
+                        <div class="ac-addr-col"><div class="ac-addr-label">DEFAULT BILLING ADDRESS</div><div id="abBill"></div></div>
+                    </div>
+                </div>
+                <div class="account-card">
+                    <h3>সেভড ডেলিভারি ঠিকানা</h3>
+                    <p style="font-size:12.5px; color:#999; margin:0;">এখানে ঠিকানা সেভ করলে পরের বার চেকআউট করার সময় এটা অটোমেটিক ভরে যাবে।</p>
+                    <form id="addressForm" autocomplete="on" onsubmit="return false;">
+                        <label>সম্পূর্ণ ঠিকানা</label>
+                        <textarea id="acAddress" name="street-address" autocomplete="street-address" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
+                        <label>ডেলিভারি এলাকা</label>
+                        <div class="delivery-area-options">
+                            <label class="area-option" for="acAreaInside">
+                                <input type="radio" name="acDeliveryArea" id="acAreaInside" value="inside">
+                                <span>ঢাকার ভেতরে</span>
+                            </label>
+                            <label class="area-option" for="acAreaOutside">
+                                <input type="radio" name="acDeliveryArea" id="acAreaOutside" value="outside">
+                                <span>ঢাকার বাইরে</span>
+                            </label>
+                        </div>
+                    </form>
+                    <button class="save-btn" id="saveAddressBtn" onclick="saveAddress()">ঠিকানা সেভ করুন</button>
+                    <div id="addressMsg"></div>
+                </div>
+            </section>
+
+            <!-- ===== My Payment Options ===== -->
+            <section class="acv" id="view-payment" style="display:none;">
+                <div class="account-card" id="paymentSection">
+                    <h3>My Payment Options</h3>
+                    <p style="font-size:12.5px; color:#999; margin:0 0 4px;">bKash, Nagad, Rocket বা অন্য যেকোনো পেমেন্ট নাম্বার এখানে সেভ করে রাখতে পারেন — এটা শুধু আপনার নিজের রেফারেন্সের জন্য, সরাসরি পেমেন্ট প্রসেস করে না।</p>
+                    <div id="paymentMethodsList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+                    <div class="pm-add-row">
+                        <select id="pmType">
+                            <option value="bkash">bKash</option>
+                            <option value="nagad">Nagad</option>
+                            <option value="rocket">Rocket</option>
+                            <option value="other">অন্যান্য</option>
+                        </select>
+                        <input type="text" id="pmLabel" placeholder="নাম (যেমন: Bank Card)" style="display:none;">
+                        <input type="tel" id="pmNumber" placeholder="01XXXXXXXXX">
+                        <button class="save-btn" id="addPaymentBtn" onclick="addPaymentMethod()">যোগ করুন</button>
+                    </div>
+                    <div id="paymentMsg"></div>
+                </div>
+            </section>
+
+            <!-- ===== STZ Wallet ===== -->
+            <section class="acv" id="view-wallet" style="display:none;">
+                <div class="wallet-hero">
+                    <div class="wh-label">STZ Wallet Balance</div>
+                    <div class="wh-amount">&#2547; <span id="walletBalanceBig">0</span></div>
+                    <div class="wh-note">এই ব্যালেন্স চেকআউটে ক্যাশ অন ডেলিভারি অর্ডারের বিল থেকে কাটা যায়। অর্ডার ক্যান্সেল হলে কাটা টাকা এখানে ফেরত আসে। ব্যালেন্স তুলে নেওয়া যায় না।</div>
+                </div>
+                <div class="account-card">
+                    <h3>লেনদেনের ইতিহাস</h3>
+                    <div id="walletTxList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+                </div>
+            </section>
+
+            <!-- ===== All Orders ===== -->
+            <section class="acv" id="view-orders" style="display:none;">
+                <div class="account-card" id="ordersSection">
+                    <h3>All Orders</h3>
+                    <div class="ac-chips" id="orderChips"></div>
+                    <div id="ordersList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+                </div>
+            </section>
+
+            <!-- ===== একটি অর্ডারের বিস্তারিত (MANAGE) ===== -->
+            <section class="acv" id="view-order" style="display:none;">
+                <a class="ac-back" href="#ordersSection">&larr; Back to All Orders</a>
+                <div class="account-card" id="orderDetailBox"></div>
+            </section>
+
+            <!-- ===== My Returns ===== -->
+            <section class="acv" id="view-returns" style="display:none;">
+                <div class="account-card" id="returnTrackingSection">
+                    <h3>My Returns</h3>
+                    <p style="font-size:12.5px; color:#999; margin:0;">আপনার রিটার্ন/রিফান্ড রিকোয়েস্টের সর্বশেষ অবস্থা এখানে দেখা যাবে। নতুন রিটার্নের জন্য All Orders থেকে ডেলিভারড অর্ডারের আইটেমে "রিটার্ন করুন" চাপুন।</p>
+                    <div id="returnTrackingList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+                </div>
+            </section>
+
+            <!-- ===== My Cancellations ===== -->
+            <section class="acv" id="view-cancellations" style="display:none;">
+                <div class="account-card">
+                    <h3>My Cancellations</h3>
+                    <div id="cancellationsList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+                </div>
+            </section>
+
+            <!-- ===== My Reviews ===== -->
+            <section class="acv" id="view-reviews" style="display:none;">
+                <div class="account-card">
+                    <h3>My Reviews</h3>
+                    <div class="ac-chips" id="reviewChips"></div>
+                    <div id="reviewsList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+                </div>
+            </section>
+
+            <!-- ===== My Wishlist & Followed Stores ===== -->
+            <section class="acv" id="view-wishlist" style="display:none;">
+                <div class="account-card" id="wishlistSection">
+                    <h3>My Wishlist</h3>
+                    <div id="wishlistList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+                </div>
+                <div class="account-card">
+                    <h3>Followed Stores</h3>
+                    <div class="ac-soon">
+                        <div class="ico">&#127978;</div>
+                        <h4>শীঘ্রই আসছে</h4>
+                        <p>এখন Smart Tech Zone-ই একমাত্র স্টোর। ভবিষ্যতে আরও সেলার যুক্ত হলে তাদের ফলো করে এখানে দেখতে পারবেন।</p>
+                        <span class="tag">Coming soon</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== Sell On STZ ===== -->
+            <section class="acv" id="view-sell" style="display:none;">
+                <div class="account-card">
+                    <h3>Sell On STZ</h3>
+                    <div class="ac-soon">
+                        <div class="ico">&#128230;</div>
+                        <h4>সেলার হিসেবে যুক্ত হওয়ার সুযোগ শীঘ্রই</h4>
+                        <p>Smart Tech Zone-এ নিজের প্রোডাক্ট বিক্রি করার সুবিধা এখনো চালু হয়নি। চালু হলে এই পেজ থেকেই আবেদন করতে পারবেন।</p>
+                        <span class="tag">Coming soon</span>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
     <!-- ===== রিটার্ন রিকোয়েস্ট মোডাল ===== -->
@@ -363,47 +627,38 @@
             window.location.href = 'login.html?redirect=account.html';
         }
 
-        // নেভবারের প্রোফাইল ড্রপডাউন থেকে #profileSection/#ordersSection দিয়ে এলে শুধু প্রাসঙ্গিক
-        // সেকশনটুকু দেখানো হয় — বাকিগুলো লুকিয়ে রাখা হয়। এই ফাংশনটা শুধু পেজ লোডের সময় না, বরং
-        // 'hashchange' ইভেন্টেও কল করা হয় (নিচে দেখুন) — কারণ account.html এর মধ্যেই একটা লিংক
-        // থেকে আরেকটায় (যেমন #profileSection → #ordersSection) ক্লিক করলে ব্রাউজার পুরো পেজ রিলোড
-        // করে না (শুধু URL-এর hash বদলায়), তাই আগে এই লজিকটা একবারই রান হতো আর "My Orders"-এ ক্লিক
-        // করলেও Orders সেকশন লুকানোই থেকে যেত — অর্ডার ডেটা ঠিকই লোড হতো, শুধু দেখানো হতো না।
-        function applyHashSection() {
-            // প্রতিবার শুরুতে সব সেকশন আবার দৃশ্যমান করে দেওয়া হচ্ছে, নাহলে আগের hash-এ লুকানো
-            // সেকশন পরের hash-এ আর কখনো ফিরে আসত না
-            document.getElementById('profileSection').style.display = '';
-            document.getElementById('addressSection').style.display = '';
-            document.getElementById('paymentSection').style.display = '';
-            document.getElementById('ordersSection').style.display = '';
-            document.getElementById('wishlistSection').style.display = '';
-            document.getElementById('returnTrackingSection').style.display = '';
-            document.querySelector('.account-container h2').textContent = 'আমার অ্যাকাউন্ট';
+        // ===== রাউটার: URL hash দেখে সাইডবারের মেনু অনুযায়ী ডান পাশের ভিউ বদলায় (রিলোড ছাড়াই) =====
+        // পুরনো hash নামগুলো (#profileSection, #ordersSection, #wishlistSection, #paymentSection...) নেভবার
+        // ড্রপডাউন থেকে আসে, তাই একই নাম রেখে নতুন ভিউয়ে ম্যাপ করা হয়েছে। #order-<id> = একটি অর্ডারের বিস্তারিত (MANAGE)।
+        const ROUTES = {
+            '': 'overview', '#account': 'overview',
+            '#profileSection': 'profile', '#addressSection': 'address', '#paymentSection': 'payment', '#walletSection': 'wallet',
+            '#ordersSection': 'orders', '#returnTrackingSection': 'returns', '#cancellationsSection': 'cancellations',
+            '#reviewsSection': 'reviews', '#wishlistSection': 'wishlist', '#sellSection': 'sell'
+        };
+        const ROUTE_TITLES = {
+            overview: 'Manage My Account', profile: 'My Profile', address: 'Address Book', payment: 'My Payment Options',
+            wallet: 'STZ Wallet', orders: 'All Orders', order: 'Order Details', returns: 'My Returns',
+            cancellations: 'My Cancellations', reviews: 'My Reviews', wishlist: 'My Wishlist & Followed Stores', sell: 'Sell On STZ'
+        };
+        let currentView = 'overview';
+        let currentOrderId = null;
 
-            if (window.location.hash === '#ordersSection') {
-                document.getElementById('profileSection').style.display = 'none';
-                document.getElementById('addressSection').style.display = 'none';
-                document.getElementById('paymentSection').style.display = 'none';
-                document.getElementById('wishlistSection').style.display = 'none';
-                document.querySelector('.account-container h2').textContent = 'আমার অর্ডারসমূহ';
-            } else if (window.location.hash === '#profileSection') {
-                document.getElementById('addressSection').style.display = 'none';
-                document.getElementById('paymentSection').style.display = 'none';
-                document.getElementById('ordersSection').style.display = 'none';
-                document.getElementById('wishlistSection').style.display = 'none';
-                document.getElementById('returnTrackingSection').style.display = 'none';
-                document.querySelector('.account-container h2').textContent = 'প্রোফাইল';
-            } else if (window.location.hash === '#wishlistSection') {
-                document.getElementById('profileSection').style.display = 'none';
-                document.getElementById('addressSection').style.display = 'none';
-                document.getElementById('paymentSection').style.display = 'none';
-                document.getElementById('ordersSection').style.display = 'none';
-                document.getElementById('returnTrackingSection').style.display = 'none';
-                document.querySelector('.account-container h2').textContent = 'আমার উইশলিস্ট';
-            }
+        function applyRoute() {
+            const h = window.location.hash || '';
+            let view = ROUTES[h];
+            currentOrderId = null;
+            if (!view && h.indexOf('#order-') === 0) { view = 'order'; currentOrderId = h.slice(7); }
+            if (!view) view = 'overview';
+            currentView = view;
+            document.querySelectorAll('.acv').forEach(el => { el.style.display = el.id === 'view-' + view ? '' : 'none'; });
+            const navKey = view === 'order' ? 'orders' : view;
+            document.querySelectorAll('.ac-menu [data-route]').forEach(a => a.classList.toggle('active', a.dataset.route === navKey));
+            document.getElementById('acTitle').textContent = ROUTE_TITLES[view];
+            if (view === 'order') renderOrderDetail();
+            window.scrollTo(0, 0);
         }
-        applyHashSection();
-        window.addEventListener('hashchange', applyHashSection);
+        window.addEventListener('hashchange', applyRoute);
 
         function formatPrice(n) {
             return Number(n).toLocaleString('en-IN');
@@ -459,6 +714,7 @@
         // মানে একটা প্রোডাক্টে একবারই রিভিউ দেওয়া যায় (কোন অর্ডার থেকে দিয়েছেন সেটা গুরুত্বপূর্ণ না) —
         // তাই myReviewedProductIds একটা productId-ভিত্তিক Set, itemIndex-ভিত্তিক না
         let myReviewedProductIds = new Set();
+        let myReviews = [];
         let activeReviewProductId = null;
         let activeReviewOrderId = null;
         let activeReviewItemIndex = null;
@@ -501,6 +757,66 @@
         });
 
         // ===== প্রোফাইল ও ঠিকানা লোড =====
+        let me = null;
+
+        function maskEmail(e) {
+            const parts = String(e || '').split('@');
+            if (parts.length !== 2 || !parts[1]) return e || '';
+            const u = parts[0];
+            return u.slice(0, 2) + '*'.repeat(Math.max(3, u.length - 2)) + '@' + parts[1];
+        }
+
+        function addressBlockHtml(m) {
+            if (!m || !m.address) {
+                return `<div class="ac-empty-addr">এখনো কোনো ঠিকানা সেভ করা হয়নি। <a class="ac-edit" href="#addressSection">ঠিকানা যোগ করুন</a></div>`;
+            }
+            return `
+                <div class="ac-addr-name">${escapeHtmlPm(m.name)}</div>
+                <div class="ac-addr-line">${escapeHtmlPm(m.address)}</div>
+                ${m.city ? `<div class="ac-addr-line">${escapeHtmlPm(m.city)}</div>` : ''}
+                ${m.phone ? `<div class="ac-addr-line">${escapeHtmlPm(m.phone)}</div>` : ''}`;
+        }
+
+        function setMarketingUI(sms, email) {
+            document.querySelectorAll('.mk-sms').forEach(c => { c.checked = !!sms; });
+            document.querySelectorAll('.mk-email').forEach(c => { c.checked = !!email; });
+        }
+
+        // সার্ভার থেকে আসা প্রোফাইল দিয়ে পুরো পেজের (সাইডবার, ওভারভিউ কার্ড, ফর্ম) তথ্য একসাথে আপডেট
+        function applyMe(data) {
+            me = data;
+            const first = (data.name || '').trim() || 'Customer';
+            document.getElementById('acHelloName').textContent = first;
+            document.getElementById('acAvatar').textContent = first.charAt(0).toUpperCase();
+            document.getElementById('acVerified').style.display = (data.phone || data.email) ? 'inline-block' : 'none';
+            document.getElementById('acWalletMini').textContent = (data.walletBalance > 0) ? '৳ ' + formatPrice(data.walletBalance) : '';
+
+            document.getElementById('ovName').textContent = data.name || '-';
+            document.getElementById('ovContact').innerHTML =
+                (data.email ? escapeHtmlPm(maskEmail(data.email)) : '') +
+                (data.email && data.phone ? '<br>' : '') +
+                (data.phone ? escapeHtmlPm(data.phone) : '') ||
+                '-';
+            const addr = addressBlockHtml(data);
+            document.getElementById('ovAddress').innerHTML = data.address
+                ? `<div class="ac-addr-cols">
+                       <div class="ac-addr-col"><div class="ac-addr-label">DEFAULT SHIPPING ADDRESS</div>${addr}</div>
+                       <div class="ac-addr-col"><div class="ac-addr-label">DEFAULT BILLING ADDRESS</div>${addr}</div>
+                   </div>`
+                : addr;
+            document.getElementById('abShip').innerHTML = addr;
+            document.getElementById('abBill').innerHTML = addr;
+
+            document.getElementById('acName').value = data.name || '';
+            document.getElementById('acEmail').value = data.email || '';
+            applyPhoneField(data.phone);
+            document.getElementById('acAddress').value = data.address || '';
+            const savedArea = areaFromCityValue(data.city);
+            if (savedArea) setSelectedArea(savedArea);
+            setMarketingUI(data.marketingSms, data.marketingEmail);
+            document.getElementById('walletBalanceBig').textContent = formatPrice(data.walletBalance || 0);
+        }
+
         async function loadProfile() {
             try {
                 const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/me`);
@@ -511,12 +827,7 @@
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'প্রোফাইল লোড করা যায়নি।');
 
-                document.getElementById('acName').value = data.name || '';
-                applyPhoneField(data.phone);
-                document.getElementById('acAddress').value = data.address || '';
-
-                const savedArea = areaFromCityValue(data.city);
-                if (savedArea) setSelectedArea(savedArea);
+                applyMe(data);
 
                 // সবচেয়ে আপডেটেড নাম localStorage-এও রেখে দেওয়া হচ্ছে (নেভবারে দেখানোর জন্য)
                 setCustomerSession(getCustomerToken(), data);
@@ -524,8 +835,37 @@
             } catch (err) {
                 document.getElementById('profileMsg').style.color = '#e74c3c';
                 document.getElementById('profileMsg').textContent = '❌ ' + err.message;
+                document.getElementById('ovName').textContent = '-';
             }
         }
+
+        // মার্কেটিং চেকবক্স (ওভারভিউ ও My Profile দুই জায়গাতেই আছে) — টিক বদলালেই সেভ হয়, দুই জায়গা মিলিয়ে রাখা হয়
+        async function saveMarketing(src) {
+            if (src.classList.contains('mk-sms')) document.querySelectorAll('.mk-sms').forEach(c => { c.checked = src.checked; });
+            if (src.classList.contains('mk-email')) document.querySelectorAll('.mk-email').forEach(c => { c.checked = src.checked; });
+            const sms = document.querySelector('.mk-sms').checked;
+            const email = document.querySelector('.mk-email').checked;
+            const msgs = [document.getElementById('mkMsgOv'), document.getElementById('mkMsgPr')];
+            msgs.forEach(m => { m.style.color = '#999'; m.textContent = 'সেভ হচ্ছে...'; });
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/me`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ marketingSms: sms, marketingEmail: email })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'সেভ করা যায়নি।');
+                me = data;
+                msgs.forEach(m => { m.style.color = '#16a34a'; m.textContent = '✓ সেভ হয়েছে'; });
+                setTimeout(() => msgs.forEach(m => { m.textContent = ''; }), 2500);
+            } catch (err) {
+                setMarketingUI(me && me.marketingSms, me && me.marketingEmail);
+                msgs.forEach(m => { m.style.color = '#e74c3c'; m.textContent = '❌ ' + err.message; });
+            }
+        }
+        document.addEventListener('change', function (e) {
+            const t = e.target;
+            if (t && t.classList && (t.classList.contains('mk-sms') || t.classList.contains('mk-email'))) saveMarketing(t);
+        });
 
         // ফোন থাকলে লক (বদলানো যায় না); না থাকলে (Google/Facebook অ্যাকাউন্ট) লিখে সেভ করা যায়
         function applyPhoneField(phone) {
@@ -564,7 +904,7 @@
 
                 setCustomerSession(getCustomerToken(), data);
                 renderNavAuth();
-                applyPhoneField(data.phone);
+                applyMe(data);
                 msg.style.color = '#16a34a';
                 msg.textContent = '✅ প্রোফাইল সেভ হয়েছে।';
             } catch (err) {
@@ -592,6 +932,7 @@
                 if (!res.ok) throw new Error(data.error || 'সেভ করা যায়নি।');
 
                 setCustomerSession(getCustomerToken(), data);
+                applyMe(data);
                 msg.style.color = '#16a34a';
                 msg.textContent = '✅ ঠিকানা সেভ হয়েছে — পরের চেকআউটে এটা অটোমেটিক ভরে যাবে।';
             } catch (err) {
@@ -762,18 +1103,56 @@
         }
 
         // ===== অর্ডার হিস্টরি =====
-        function renderOrders(orders) {
-            lastOrders = orders;
-            const box = document.getElementById('ordersList');
-            if (!orders.length) {
-                box.innerHTML = `<div class="no-orders">এখনো কোনো অর্ডার নেই।<br><br><a href="index.html">কেনাকাটা শুরু করুন →</a></div>`;
-                return;
+        // অর্ডারের ডেটা একবারই লোড হয় (lastOrders); ওভারভিউয়ের Recent Orders, All Orders, একটি অর্ডারের বিস্তারিত,
+        // My Cancellations আর My Reviews সবই এই একই ডেটা থেকে আঁকা হয় — তাই কোনো অ্যাকশনের (ক্যান্সেল/রিভিউ/রিটার্ন)
+        // পর renderOrders() ডাকলেই সব ভিউ একসাথে আপডেট হয়।
+        const ACTIVE_STATUSES = ['pending', 'processing', 'shipped'];
+        const CLOSED_STATUSES = ['cancelled', 'delivery_failed', 'returned'];
+        let orderFilter = 'all';
+        let ordersLoaded = false;
+
+        function fmtDate(d) {
+            return d ? new Date(d).toLocaleDateString('en-GB') : '';
+        }
+
+        function setOrderFilter(f) {
+            orderFilter = f;
+            renderOrderList();
+        }
+
+        function orderMatchesFilter(o) {
+            if (orderFilter === 'active') return ACTIVE_STATUSES.includes(o.orderStatus);
+            if (orderFilter === 'delivered') return o.orderStatus === 'delivered';
+            if (orderFilter === 'closed') return CLOSED_STATUSES.includes(o.orderStatus);
+            return true;
+        }
+
+        function orderThumbsHtml(order, max) {
+            const items = order.items || [];
+            const shown = items.slice(0, max);
+            return `<div class="ac-thumbs">${shown.map(it => `<img src="${resolveImg(it.image)}" alt="" onerror="this.style.visibility='hidden'">`).join('')}${items.length > max ? `<span class="more">+${items.length - max}</span>` : ''}</div>`;
+        }
+
+        function walletLinesHtml(order) {
+            const used = Number(order.walletUsed) || 0;
+            if (!used) return '';
+            let h = `<div class="order-wallet-line">STZ Wallet থেকে পরিশোধ: ৳ ${formatPrice(used)}${order.walletRefunded ? ' (ক্যান্সেলে ফেরত গেছে)' : ''}</div>`;
+            if (!order.walletRefunded && order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && order.paymentMethod === 'cod') {
+                h += `<div class="order-due-line">ডেলিভারির সময় দিতে হবে: ৳ ${formatPrice(Math.max(0, order.total - used))}</div>`;
             }
-            box.innerHTML = orders.map(order => `
-                <div class="order-mini-card">
+            return h;
+        }
+
+        // একটি অর্ডার কার্ড — আগের "অর্ডারসমূহ" সেকশনের কার্ডেরই হুবহু কনটেন্ট (রিটার্ন/রিভিউ/ক্যান্সেল/প্যাকেজিং প্রুফ সহ)
+        function orderCardHtml(order, asDetail) {
+            const numberHtml = asDetail
+                ? `<strong>${order.orderNumber}</strong>`
+                : `<a class="ac-ord" href="#order-${order._id}"><strong>${order.orderNumber}</strong></a>`;
+            return `
+                <div class="order-mini-card" ${asDetail ? 'style="margin-top:0;border:none;padding:0;"' : ''}>
                     <div class="order-result-header">
                         <div>
-                            <strong>${order.orderNumber}</strong>
+                            ${numberHtml}
                             <div style="font-size:12px; color:#999; margin-top:2px;">${new Date(order.createdAt).toLocaleDateString('bn-BD')}</div>
                         </div>
                         <span class="order-status-badge status-${order.orderStatus}">${statusLabels[order.orderStatus] || order.orderStatus}</span>
@@ -804,6 +1183,7 @@
                         })()}
                     `).join('')}
                     <div class="order-mini-total">মোট: ৳ ${formatPrice(order.total)}</div>
+                    ${walletLinesHtml(order)}
                     ${order.canCancel ? `<button type="button" class="order-cancel-btn" onclick="openCancelOrder('${order._id}')">অর্ডার ক্যান্সেল করুন</button>` : ''}
                     ${order.packagingProofVideoUrl ? `
                         <div class="order-packaging-proof">
@@ -815,7 +1195,210 @@
                         </div>
                     ` : ''}
                 </div>
-            `).join('');
+            `;
+        }
+
+        function renderOrderChips() {
+            const count = f => { const keep = orderFilter; orderFilter = f; const n = lastOrders.filter(orderMatchesFilter).length; orderFilter = keep; return n; };
+            const defs = [['all', 'All'], ['active', 'Active'], ['delivered', 'Delivered'], ['closed', 'Cancelled / Failed']];
+            document.getElementById('orderChips').innerHTML = defs.map(([k, label]) =>
+                `<button type="button" class="ac-chip ${orderFilter === k ? 'active' : ''}" onclick="setOrderFilter('${k}')">${label} (${count(k)})</button>`).join('');
+        }
+
+        function renderOrderList() {
+            const box = document.getElementById('ordersList');
+            renderOrderChips();
+            if (!lastOrders.length) {
+                box.innerHTML = `<div class="no-orders">এখনো কোনো অর্ডার নেই।<br><br><a href="index.html">কেনাকাটা শুরু করুন →</a></div>`;
+                return;
+            }
+            const list = lastOrders.filter(orderMatchesFilter);
+            box.innerHTML = list.length ? list.map(o => orderCardHtml(o, false)).join('') : `<div class="no-orders">এই ফিল্টারে কোনো অর্ডার নেই।</div>`;
+        }
+
+        // ওভারভিউয়ের Recent Orders টেবিল (সর্বশেষ ৫টা): Order # | Placed On | Items | Total | Action
+        function renderOverviewOrders() {
+            const box = document.getElementById('ovOrders');
+            if (!lastOrders.length) {
+                box.innerHTML = `<div class="no-orders">এখনো কোনো অর্ডার নেই।<br><br><a href="index.html">কেনাকাটা শুরু করুন →</a></div>`;
+                return;
+            }
+            box.innerHTML = `
+                <div class="ac-table-wrap"><table class="ac-table">
+                    <thead><tr><th>Order #</th><th>Placed On</th><th>Items</th><th class="num">Total</th><th class="num">Action</th></tr></thead>
+                    <tbody>${lastOrders.slice(0, 5).map(o => `
+                        <tr>
+                            <td><a class="ac-ord" href="#order-${o._id}">${o.orderNumber}</a></td>
+                            <td>${fmtDate(o.createdAt)}</td>
+                            <td>${orderThumbsHtml(o, 6)}</td>
+                            <td class="num">৳ ${formatPrice(o.total)}</td>
+                            <td class="num"><a class="ac-manage" href="#order-${o._id}">MANAGE</a></td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table></div>`;
+        }
+
+        // একটি অর্ডারের বিস্তারিত (MANAGE): স্ট্যাটাস লাইন, পেমেন্ট/ঠিকানা/লজিস্টিকস + পুরো অর্ডার কার্ড (প্যাকেজিং ভিডিওসহ)
+        function renderOrderDetail() {
+            const box = document.getElementById('orderDetailBox');
+            if (!ordersLoaded) { box.innerHTML = '<div class="loading-hint">লোড হচ্ছে...</div>'; return; }
+            const o = lastOrders.find(x => String(x._id) === String(currentOrderId));
+            if (!o) { box.innerHTML = '<div class="no-orders">অর্ডারটি পাওয়া যায়নি।</div>'; return; }
+            const steps = [['pending', 'অর্ডার গৃহীত'], ['processing', 'প্রসেসিং'], ['shipped', 'শিপড'], ['delivered', 'ডেলিভারড']];
+            const idx = steps.findIndex(s => s[0] === o.orderStatus);
+            const stepsHtml = idx >= 0
+                ? `<div class="order-steps">${steps.map((s, i) => `<div class="st ${i <= idx ? 'done' : ''}">${s[1]}</div>`).join('')}</div>` : '';
+            const payLabel = o.paymentMethod === 'wallet' ? 'STZ Wallet (পরিশোধিত)'
+                : o.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (' + (o.paymentStatus === 'paid' ? 'পরিশোধিত' : 'বাকি') + ')';
+            const c = o.courier || {};
+            const logistics = c.provider
+                ? `Courier: ${escapeHtmlPm(c.provider)}${c.trackingCode ? ' · Tracking: ' + escapeHtmlPm(c.trackingCode) : ''}${c.status ? ' · Status: ' + escapeHtmlPm(c.status) : ''}`
+                : (['pending', 'processing'].includes(o.orderStatus) ? 'কুরিয়ারে এখনো হ্যান্ডওভার হয়নি।' : '');
+            const cust = o.customer || {};
+            box.innerHTML = `
+                ${stepsHtml}
+                <div class="order-logistics">
+                    Payment: ${payLabel}<br>
+                    Delivery address: ${escapeHtmlPm([cust.address, cust.city].filter(Boolean).join(', '))}
+                    ${logistics ? '<br>' + logistics : ''}
+                </div>
+                <div style="margin-top:14px;">${orderCardHtml(o, true)}</div>`;
+        }
+
+        // My Cancellations — শুধু ক্যান্সেল হওয়া অর্ডার। অ্যাডমিনের নিজস্ব ক্যান্সেল কারণ কাস্টমারকে দেখানো হয় না,
+        // শুধু কাস্টমার নিজে ক্যান্সেল করলে তার দেওয়া কারণ দেখানো হয়
+        function renderCancellations() {
+            const box = document.getElementById('cancellationsList');
+            const list = lastOrders.filter(o => o.orderStatus === 'cancelled');
+            if (!list.length) { box.innerHTML = '<div class="no-orders">কোনো ক্যান্সেল করা অর্ডার নেই।</div>'; return; }
+            box.innerHTML = list.map(o => {
+                const byMe = o.cancelledBy === 'customer';
+                const reason = byMe ? String(o.cancelReason || '').replace(/^Customer:\s*/, '') : '';
+                return `
+                    <div class="order-mini-card">
+                        <div class="order-result-header">
+                            <div>
+                                <a class="ac-ord" href="#order-${o._id}"><strong>${o.orderNumber}</strong></a>
+                                <div style="font-size:12px; color:#999; margin-top:2px;">অর্ডার: ${fmtDate(o.createdAt)}${o.cancelledAt ? ' · ক্যান্সেল: ' + fmtDate(o.cancelledAt) : ''}</div>
+                            </div>
+                            <span class="order-status-badge status-cancelled">বাতিল</span>
+                        </div>
+                        <div style="margin:6px 0;">${orderThumbsHtml(o, 6)}</div>
+                        <div class="ac-cancel-meta">
+                            ${byMe ? 'আপনি ক্যান্সেল করেছেন' : 'Smart Tech Zone ক্যান্সেল করেছে'}${reason ? ' · কারণ: ' + escapeHtmlPm(reason) : ''}<br>
+                            মোট: ৳ ${formatPrice(o.total)}${o.walletUsed > 0 ? ` · Wallet-এ ৳ ${formatPrice(o.walletUsed)} ${o.walletRefunded ? 'ফেরত গেছে' : 'ফেরত প্রক্রিয়াধীন'}` : ''}
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // My Reviews — To Review (ডেলিভারড, এখনো রিভিউ না দেওয়া) আর Reviewed (আগে দেওয়া রিভিউ)
+        let reviewTab = 'pending';
+        function setReviewTab(t) { reviewTab = t; renderReviews(); }
+
+        function findOrderItemByProduct(productId) {
+            for (const o of lastOrders) {
+                for (let i = 0; i < o.items.length; i++) {
+                    if (String(o.items[i].product) === String(productId)) return { order: o, item: o.items[i], idx: i };
+                }
+            }
+            return null;
+        }
+
+        function renderReviews() {
+            const pending = [];
+            const seen = new Set();
+            lastOrders.forEach(o => {
+                if (o.orderStatus !== 'delivered') return;
+                o.items.forEach((item, idx) => {
+                    if (!item.product) return;
+                    const pid = String(item.product);
+                    if (myReviewedProductIds.has(pid) || seen.has(pid)) return;
+                    seen.add(pid);
+                    pending.push({ o, item, idx });
+                });
+            });
+            document.getElementById('reviewChips').innerHTML =
+                `<button type="button" class="ac-chip ${reviewTab === 'pending' ? 'active' : ''}" onclick="setReviewTab('pending')">To Review (${pending.length})</button>` +
+                `<button type="button" class="ac-chip ${reviewTab === 'done' ? 'active' : ''}" onclick="setReviewTab('done')">Reviewed (${myReviews.length})</button>`;
+            const box = document.getElementById('reviewsList');
+            if (reviewTab === 'pending') {
+                box.innerHTML = pending.length ? pending.map(p => `
+                    <div class="rv-row">
+                        <img src="${resolveImg(p.item.image)}" alt="" onerror="this.style.visibility='hidden'">
+                        <div class="rv-info">
+                            <div class="rv-name">${p.item.name}${p.item.variantLabel ? ` (${p.item.variantLabel})` : ''}</div>
+                            <div class="rv-meta">অর্ডার: ${p.o.orderNumber} · ডেলিভারড</div>
+                        </div>
+                        <button class="review-btn" style="margin:0;" onclick="openReviewModal('${p.o._id}', ${p.idx})">✍️ রিভিউ দিন</button>
+                    </div>`).join('') : `<div class="no-orders">রিভিউ দেওয়ার মতো কোনো প্রোডাক্ট বাকি নেই।</div>`;
+                return;
+            }
+            box.innerHTML = myReviews.length ? myReviews.map(r => {
+                const f = findOrderItemByProduct(r.productId);
+                const stars = '★'.repeat(r.rating) + `<span class="off">${'★'.repeat(5 - r.rating)}</span>`;
+                return `
+                    <div class="rv-row">
+                        ${f ? `<img src="${resolveImg(f.item.image)}" alt="" onerror="this.style.visibility='hidden'">` : ''}
+                        <div class="rv-info">
+                            <div class="rv-name">${f ? f.item.name : 'প্রোডাক্ট'}</div>
+                            <div class="rv-stars">${stars}</div>
+                            ${r.comment ? `<div class="rv-comment">${escapeHtmlPm(r.comment)}</div>` : ''}
+                            ${(r.images && r.images.length) ? `<div class="rv-imgs">${r.images.map(u => `<img src="${resolveImg(u)}" alt="">`).join('')}</div>` : ''}
+                            <div class="rv-meta">${fmtDate(r.createdAt)}</div>
+                        </div>
+                    </div>`;
+            }).join('') : `<div class="no-orders">আপনি এখনো কোনো রিভিউ দেননি।</div>`;
+        }
+
+        // অর্ডার ডেটা বদলালে সব ভিউ একসাথে আবার আঁকা
+        function refreshOrderViews() {
+            renderOrderList();
+            renderOverviewOrders();
+            renderCancellations();
+            renderReviews();
+            if (currentView === 'order') renderOrderDetail();
+        }
+
+        function renderOrders(orders) {
+            if (orders) lastOrders = orders;
+            refreshOrderViews();
+        }
+
+        // ===== STZ Wallet: ব্যালেন্স + লেনদেনের ইতিহাস =====
+        const walletReasonLabel = {
+            admin_credit: 'ক্রেডিট', admin_debit: 'ডেবিট',
+            order_payment: 'অর্ডারে ব্যবহার', order_refund: 'অর্ডার ক্যান্সেলে ফেরত'
+        };
+
+        async function loadWallet() {
+            const box = document.getElementById('walletTxList');
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/wallet`);
+                if (res.status === 401 || res.status === 403) { customerLogout(); return; }
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Wallet লোড করা যায়নি।');
+                document.getElementById('walletBalanceBig').textContent = formatPrice(data.balance);
+                document.getElementById('acWalletMini').textContent = data.balance > 0 ? '৳ ' + formatPrice(data.balance) : '';
+                if (!data.transactions.length) {
+                    box.innerHTML = '<div class="no-orders">এখনো কোনো লেনদেন নেই।</div>';
+                    return;
+                }
+                box.innerHTML = data.transactions.map(t => {
+                    const cr = t.type === 'credit';
+                    const sub = [t.orderNumber ? 'অর্ডার ' + t.orderNumber : '', t.note && !t.orderNumber ? escapeHtmlPm(t.note) : '', fmtDate(t.createdAt)].filter(Boolean).join(' · ');
+                    return `
+                        <div class="wtx-row">
+                            <div>
+                                <div class="wtx-title">${walletReasonLabel[t.reason] || (cr ? 'ক্রেডিট' : 'ডেবিট')}</div>
+                                <div class="wtx-sub">${sub}</div>
+                            </div>
+                            <div class="wtx-amt ${cr ? 'cr' : 'db'}">${cr ? '+' : '−'} ৳ ${formatPrice(t.amount)}<div class="wtx-bal">ব্যালেন্স ৳ ${formatPrice(t.balanceAfter)}</div></div>
+                        </div>`;
+                }).join('');
+            } catch (err) {
+                box.innerHTML = `<div class="no-orders">❌ ${err.message}</div>`;
+            }
         }
 
         // Daraz-স্টাইল ক্যান্সেল: শুধু Pending + COD অর্ডারে সার্ভার canCancel দেয় (order-cancel.js পপআপ খোলে)
@@ -840,9 +1423,13 @@
                 }
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'অর্ডার লোড করা যায়নি।');
+                ordersLoaded = true;
                 renderOrders(data);
             } catch (err) {
                 document.getElementById('ordersList').innerHTML = `<div class="no-orders">❌ ${err.message}</div>`;
+                document.getElementById('ovOrders').innerHTML = `<div class="no-orders">❌ ${err.message}</div>`;
+                ordersLoaded = true;
+                if (currentView === 'order') renderOrderDetail();
             }
         }
 
@@ -1106,6 +1693,7 @@
                 if (!res.ok) throw new Error(data.error || 'রিভিউ জমা দেওয়া যায়নি।');
 
                 myReviewedProductIds.add(String(activeReviewProductId));
+                myReviews.unshift({ productId: activeReviewProductId, rating: selectedReviewRating, comment, images: [], createdAt: new Date().toISOString() });
                 closeReviewModal();
                 renderOrders(lastOrders);
                 alert('✅ আপনার রিভিউ জমা হয়েছে। ধন্যবাদ!');
@@ -1128,6 +1716,7 @@
                 }
                 const data = await res.json();
                 if (!res.ok) return; // নন-ক্রিটিক্যাল — ব্যর্থ হলেও অর্ডার লিস্ট দেখাতে বাধা দেওয়া হচ্ছে না
+                myReviews = data;
                 myReviewedProductIds = new Set(data.map(r => String(r.productId)));
             } catch (err) {
                 // নন-ক্রিটিক্যাল — রিভিউ-স্ট্যাটাস লোড না হলেও বাটন দেখাবে, শুধু ভুলবশত আগে-রিভিউ-করা
@@ -1186,9 +1775,11 @@
             await loadOrders();
         }
 
+        applyRoute();
         loadProfile();
         loadPaymentMethods();
         loadWishlist();
+        loadWallet();
         loadOrdersAndReturns();
     </script>
 </body>

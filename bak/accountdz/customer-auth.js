@@ -1,0 +1,116 @@
+// ===== কাস্টমার লগইন সেশন — সব পেজে (নেভবার Login/অ্যাকাউন্ট লিংক দেখানো সহ) শেয়ার করা হয় =====
+const CUSTOMER_TOKEN_KEY = 'customerToken';
+const CUSTOMER_DATA_KEY = 'customerData';
+
+function getCustomerToken() {
+    try { return localStorage.getItem(CUSTOMER_TOKEN_KEY); } catch (e) { return null; }
+}
+
+function getCustomerData() {
+    try { return JSON.parse(localStorage.getItem(CUSTOMER_DATA_KEY) || 'null'); } catch (e) { return null; }
+}
+
+function setCustomerSession(token, customer) {
+    localStorage.setItem(CUSTOMER_TOKEN_KEY, token);
+    localStorage.setItem(CUSTOMER_DATA_KEY, JSON.stringify(customer));
+}
+
+async function customerLogout() {
+    // চ্যাট উইজেট থাকলে এই ব্রাউজারের পুশ সাবস্ক্রিপশন আগে বাদ দেওয়া (টোকেন থাকতে থাকতেই), ১.৫ সেকেন্ডের বেশি আটকাবে না
+    try {
+        if (typeof window.stzChatBeforeLogout === 'function') {
+            await Promise.race([window.stzChatBeforeLogout(), new Promise(function (r) { setTimeout(r, 1500); })]);
+        }
+    } catch (e) { /* লগআউট কখনো আটকাবে না */ }
+    localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+    localStorage.removeItem(CUSTOMER_DATA_KEY);
+    window.location.href = getAuthBasePath() + 'index.html';
+}
+
+// অথেনটিকেটেড API কল — টোকেন থাকলে Authorization হেডারে যোগ হয়
+async function customerAuthFetch(url, options = {}) {
+    const token = getCustomerToken();
+    const headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return fetch(url, Object.assign({}, options, { headers }));
+}
+
+// এই স্ক্রিপ্টটা root থেকে নাকি সাবফোল্ডার থেকে (../customer-auth.js) লোড হয়েছে সেটা বের করে —
+// chat-widget.js এর getBasePath() এর মতোই — যাতে লগইন আইকনের ছবির পাথ সব পেজেই ঠিক থাকে
+function getAuthBasePath() {
+    const scripts = document.getElementsByTagName('script');
+    for (let i = 0; i < scripts.length; i++) {
+        const src = scripts[i].getAttribute('src') || '';
+        if (src.indexOf('customer-auth.js') !== -1) {
+            return src.slice(0, src.lastIndexOf('customer-auth.js'));
+        }
+    }
+    return '';
+}
+
+// নেভবারের প্রোফাইল ড্রপডাউনের "Message Center" ক্লিক করলে পূর্ণাঙ্গ মেসেজ সেন্টার পেজে নিয়ে যায়
+// (আগে এখানে ছোট ফ্লোটিং চ্যাট উইজেট খুলতো — এখন থ্রেড-লিস্ট + কথোপকথন সহ আলাদা পেজ)
+function stzOpenMessageCenter() {
+    window.location.href = getAuthBasePath() + 'messages.html';
+}
+
+// নেভবারের প্রোফাইল ড্রপডাউনে থাকা "Message Center"-এর পাশে আনরিড থ্রেডের সংখ্যা দেখানো হয়
+// (থ্রেড-লেভেলে unreadByCustomer ফ্ল্যাগ গণনা করে — চ্যাট উইজেটের ডট-ব্যাজের মতোই সোর্স)
+async function loadNavUnreadCount() {
+    try {
+        if (!getCustomerToken() || typeof BACKEND_URL === 'undefined') return;
+        const res = await customerAuthFetch(`${BACKEND_URL}/api/chat/threads`);
+        if (!res.ok) return;
+        const threads = await res.json();
+        const count = Array.isArray(threads) ? threads.filter(t => t.unreadByCustomer).length : 0;
+        const badge = document.getElementById('stzNavUnreadBadge');
+        if (!badge) return;
+        if (count > 0) {
+            badge.textContent = `(${count})`;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    } catch (e) { /* নন-ক্রিটিক্যাল — ব্যাজ না দেখালেও সমস্যা নেই */ }
+}
+
+// প্রতিটা পেজের নেভবারে #navAuthArea থাকলে সেটা লগইন স্টেট অনুযায়ী আপডেট করে —
+// লগইন করা থাকলে হোভার করলে ড্রপডাউন (Sign Out, My Orders, Message Center, Payment),
+// না থাকলে একটা Login আইকন বাটন → login.html
+function renderNavAuth() {
+    const el = document.getElementById('navAuthArea');
+    if (!el) return;
+    const customer = getCustomerData();
+    const token = getCustomerToken();
+    const base = getAuthBasePath();
+    if (customer && token) {
+        const firstName = (customer.name || '').trim().split(' ')[0] || 'অ্যাকাউন্ট';
+        const initial = firstName.charAt(0).toUpperCase();
+        el.innerHTML = `
+            <div class="stz-profile-wrap">
+                <a href="${base}account.html#profileSection" class="stz-profile-trigger">${firstName} <span class="stz-caret">&#9662;</span></a>
+                <div class="stz-profile-dropdown">
+                    <a href="${base}account.html#profileSection" class="stz-profile-header">
+                        <div class="stz-profile-avatar">${initial}</div>
+                        <div class="stz-profile-welcome">স্বাগতম,<br><strong>${firstName}</strong></div>
+                    </a>
+                    <a href="javascript:void(0)" onclick="customerLogout()" class="stz-signout-link">Sign Out</a>
+                    <div class="stz-dropdown-divider"></div>
+                    <a href="${base}account.html#ordersSection" class="stz-dropdown-item">📦 My Orders</a>
+                    <a href="${base}account.html#wishlistSection" class="stz-dropdown-item">❤️ Wishlist</a>
+                    <a href="javascript:void(0)" onclick="stzOpenMessageCenter()" class="stz-dropdown-item">💬 Message Center <span id="stzNavUnreadBadge" class="stz-unread-badge" style="display:none;"></span></a>
+                    <a href="${base}account.html#paymentSection" class="stz-dropdown-item">💳 Payment</a>
+                </div>
+            </div>
+        `;
+        loadNavUnreadCount();
+    } else {
+        // আগে এখানে একটা glossy/3D "LOGIN" স্টক আইকন ছবি (images/login-icon.png) দেখানো হতো,
+        // দেখতে দাগযুক্ত/পুরনো ধাঁচের লাগছিল। এখন একটা ক্লিন, মডার্ন pill-বাটন — ইউজার-আইকন +
+        // "Login" টেক্সট, সাইটের accent কালার (#e74c3c) অনুযায়ী — বসানো হলো (ইমেজ ফাইলের বদলে
+        // ইনলাইন SVG, তাই যেকোনো সাইজে ঝকঝকে দেখাবে)।
+        el.innerHTML = `<a href="${base}login.html" class="stz-login-btn" title="লগইন করুন"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-login-icon-svg" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Login</span></a>`;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', renderNavAuth);
