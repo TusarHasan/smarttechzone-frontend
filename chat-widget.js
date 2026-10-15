@@ -253,11 +253,30 @@
                 <div class="stz-msg-time">${timeLabel(m.createdAt)}</div>
             `;
         }
+        if (m.type === 'product_card' && m.productCard) {
+            const c = m.productCard;
+            const img = resolveImgSrc(c.image);
+            return `
+                <div class="stz-oc-body">
+                    ${img ? `<img src="${img}" alt="" onerror="this.style.display='none'">` : ''}
+                    <div class="stz-oc-info">
+                        <div class="stz-oc-name">${escapeHtml(c.name)}</div>
+                        ${c.variantLabel ? `<div class="stz-oc-meta">${escapeHtml(c.variantLabel)}</div>` : ''}
+                        <div class="stz-oc-price">৳${fmtPrice(c.price)}${c.originalPrice > c.price ? ` <span style="color:#aaa;font-weight:400;text-decoration:line-through;">৳${fmtPrice(c.originalPrice)}</span>` : ''}</div>
+                    </div>
+                </div>
+                <div class="stz-oc-footer">
+                    <span class="stz-oc-order-no">প্রোডাক্ট</span>
+                    <a class="stz-oc-track-link" href="${escapeHtml(c.path || '#')}">প্রোডাক্ট দেখুন</a>
+                </div>
+                <div class="stz-msg-time">${timeLabel(m.createdAt)}</div>
+            `;
+        }
         const grid = window.STZChatImages ? STZChatImages.gridHtml(m.images, resolveImgSrc) : '';
         return `${grid}${m.text ? `<div>${escapeHtml(m.text)}</div>` : ''}<div class="stz-msg-time">${timeLabel(m.createdAt)}</div>`;
     }
     function messageBubbleClass(m) {
-        return `stz-msg ${m.senderType}${m.type === 'order_card' ? ' order-card-bubble' : ''}`;
+        return `stz-msg ${m.senderType}${(m.type === 'order_card' || m.type === 'product_card') ? ' order-card-bubble' : ''}`;
     }
 
     function renderMessages(messages) {
