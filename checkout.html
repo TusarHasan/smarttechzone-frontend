@@ -75,6 +75,11 @@
         .cb-btn.fb { background: #1877f2; color: #fff; }
         .cb-btn.pay { flex-basis: 100%; background: #fff; color: #e74c3c; border-color: #e74c3c; }
         .cb-btn.pay:hover { background: #fdf6f5; }
+        .cb-adv { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 10px 12px; margin: 10px 0 12px; font-size: 13.5px; color: #7c2d12; }
+        .cb-adv .row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; }
+        .cb-adv .row.mine { font-weight: bold; color: #c2410c; }
+        .cb-adv .num { margin-top: 6px; padding-top: 6px; border-top: 1px dashed #fdba74; }
+        .cb-box p.terms { font-size: 12.5px; color: #666; }
         .cb-close { display: block; width: 100%; margin-top: 8px; background: none; border: none; color: #888; font-size: 13px; padding: 8px; cursor: pointer; }
     </style>
     <script src="config.js"></script>
@@ -517,6 +522,7 @@
                         const blockErr = new Error(data.error || 'অর্ডার গ্রহণ করা যাচ্ছে না।');
                         blockErr.courierBlock = true;
                         blockErr.onlineOk = data.onlinePaymentAllowed !== false;
+                        blockErr.advance = Number(data.advanceCharge) || 0;
                         throw blockErr;
                     }
                     throw new Error(data.error || 'অর্ডার করা যায়নি।');
@@ -538,7 +544,7 @@
                     statusMsg.textContent = '';
                     btn.disabled = false;
                     updatePlaceOrderBtnText();
-                    openCourierBlock(err.onlineOk);
+                    openCourierBlock(err.onlineOk, err.advance);
                     return;
                 }
                 statusMsg.style.color = '#e74c3c';
@@ -552,12 +558,19 @@
     </script>
     <div class="cb-bg" id="courierBlockModal" role="dialog" aria-modal="true" aria-labelledby="cbTitle" onclick="if(event.target===this)closeCourierBlock()">
         <div class="cb-box">
-            <div class="cb-head"><div class="cb-icon" aria-hidden="true">!</div><h3 id="cbTitle">অর্ডার গ্রহণ করা যাচ্ছে না / Order cannot be accepted</h3></div>
-            <p>আপনার কুরিয়ার স্কোর আশানুরূপ না হওয়ায় আমরা আপনার অর্ডারটি গ্রহণ করতে পারছি না। দয়া করে মার্চেন্টের সাথে যোগাযোগ করুন। নিচের বাটন থেকে হটলাইনে কল, WhatsApp বা ফেসবুক পেজে মেসেজ দিতে পারেন। অর্ডারটি গ্রহণ করতে অগ্রিম পেমেন্ট প্রদান জরুরি হতে পারে।</p>
-            <p class="en">We are unable to accept your order as your courier success score is not up to the mark. Please contact the merchant using the buttons below (call, WhatsApp or Facebook page). Alternatively, paying in advance may be required to process your order.</p>
+            <div class="cb-head"><div class="cb-icon" aria-hidden="true">!</div><h3 id="cbTitle">অর্ডার সম্পন্ন করতে একটি ধাপ বাকি / One more step to place your order</h3></div>
+            <p>আপনার আগের ডেলিভারি রেকর্ডের কারণে এই মুহূর্তে ক্যাশ অন ডেলিভারিতে আপনার অর্ডারটি প্রসেস করা সম্ভব হচ্ছে না। তবে ডেলিভারি চার্জ অগ্রিম প্রদান করলে আপনি Smart Tech Zone এর একজন সম্মানিত কাস্টমার হিসেবে অর্ডার করার সুযোগ পাবেন।</p>
+            <div class="cb-adv">
+                <div class="row" id="cbRowOut"><span>অগ্রিম ডেলিভারি চার্জ, ঢাকার বাইরে / Outside Dhaka</span><span>১১৫ টাকা / BDT 115</span></div>
+                <div class="row" id="cbRowIn"><span>অগ্রিম ডেলিভারি চার্জ, ঢাকার মধ্যে / Inside Dhaka</span><span>৮০ টাকা / BDT 80</span></div>
+                <div class="num">01718381066 নম্বরে Send Money করে নিচের WhatsApp বাটনে ক্লিক করুন এবং পেমেন্টের স্ক্রিনশট পাঠান।</div>
+            </div>
+            <p class="terms">ডেলিভারি গ্রহণ করলে এই টাকা আপনার মোট বিল থেকে বাদ যাবে। ডেলিভারি গ্রহণ না করলে অগ্রিম চার্জ ফেরতযোগ্য নয়।</p>
+            <p class="en">Due to your previous delivery record, we are unable to process your Cash on Delivery order at the moment. However, by paying the delivery charge in advance, you can order as a valued Smart Tech Zone customer. Please Send Money to 01718381066, then click the WhatsApp button below and share the payment screenshot.</p>
+            <p class="en terms">If you accept the delivery, this amount is deducted from your total bill. If you refuse the delivery, the advance charge is non-refundable.</p>
             <div class="cb-contact">
+                <a class="cb-btn wa" id="cbWaBtn" href="https://wa.me/8801718381066" target="_blank" rel="noopener" style="flex-basis:100%;">WhatsApp এ স্ক্রিনশট পাঠান / Send screenshot on WhatsApp</a>
                 <a class="cb-btn call" href="tel:+8801718381066">কল করুন / Call 01718381066</a>
-                <a class="cb-btn wa" href="https://wa.me/8801718381066" target="_blank" rel="noopener">WhatsApp</a>
                 <a class="cb-btn fb" href="https://www.facebook.com/smarttechzonedhaka" target="_blank" rel="noopener">Facebook</a>
                 <button type="button" class="cb-btn pay" id="cbPayOnline" onclick="chooseOnlinePayment()" style="display:none;">অনলাইন পেমেন্টে অর্ডার করুন / Pay online instead</button>
             </div>
@@ -565,13 +578,33 @@
         </div>
     </div>
     <script>
-        // কুরিয়ার স্কোর গেট: সার্ভার COD অর্ডার আটকালে এই পপআপ দেখায় (স্কোরের সংখ্যা ক্রেতাকে বলা হয় না)
-        function openCourierBlock(onlineOk) {
+        // কুরিয়ার স্কোর গেট: সার্ভার COD অর্ডার আটকালে এই পপআপ দেখায়। ক্রেতাকে স্কোর বা "খারাপ" শব্দটা বলা হয় না,
+        // শুধু "আগের ডেলিভারি রেকর্ড" বলে অগ্রিম ডেলিভারি চার্জের পথ দেখানো হয়। চার্জ: ঢাকার বাইরে ১১৫, ঢাকার মধ্যে ৮০
+        // (backend/routes/orders.js এর ADVANCE_CHARGE_* এর সাথে মিলিয়ে রাখুন)।
+        function openCourierBlock(onlineOk, advance) {
             const payBtn = document.getElementById('cbPayOnline');
             const onlineOpt = document.getElementById('payOnline');
             payBtn.style.display = (onlineOk && onlineOpt) ? '' : 'none';
+
+            // কাস্টমারের নিজের এলাকার সারিটা হাইলাইট
+            const inside = Number(advance) === 80;
+            const rowIn = document.getElementById('cbRowIn');
+            const rowOut = document.getElementById('cbRowOut');
+            rowIn.classList.toggle('mine', !!advance && inside);
+            rowOut.classList.toggle('mine', !!advance && !inside);
+
+            // WhatsApp বাটন: নাম ও ফোন বসানো মেসেজ আগে থেকে লেখা থাকবে
+            const nm = (document.getElementById('custName').value || '').trim();
+            const ph = (document.getElementById('custPhone').value || '').trim();
+            const amt = advance ? advance : 0;
+            const msg = 'আসসালামু আলাইকুম, আমি ' + (nm || 'একজন কাস্টমার') + (ph ? ' (ফোন: ' + ph + ')' : '') + '। '
+                + (amt ? amt + ' টাকা ' : '') + 'অগ্রিম ডেলিভারি চার্জ Send Money করেছি। পেমেন্টের স্ক্রিনশট সংযুক্ত করছি। অনুগ্রহ করে আমার অর্ডারটি প্রসেস করুন।\n\n'
+                + 'Hello, I am ' + (nm || 'a customer') + (ph ? ' (phone: ' + ph + ')' : '') + '. I have sent the advance delivery charge'
+                + (amt ? ' (BDT ' + amt + ')' : '') + ' via Send Money. Attaching the payment screenshot. Please process my order.';
+            document.getElementById('cbWaBtn').href = 'https://wa.me/8801718381066?text=' + encodeURIComponent(msg);
+
             document.getElementById('courierBlockModal').classList.add('open');
-            const first = document.querySelector('#courierBlockModal .cb-btn.call');
+            const first = document.getElementById('cbWaBtn');
             if (first) first.focus();
         }
         function closeCourierBlock() {
