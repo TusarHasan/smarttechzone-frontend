@@ -286,6 +286,116 @@
             .account-card { padding: 16px; }
             .ac-table th, .ac-table td { padding: 12px 10px; }
         }
+
+        /* ===== My Reviews + Write Review (Daraz-স্টাইল, STZ রঙে) ===== */
+        .rvw-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--ac-line); margin: 0 -4px 14px; }
+        .rvw-tab { background: none; border: none; border-bottom: 3px solid transparent; padding: 12px 18px; font-size: 14.5px; font-weight: 600; color: #666; cursor: pointer; font-family: inherit; margin-bottom: -1px; }
+        .rvw-tab:hover { color: var(--ac-red); }
+        .rvw-tab.active { color: var(--ac-red); border-bottom-color: var(--ac-red); }
+        .rvw-card { border: 1px solid var(--ac-line); border-radius: 8px; background: #fff; margin-bottom: 12px; padding: 14px 18px 16px; }
+        .rvw-purch { font-size: 12.5px; color: #8a8a8a; margin-bottom: 10px; }
+        .rvw-body { display: grid; grid-template-columns: 1fr 250px; gap: 18px; align-items: stretch; }
+        .rvw-prod { display: flex; gap: 14px; min-width: 0; }
+        .rvw-prod img { width: 64px; height: 64px; object-fit: cover; border: 1px solid var(--ac-line); border-radius: 6px; background: #fff; flex-shrink: 0; }
+        .rvw-title { font-size: 14px; color: #222; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .rvw-var { font-size: 12px; color: #8a8a8a; margin-top: 3px; }
+        .rvw-stars { color: #f5a623; font-size: 16px; letter-spacing: 1px; margin-top: 6px; }
+        .rvw-stars .off { color: #ddd; }
+        .rvw-comment { font-size: 13px; color: #444; margin-top: 4px; white-space: pre-wrap; }
+        .rvw-imgs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+        .rvw-imgs img { width: 44px; height: 44px; }
+        .rvw-meta { font-size: 11.5px; color: #9a9a9a; margin-top: 6px; }
+        .rvw-side { border-left: 1px solid var(--ac-line); padding-left: 18px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+        .rvw-sold { font-size: 13px; color: #555; }
+        .rvw-sold b { color: #222; }
+        .rv-seller-off { color: #999 !important; font-weight: 600; }
+        .rvw-btn { background: #fff; border: 1px solid var(--ac-red); color: var(--ac-red); font-size: 12.5px; font-weight: 700; letter-spacing: .4px; padding: 8px 0; width: 150px; border-radius: 4px; cursor: pointer; font-family: inherit; text-transform: uppercase; }
+        .rvw-btn:hover { background: var(--ac-red); color: #fff; }
+        .rvw-btn.ghost { border-color: #bbb; color: #666; }
+        .rvw-btn.ghost:hover { background: #666; border-color: #666; color: #fff; }
+        .rvw-note { font-size: 11.5px; color: #999; }
+        .rvw-pager { display: flex; gap: 6px; margin-top: 16px; align-items: center; flex-wrap: wrap; }
+        .rvw-pg { min-width: 32px; height: 32px; border: 1px solid #ddd; background: #fff; border-radius: 4px; font-size: 13px; color: #555; cursor: pointer; font-family: inherit; padding: 0 8px; }
+        .rvw-pg:hover:not(:disabled) { border-color: var(--ac-teal); color: var(--ac-teal); }
+        .rvw-pg.active { background: var(--ac-teal); border-color: var(--ac-teal); color: #fff; font-weight: 700; }
+        .rvw-pg:disabled { background: #f3f3f3; color: #bbb; cursor: not-allowed; }
+        .rvw-dots { color: #999; padding: 0 2px; }
+
+        .wr-wrap { background: #fff; border: 1px solid var(--ac-line); border-radius: 8px; padding: 20px 22px; }
+        .wr-back { display: inline-block; font-size: 13px; color: var(--ac-teal); text-decoration: none; margin-bottom: 12px; cursor: pointer; }
+        .wr-back:hover { text-decoration: underline; }
+        .wr-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 0; }
+        .wr-left { padding-right: 26px; }
+        .wr-right { padding-left: 26px; border-left: 1px solid var(--ac-line); display: flex; flex-direction: column; }
+        .wr-meta { font-size: 13px; color: #777; margin-bottom: 10px; }
+        .wr-label { font-size: 13px; font-weight: 700; color: #333; margin: 14px 0 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .wr-label a { font-weight: 400; color: var(--ac-teal); cursor: pointer; font-size: 12.5px; }
+        .wr-prod { display: flex; gap: 12px; align-items: flex-start; }
+        .wr-prod img { width: 56px; height: 56px; object-fit: cover; border: 1px solid var(--ac-line); border-radius: 6px; flex-shrink: 0; background: #fff; }
+        .wr-prod .t { font-size: 14px; font-weight: 600; color: #222; line-height: 1.4; }
+        .wr-prod .v { font-size: 12px; color: #8a8a8a; margin-top: 2px; }
+        .wr-starsrow { display: flex; align-items: center; gap: 12px; margin: 10px 0 2px; }
+        .wr-stars { display: flex; gap: 4px; }
+        .wr-star { font-size: 34px; line-height: 1; color: #d9d9d9; cursor: pointer; transition: color .1s, transform .1s; user-select: none; }
+        .wr-star.on { color: #f5a623; }
+        .wr-star:hover { transform: scale(1.08); }
+        .wr-stars.sm .wr-star { font-size: 30px; }
+        .wr-stars.ro .wr-star { cursor: default; } .wr-stars.ro .wr-star:hover { transform: none; }
+        .wr-starlabel { font-size: 13px; color: #555; min-width: 70px; }
+        .wr-err { color: #e74c3c; font-size: 12.5px; margin-top: 4px; display: none; }
+        .wr-ta { width: 100%; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; padding: 10px 12px; font-size: 13.5px; font-family: inherit; min-height: 96px; resize: vertical; color: #333; }
+        .wr-ta:focus { outline: none; border-color: var(--ac-teal); box-shadow: 0 0 0 2px rgba(15,139,141,.12); }
+        .wr-ta:disabled { background: #f7f7f7; color: #777; }
+        .wr-tips { display: none; background: #f4fbfb; border: 1px solid #cfe9e9; border-radius: 6px; padding: 10px 14px; font-size: 12.5px; color: #35615f; margin-bottom: 8px; line-height: 1.6; }
+        .wr-tips.open { display: block; }
+        .wr-photos { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+        .wr-drop { width: 82px; height: 82px; border: 1.5px dashed #c9c9c9; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #9a9a9a; font-size: 11px; cursor: pointer; background: #fcfcfc; text-align: center; }
+        .wr-drop:hover, .wr-drop.over { border-color: var(--ac-teal); color: var(--ac-teal); background: #f4fbfb; }
+        .wr-drop svg { width: 24px; height: 24px; }
+        .wr-thumb { position: relative; width: 82px; height: 82px; border-radius: 6px; overflow: hidden; border: 1px solid var(--ac-line); }
+        .wr-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .wr-thumb button { position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border-radius: 50%; border: none; background: rgba(0,0,0,.65); color: #fff; font-size: 13px; line-height: 20px; padding: 0; cursor: pointer; }
+        .wr-imp { margin-top: 18px; font-size: 12.5px; color: #555; line-height: 1.7; }
+        .wr-imp b { color: #222; display: block; margin-bottom: 2px; }
+        .wr-imp ul { margin: 0; padding-left: 16px; }
+        .wr-sold { font-size: 13px; color: #555; margin-bottom: 4px; }
+        .wr-sold b { color: var(--ac-teal); }
+        .wr-faces { display: flex; align-items: center; gap: 14px; margin: 6px 0 4px; }
+        .wr-face { background: none; border: none; padding: 0; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; }
+        .wr-face svg { width: 40px; height: 40px; }
+        .wr-face .bg { fill: #fff; stroke: #b5b5b5; stroke-width: 2; transition: fill .15s, stroke .15s; }
+        .wr-face .ft { stroke: #b5b5b5; stroke-width: 2.4; fill: none; stroke-linecap: round; transition: stroke .15s; }
+        .wr-face .ey { fill: #b5b5b5; transition: fill .15s; }
+        .wr-face:hover .bg { stroke: #f5a623; }
+        .wr-face.on .bg { fill: #f8c53a; stroke: #f5a623; }
+        .wr-face.on .ft { stroke: #6b4a00; } .wr-face.on .ey { fill: #6b4a00; }
+        .wr-faces.ro .wr-face { cursor: default; }
+        .wr-facelabel { font-size: 13px; color: #555; }
+        .wr-bottom { margin-top: auto; padding-top: 18px; }
+        .wr-anon { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13.5px; color: #333; margin-bottom: 14px; flex-wrap: wrap; }
+        .wr-anon .sw { display: flex; align-items: center; gap: 8px; }
+        .wr-switch { position: relative; width: 46px; height: 26px; display: inline-block; }
+        .wr-switch input { opacity: 0; width: 0; height: 0; }
+        .wr-slider { position: absolute; inset: 0; background: #c9c9c9; border-radius: 26px; cursor: pointer; transition: background .2s; }
+        .wr-slider:before { content: ''; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+        .wr-switch input:checked + .wr-slider { background: var(--ac-teal); }
+        .wr-switch input:checked + .wr-slider:before { transform: translateX(20px); }
+        .wr-switch input:disabled + .wr-slider { opacity: .6; cursor: not-allowed; }
+        .wr-anonlabel { font-size: 12.5px; color: #888; min-width: 64px; }
+        .wr-anonlabel.on { color: var(--ac-teal); font-weight: 600; }
+        .wr-submit { width: 100%; background: var(--ac-red); color: #fff; border: none; border-radius: 4px; padding: 14px; font-size: 14px; font-weight: 700; letter-spacing: .5px; cursor: pointer; font-family: inherit; }
+        .wr-submit:hover { background: #c0392b; }
+        .wr-submit:disabled { opacity: .6; cursor: not-allowed; }
+        .wr-closed { background: #fff8ec; border: 1px solid #fde0b0; color: #8a5a00; border-radius: 6px; padding: 10px 12px; font-size: 12.5px; margin-bottom: 14px; }
+        .wr-toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: #222; color: #fff; padding: 11px 20px; border-radius: 24px; font-size: 13.5px; z-index: 5000; box-shadow: 0 6px 20px rgba(0,0,0,.25); max-width: 90vw; }
+        .wr-toast.err { background: #c0392b; }
+        @media (max-width: 860px) {
+            .rvw-body { grid-template-columns: 1fr; }
+            .rvw-side { border-left: none; border-top: 1px solid var(--ac-line); padding: 12px 0 0; flex-direction: row; align-items: center; justify-content: space-between; }
+            .wr-grid { grid-template-columns: 1fr; }
+            .wr-left { padding-right: 0; }
+            .wr-right { padding-left: 0; border-left: none; border-top: 1px solid var(--ac-line); margin-top: 18px; padding-top: 6px; }
+        }
     </style>
     <script src="config.js"></script>
     <script src="visitor-track.js" defer></script>
@@ -489,13 +599,18 @@
                 </div>
             </section>
 
-            <!-- ===== My Reviews ===== -->
+            <!-- ===== My Reviews (Daraz-স্টাইল: To Be Reviewed / History) ===== -->
             <section class="acv" id="view-reviews" style="display:none;">
-                <div class="account-card">
-                    <h3>My Reviews</h3>
-                    <div class="ac-chips" id="reviewChips"></div>
+                <div class="account-card" style="padding-bottom:14px;">
+                    <div class="rvw-tabs" id="reviewChips"></div>
                     <div id="reviewsList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+                    <div class="rvw-pager" id="reviewPager"></div>
                 </div>
+            </section>
+
+            <!-- ===== Write Review (REVIEW/EDIT চাপলে খোলে) ===== -->
+            <section class="acv" id="view-writereview" style="display:none;">
+                <div id="writeReviewRoot"><div class="loading-hint">লোড হচ্ছে...</div></div>
             </section>
 
             <!-- ===== My Wishlist & Followed Stores ===== -->
@@ -582,39 +697,6 @@
         </div>
     </div>
 
-    <!-- ===== রিভিউ লেখার মোডাল ===== -->
-    <div class="modal" id="reviewModal">
-        <div class="modal-content review-modal-content">
-            <h3>রিভিউ দিন</h3>
-            <p style="font-size:12px; color:#999; margin:0;">শুধুমাত্র যারা প্রোডাক্টটি অর্ডার করে ডেলিভারি পেয়েছেন, তারাই রিভিউ দিতে পারবেন।</p>
-
-            <div class="return-item-preview" id="reviewItemPreview"></div>
-
-            <label class="return-field-label">রেটিং</label>
-            <div class="star-rating-input" id="reviewStarInput">
-                <span data-value="1" onclick="setReviewRating(1)">★</span>
-                <span data-value="2" onclick="setReviewRating(2)">★</span>
-                <span data-value="3" onclick="setReviewRating(3)">★</span>
-                <span data-value="4" onclick="setReviewRating(4)">★</span>
-                <span data-value="5" onclick="setReviewRating(5)">★</span>
-            </div>
-
-            <label class="return-field-label">মতামত (ঐচ্ছিক)</label>
-            <textarea id="reviewComment" placeholder="প্রোডাক্ট নিয়ে আপনার মতামত লিখুন..."></textarea>
-
-            <label class="return-field-label">ছবি যোগ করুন (ঐচ্ছিক, সর্বোচ্চ ৪টি)</label>
-            <input type="file" id="reviewImages" accept="image/jpeg,image/png,image/webp" multiple>
-            <div class="rimg-previews" id="reviewImgPreviews"></div>
-
-            <div id="reviewModalMsg"></div>
-
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeReviewModal()">বাতিল</button>
-                <button class="save-btn" id="reviewSubmitBtn" onclick="submitReviewRequest()">রিভিউ জমা দিন</button>
-            </div>
-        </div>
-    </div>
-
     <div id="siteFooter"></div>
     <script src="footer.js"></script>
     <script src="search.js"></script>
@@ -634,28 +716,35 @@
             '': 'overview', '#account': 'overview',
             '#profileSection': 'profile', '#addressSection': 'address', '#paymentSection': 'payment', '#walletSection': 'wallet',
             '#ordersSection': 'orders', '#returnTrackingSection': 'returns', '#cancellationsSection': 'cancellations',
-            '#reviewsSection': 'reviews', '#wishlistSection': 'wishlist', '#sellSection': 'sell'
+            '#reviewsSection': 'reviews', '#myReviews': 'reviews', '#wishlistSection': 'wishlist', '#sellSection': 'sell'
         };
         const ROUTE_TITLES = {
             overview: 'Manage My Account', profile: 'My Profile', address: 'Address Book', payment: 'My Payment Options',
             wallet: 'STZ Wallet', orders: 'All Orders', order: 'Order Details', returns: 'My Returns',
-            cancellations: 'My Cancellations', reviews: 'My Reviews', wishlist: 'My Wishlist & Followed Stores', sell: 'Sell On STZ'
+            cancellations: 'My Cancellations', reviews: 'My Reviews', writereview: 'Write Review', wishlist: 'My Wishlist & Followed Stores', sell: 'Sell On STZ'
         };
         let currentView = 'overview';
         let currentOrderId = null;
+        let writeCtx = null; // { orderId, idx } — #write-review-<orderId>-<itemIndex>
 
         function applyRoute() {
             const h = window.location.hash || '';
             let view = ROUTES[h];
             currentOrderId = null;
+            writeCtx = null;
             if (!view && h.indexOf('#order-') === 0) { view = 'order'; currentOrderId = h.slice(7); }
+            if (!view && h.indexOf('#write-review-') === 0) {
+                const rest = h.slice(14); const cut = rest.lastIndexOf('-');
+                if (cut > 0) { view = 'writereview'; writeCtx = { orderId: rest.slice(0, cut), idx: Number(rest.slice(cut + 1)) }; }
+            }
             if (!view) view = 'overview';
             currentView = view;
             document.querySelectorAll('.acv').forEach(el => { el.style.display = el.id === 'view-' + view ? '' : 'none'; });
-            const navKey = view === 'order' ? 'orders' : view;
+            const navKey = view === 'order' ? 'orders' : (view === 'writereview' ? 'reviews' : view);
             document.querySelectorAll('.ac-menu [data-route]').forEach(a => a.classList.toggle('active', a.dataset.route === navKey));
             document.getElementById('acTitle').textContent = ROUTE_TITLES[view];
             if (view === 'order') renderOrderDetail();
+            if (view === 'writereview') renderWriteReview();
             window.scrollTo(0, 0);
         }
         window.addEventListener('hashchange', applyRoute);
@@ -710,21 +799,26 @@
             return !findActiveReturn(order._id, itemIndex);
         }
 
-        // ===== রিভিউ (Write a Review) — backend/models/Review.js তে (productId, customerId) ইউনিক,
-        // মানে একটা প্রোডাক্টে একবারই রিভিউ দেওয়া যায় (কোন অর্ডার থেকে দিয়েছেন সেটা গুরুত্বপূর্ণ না) —
-        // তাই myReviewedProductIds একটা productId-ভিত্তিক Set, itemIndex-ভিত্তিক না
-        let myReviewedProductIds = new Set();
+        // ===== রিভিউ (Write a Review) — রিভিউ এখন প্রতি-অর্ডার প্রতি-প্রোডাক্ট (backend/routes/reviews.js):
+        // একই প্রোডাক্ট আলাদা সময়ে আবার কিনলে নতুন অর্ডারে নতুন রিভিউ দেওয়া যায়, তাই রিভিউ চেনার চাবি
+        // "orderId:productId"। ডেলিভারির ১৪ দিনের মধ্যে নিজের রিভিউ এডিট করা যায় (সার্ভার editableUntil/canEdit পাঠায়)
+        let myReviewMap = new Map(); // "orderId:productId" -> review
         let myReviews = [];
-        let activeReviewProductId = null;
-        let activeReviewOrderId = null;
-        let activeReviewItemIndex = null;
-        let selectedReviewRating = 0;
+
+        function reviewKey(orderId, productId) { return String(orderId) + ':' + String(productId); }
+        function getMyReview(order, item) {
+            return (order && item && item.product) ? (myReviewMap.get(reviewKey(order._id, item.product)) || null) : null;
+        }
+        function reviewDaysLeft(r) {
+            if (!r || !r.canEdit || !r.editableUntil) return 0;
+            return Math.max(1, Math.ceil((new Date(r.editableUntil).getTime() - Date.now()) / 86400000));
+        }
 
         function isReviewEligible(order, item) {
             // অর্ডার ডেলিভারড থাকতে হবে, আইটেমের সাথে productId থাকতে হবে (পুরনো/ম্যানুয়াল অর্ডারে
-            // না-ও থাকতে পারে), আর একই প্রোডাক্টে আগে থেকে রিভিউ দেওয়া না থাকতে হবে
+            // না-ও থাকতে পারে), আর এই অর্ডারের এই প্রোডাক্টে আগে রিভিউ দেওয়া না থাকতে হবে
             if (order.orderStatus !== 'delivered' || !item.product) return false;
-            return !myReviewedProductIds.has(String(item.product));
+            return !myReviewMap.has(reviewKey(order._id, item.product));
         }
 
         // ===== ডেলিভারি এলাকা (ঢাকার ভেতরে/বাইরে) — checkout.html এর মতোই =====
@@ -1173,11 +1267,13 @@
                             return '';
                         })()}
                         ${(() => {
-                            if (item.product && myReviewedProductIds.has(String(item.product))) {
-                                return `<span class="reviewed-tag">⭐ রিভিউ দেওয়া হয়েছে</span>`;
+                            const myRv = getMyReview(order, item);
+                            if (myRv) {
+                                return `<span class="reviewed-tag">⭐ রিভিউ দেওয়া হয়েছে</span>` +
+                                    (myRv.canEdit ? `<button class="review-btn" style="margin-left:8px;" onclick="goWriteReview('${order._id}', ${idx})">✏️ রিভিউ এডিট (${reviewDaysLeft(myRv)} দিন বাকি)</button>` : '');
                             }
                             if (isReviewEligible(order, item)) {
-                                return `<button class="review-btn" onclick="openReviewModal('${order._id}', ${idx})">✍️ রিভিউ দিন</button>`;
+                                return `<button class="review-btn" onclick="goWriteReview('${order._id}', ${idx})">✍️ রিভিউ দিন</button>`;
                             }
                             return '';
                         })()}
@@ -1292,60 +1388,112 @@
             }).join('');
         }
 
-        // My Reviews — To Review (ডেলিভারড, এখনো রিভিউ না দেওয়া) আর Reviewed (আগে দেওয়া রিভিউ)
+        // ===== My Reviews (Daraz-স্টাইল) — To Be Reviewed / History, প্রতি পেজে ৫টা করে =====
+        const REVIEW_PAGE_SIZE = 5;
+        const SELLER_NAME = 'Smart Tech Zone'; // সিঙ্গেল-ভেন্ডর/ডিফল্ট মোডের নাম
+        // "Sold by ..." এর পরের অংশ। সার্ভার (/api/orders/my) প্রতিটা আইটেমে sellerName + sellerState পাঠায়:
+        //  • অ্যাক্টিভ সেলার → সেলারের নাম; সিঙ্গেল-ভেন্ডর/ডিফল্ট → Smart Tech Zone
+        //  • সেলার মুছে ফেলা/সাসপেন্ড/ডিলিস্টেড (inactive) → "Seller (Inactive)" — জায়গা কখনো ফাঁকা থাকে না
+        //  • পুরনো রেসপন্সে ফিল্ড না থাকলে ডিফল্ট Smart Tech Zone
+        function sellerHtml(item) {
+            const state = item && item.sellerState;
+            const name = item && item.sellerName ? String(item.sellerName).trim() : '';
+            if (state === 'inactive') return `<b class="rv-seller-off" title="This seller is no longer active">Seller (Inactive)</b>`;
+            return `<b>${escapeHtmlPm(name || SELLER_NAME)}</b>`;
+        }
         let reviewTab = 'pending';
+        const reviewPage = { pending: 1, done: 1 };
         function setReviewTab(t) { reviewTab = t; renderReviews(); }
+        function setReviewPage(n) { reviewPage[reviewTab] = n; renderReviews(); const t = document.getElementById('acTitle'); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        function goWriteReview(orderId, idx) { window.location.hash = `#write-review-${orderId}-${idx}`; }
+        function fmtLong(d) { return d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : ''; }
+        function starsHtmlRv(n) { return '★'.repeat(n) + `<span class="off">${'★'.repeat(5 - n)}</span>`; }
 
-        function findOrderItemByProduct(productId) {
-            for (const o of lastOrders) {
-                for (let i = 0; i < o.items.length; i++) {
-                    if (String(o.items[i].product) === String(productId)) return { order: o, item: o.items[i], idx: i };
-                }
-            }
-            return null;
+        function findOrderItemForReview(r) {
+            const o = lastOrders.find(x => String(x._id) === String(r.orderId));
+            if (!o) return null;
+            const idx = o.items.findIndex(i => String(i.product) === String(r.productId));
+            return idx < 0 ? null : { order: o, item: o.items[idx], idx };
         }
 
-        function renderReviews() {
-            const pending = [];
-            const seen = new Set();
+        function pendingReviewItems() {
+            const pending = []; const seen = new Set();
             lastOrders.forEach(o => {
                 if (o.orderStatus !== 'delivered') return;
                 o.items.forEach((item, idx) => {
                     if (!item.product) return;
-                    const pid = String(item.product);
-                    if (myReviewedProductIds.has(pid) || seen.has(pid)) return;
-                    seen.add(pid);
+                    const key = reviewKey(o._id, item.product);
+                    if (myReviewMap.has(key) || seen.has(key)) return;
+                    seen.add(key);
                     pending.push({ o, item, idx });
                 });
             });
+            return pending;
+        }
+
+        function pagerHtml(total, page) {
+            const pages = Math.max(1, Math.ceil(total / REVIEW_PAGE_SIZE));
+            if (total <= REVIEW_PAGE_SIZE) return '';
+            const nums = [];
+            for (let i = 1; i <= pages; i++) { if (i === 1 || i === pages || Math.abs(i - page) <= 1) nums.push(i); else if (nums[nums.length - 1] !== '…') nums.push('…'); }
+            return `<button class="rvw-pg" ${page <= 1 ? 'disabled' : ''} onclick="setReviewPage(${page - 1})" aria-label="Previous">&lsaquo;</button>` +
+                nums.map(n => n === '…' ? `<span class="rvw-dots">…</span>` : `<button class="rvw-pg ${n === page ? 'active' : ''}" onclick="setReviewPage(${n})">${n}</button>`).join('') +
+                `<button class="rvw-pg" ${page >= pages ? 'disabled' : ''} onclick="setReviewPage(${page + 1})" aria-label="Next">&rsaquo;</button>`;
+        }
+
+        function renderReviews() {
+            const pending = pendingReviewItems();
             document.getElementById('reviewChips').innerHTML =
-                `<button type="button" class="ac-chip ${reviewTab === 'pending' ? 'active' : ''}" onclick="setReviewTab('pending')">To Review (${pending.length})</button>` +
-                `<button type="button" class="ac-chip ${reviewTab === 'done' ? 'active' : ''}" onclick="setReviewTab('done')">Reviewed (${myReviews.length})</button>`;
+                `<button type="button" class="rvw-tab ${reviewTab === 'pending' ? 'active' : ''}" onclick="setReviewTab('pending')">To Be Reviewed (${pending.length})</button>` +
+                `<button type="button" class="rvw-tab ${reviewTab === 'done' ? 'active' : ''}" onclick="setReviewTab('done')">History (${myReviews.length})</button>`;
             const box = document.getElementById('reviewsList');
+            const rows = reviewTab === 'pending' ? pending : myReviews;
+            const pages = Math.max(1, Math.ceil(rows.length / REVIEW_PAGE_SIZE));
+            if (reviewPage[reviewTab] > pages) reviewPage[reviewTab] = pages;
+            const page = reviewPage[reviewTab];
+            const slice = rows.slice((page - 1) * REVIEW_PAGE_SIZE, page * REVIEW_PAGE_SIZE);
+            document.getElementById('reviewPager').innerHTML = pagerHtml(rows.length, page);
+
             if (reviewTab === 'pending') {
-                box.innerHTML = pending.length ? pending.map(p => `
-                    <div class="rv-row">
-                        <img src="${resolveImg(p.item.image)}" alt="" onerror="this.style.visibility='hidden'">
-                        <div class="rv-info">
-                            <div class="rv-name">${p.item.name}${p.item.variantLabel ? ` (${p.item.variantLabel})` : ''}</div>
-                            <div class="rv-meta">অর্ডার: ${p.o.orderNumber} · ডেলিভারড</div>
+                box.innerHTML = slice.length ? slice.map(p => `
+                    <div class="rvw-card">
+                        <div class="rvw-purch">Purchased on ${fmtLong(p.o.createdAt)}</div>
+                        <div class="rvw-body">
+                            <div class="rvw-prod">
+                                <img src="${resolveImg(p.item.image)}" alt="" onerror="this.style.visibility='hidden'">
+                                <div style="min-width:0;"><div class="rvw-title">${escapeHtmlPm(p.item.name)}</div>${p.item.variantLabel ? `<div class="rvw-var">${escapeHtmlPm(p.item.variantLabel)}</div>` : ''}<div class="rvw-meta">Order: ${escapeHtmlPm(p.o.orderNumber)}</div></div>
+                            </div>
+                            <div class="rvw-side">
+                                <div class="rvw-sold">Sold by ${sellerHtml(p.item)}</div>
+                                <button class="rvw-btn" onclick="goWriteReview('${p.o._id}', ${p.idx})">Review</button>
+                            </div>
                         </div>
-                        <button class="review-btn" style="margin:0;" onclick="openReviewModal('${p.o._id}', ${p.idx})">✍️ রিভিউ দিন</button>
                     </div>`).join('') : `<div class="no-orders">রিভিউ দেওয়ার মতো কোনো প্রোডাক্ট বাকি নেই।</div>`;
                 return;
             }
-            box.innerHTML = myReviews.length ? myReviews.map(r => {
-                const f = findOrderItemByProduct(r.productId);
-                const stars = '★'.repeat(r.rating) + `<span class="off">${'★'.repeat(5 - r.rating)}</span>`;
+            box.innerHTML = slice.length ? slice.map(r => {
+                const f = findOrderItemForReview(r);
+                const orderNo = r.orderNumber || (f && f.order.orderNumber) || '';
                 return `
-                    <div class="rv-row">
-                        ${f ? `<img src="${resolveImg(f.item.image)}" alt="" onerror="this.style.visibility='hidden'">` : ''}
-                        <div class="rv-info">
-                            <div class="rv-name">${f ? f.item.name : 'প্রোডাক্ট'}</div>
-                            <div class="rv-stars">${stars}</div>
-                            ${r.comment ? `<div class="rv-comment">${escapeHtmlPm(r.comment)}</div>` : ''}
-                            ${(r.images && r.images.length) ? `<div class="rv-imgs">${r.images.map(u => `<img src="${resolveImg(u)}" alt="">`).join('')}</div>` : ''}
-                            <div class="rv-meta">${fmtDate(r.createdAt)}</div>
+                    <div class="rvw-card">
+                        <div class="rvw-purch">${f ? `Purchased on ${fmtLong(f.order.createdAt)}` : `Reviewed on ${fmtLong(r.createdAt)}`}</div>
+                        <div class="rvw-body">
+                            <div class="rvw-prod">
+                                ${f ? `<img src="${resolveImg(f.item.image)}" alt="" onerror="this.style.visibility='hidden'">` : ''}
+                                <div style="min-width:0;">
+                                    <div class="rvw-title">${f ? escapeHtmlPm(f.item.name) : 'প্রোডাক্ট'}</div>
+                                    ${(f && f.item.variantLabel) ? `<div class="rvw-var">${escapeHtmlPm(f.item.variantLabel)}</div>` : ''}
+                                    <div class="rvw-stars">${starsHtmlRv(r.rating)}</div>
+                                    ${r.comment ? `<div class="rvw-comment">${escapeHtmlPm(r.comment)}</div>` : ''}
+                                    ${(r.images && r.images.length) ? `<div class="rvw-imgs">${r.images.map(u => `<img src="${resolveImg(u)}" alt="">`).join('')}</div>` : ''}
+                                    <div class="rvw-meta">${orderNo ? `Order: ${escapeHtmlPm(orderNo)} · ` : ''}Reviewed on ${fmtLong(r.createdAt)}${r.editedAt ? ' · Edited' : ''}${r.anonymous ? ' · Anonymous' : ''}</div>
+                                </div>
+                            </div>
+                            <div class="rvw-side">
+                                <div class="rvw-sold">Sold by ${sellerHtml(f && f.item)}</div>
+                                ${f ? `<button class="rvw-btn ${r.canEdit ? '' : 'ghost'}" onclick="goWriteReview('${f.order._id}', ${f.idx})">${r.canEdit ? 'Edit Review' : 'View'}</button>` : ''}
+                                <div class="rvw-note">${r.canEdit ? `Can be edited for ${reviewDaysLeft(r)} more day${reviewDaysLeft(r) > 1 ? 's' : ''}` : 'Edit window (14 days after delivery) is over'}</div>
+                            </div>
                         </div>
                     </div>`;
             }).join('') : `<div class="no-orders">আপনি এখনো কোনো রিভিউ দেননি।</div>`;
@@ -1358,6 +1506,7 @@
             renderCancellations();
             renderReviews();
             if (currentView === 'order') renderOrderDetail();
+            if (currentView === 'writereview' && !(wr && document.getElementById('wrSubmit') && document.getElementById('wrSubmit').disabled)) { const keep = wr; if (!keep || !document.getElementById('wrComment')) renderWriteReview(); }
         }
 
         function renderOrders(orders) {
@@ -1575,83 +1724,186 @@
         }
 
         // ===== রিভিউ মোডাল খোলা/বন্ধ করা =====
-        function openReviewModal(orderId, itemIndex) {
-            const order = lastOrders.find(o => o._id === orderId);
-            if (!order) return;
-            const item = order.items[itemIndex];
-            if (!item || !item.product) return;
+        // ===== Write Review পেজ (Daraz-স্টাইল দুই কলাম): বাঁয়ে প্রোডাক্ট রিভিউ, ডানে সেলার ও ডেলিভারি ফিডব্যাক =====
+        const STAR_LABELS = { 1: 'Poor', 2: 'Not good', 3: 'Neutral', 4: 'Good', 5: 'Delightful' };
+        const FACE_LABELS = { negative: 'Negative', neutral: 'Neutral', positive: 'Positive' };
+        const WR_MAX_IMAGES = 6;
+        const WR_MAX_BYTES = 5 * 1024 * 1024;
+        let activeReviewProductId = null;
+        let wr = null; // ফর্মের বর্তমান অবস্থা
 
-            activeReviewOrderId = orderId;
-            activeReviewItemIndex = itemIndex;
-            activeReviewProductId = item.product;
+        const FACE_SVG = {
+            negative: '<svg viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="17"/><circle class="ey" cx="14" cy="16" r="2"/><circle class="ey" cx="26" cy="16" r="2"/><path class="ft" d="M13 28 Q20 21 27 28"/></svg>',
+            neutral: '<svg viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="17"/><circle class="ey" cx="14" cy="16" r="2"/><circle class="ey" cx="26" cy="16" r="2"/><path class="ft" d="M13 26 H27"/></svg>',
+            positive: '<svg viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="17"/><circle class="ey" cx="14" cy="16" r="2"/><circle class="ey" cx="26" cy="16" r="2"/><path class="ft" d="M12 23 Q20 31 28 23"/></svg>'
+        };
+        const CAMERA_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
 
-            document.getElementById('reviewItemPreview').innerHTML = `
-                <img src="${resolveImg(item.image)}" alt="${item.name}">
-                <div>
-                    <div class="rip-name">${item.name}${item.variantLabel ? ` (${item.variantLabel})` : ''}</div>
-                    <div class="rip-meta">অর্ডার: ${order.orderNumber}</div>
-                </div>
-            `;
-
-            document.getElementById('reviewComment').value = '';
-            document.getElementById('reviewImages').value = '';
-            document.getElementById('reviewImgPreviews').innerHTML = '';
-            document.getElementById('reviewModalMsg').textContent = '';
-            setReviewRating(0);
-
-            document.getElementById('reviewModal').classList.add('open');
+        function showToast(msg, isErr) {
+            const old = document.getElementById('wrToast'); if (old) old.remove();
+            const t = document.createElement('div'); t.id = 'wrToast'; t.className = 'wr-toast' + (isErr ? ' err' : ''); t.textContent = msg;
+            document.body.appendChild(t); setTimeout(() => { if (t.parentNode) t.remove(); }, 3600);
         }
 
-        function closeReviewModal() {
-            document.getElementById('reviewModal').classList.remove('open');
+        function wrStarsHtml(id, small) {
+            return `<div class="wr-stars ${small ? 'sm' : ''}" id="${id}">${[1, 2, 3, 4, 5].map(n => `<span class="wr-star" data-v="${n}" role="button" aria-label="${n} star">★</span>`).join('')}</div>`;
         }
 
-        // স্টারে ক্লিক করলে সিলেক্টেড রেটিং পর্যন্ত সব স্টার ভরাট (filled) দেখানো হয়
-        function setReviewRating(n) {
-            selectedReviewRating = n;
-            document.querySelectorAll('#reviewStarInput span').forEach(span => {
-                span.classList.toggle('filled', Number(span.dataset.value) <= n);
-            });
-        }
-
-        // returnImages এর ভ্যালিডেশন লজিকের সাথে হুবহু মিল রেখে (সর্বোচ্চ ৪টা, jpg/png/webp, ৫MB/ছবি)
-        document.getElementById('reviewImages').addEventListener('change', function () {
-            const allowed = ['image/jpeg', 'image/png', 'image/webp'];
-            const maxSize = 5 * 1024 * 1024;
-            const files = Array.from(this.files || []);
-            const preview = document.getElementById('reviewImgPreviews');
-            const msg = document.getElementById('reviewModalMsg');
-            msg.textContent = '';
-            preview.innerHTML = '';
-
-            if (files.length > 4) {
-                msg.style.color = '#e74c3c';
-                msg.textContent = 'সর্বোচ্চ ৪টি ছবি আপলোড করা যাবে।';
-                this.value = '';
+        function renderWriteReview() {
+            const root = document.getElementById('writeReviewRoot');
+            const backLink = `<a class="wr-back" href="#reviewsSection">&larr; Back to My Reviews</a>`;
+            const order = writeCtx && lastOrders.find(o => String(o._id) === String(writeCtx.orderId));
+            const item = order && order.items[writeCtx.idx];
+            if (!lastOrders.length || !order || !item || !item.product) {
+                // অর্ডার লিস্ট এখনো লোড হয়নি হলে loadOrders শেষে refreshOrderViews আবার এই ভিউ আঁকবে
+                root.innerHTML = `<div class="wr-wrap">${backLink}<div class="no-orders">${lastOrders.length ? 'এই অর্ডার-আইটেমটি পাওয়া যায়নি।' : 'লোড হচ্ছে...'}</div></div>`;
                 return;
             }
-            for (const f of files) {
-                if (!allowed.includes(f.type)) {
-                    msg.style.color = '#e74c3c';
-                    msg.textContent = 'শুধু jpg, png, webp ছবি আপলোড করা যাবে।';
-                    this.value = '';
-                    preview.innerHTML = '';
-                    return;
-                }
-                if (f.size > maxSize) {
-                    msg.style.color = '#e74c3c';
-                    msg.textContent = 'প্রতিটি ছবি সর্বোচ্চ ৫MB হতে পারবে।';
-                    this.value = '';
-                    preview.innerHTML = '';
-                    return;
-                }
+            const existing = getMyReview(order, item);
+            if (order.orderStatus !== 'delivered' && !existing) {
+                root.innerHTML = `<div class="wr-wrap">${backLink}<div class="no-orders">শুধু ডেলিভারি সম্পন্ন অর্ডারের প্রোডাক্টে রিভিউ দেওয়া যায়।</div></div>`;
+                return;
             }
-            files.forEach(f => {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(f);
-                preview.appendChild(img);
+            const readOnly = !!(existing && !existing.canEdit);
+            activeReviewProductId = item.product;
+            wr = {
+                orderId: order._id, reviewId: existing ? existing._id : null, readOnly,
+                rating: existing ? existing.rating : 0,
+                sellerRating: existing ? (existing.sellerRating || '') : '',
+                deliveryRating: existing ? (existing.deliveryRating || 0) : 0,
+                anonymous: existing ? !!existing.anonymous : true, // Daraz-এর মতো ডিফল্ট: বেনামী
+                photos: ((existing && existing.images) || []).map(u => ({ url: u }))
+            };
+            const custName = (me && me.name) || 'Customer';
+            root.innerHTML = `
+                <div class="wr-wrap">
+                    ${backLink}
+                    <div class="wr-grid">
+                        <div class="wr-left">
+                            <div class="wr-meta">${order.deliveredAt ? `Delivered on ${fmtLong(order.deliveredAt)}` : 'Delivered'} &nbsp;·&nbsp; Order: ${escapeHtmlPm(order.orderNumber)}</div>
+                            ${readOnly ? `<div class="wr-closed">The 14-day edit window after delivery is over, so this review can only be viewed now.</div>` : (existing ? `<div class="wr-closed" style="background:#f4fbfb;border-color:#cfe9e9;color:#35615f;">You can edit this review for ${reviewDaysLeft(existing)} more day${reviewDaysLeft(existing) > 1 ? 's' : ''} after delivery.</div>` : '')}
+                            <div class="wr-label" style="margin-top:4px;">Rate and review purchased product:</div>
+                            <div class="wr-prod">
+                                <img src="${resolveImg(item.image)}" alt="" onerror="this.style.visibility='hidden'">
+                                <div><div class="t">${escapeHtmlPm(item.name)}</div>${item.variantLabel ? `<div class="v">${escapeHtmlPm(item.variantLabel)}</div>` : ''}</div>
+                            </div>
+                            <div class="wr-starsrow">${wrStarsHtml('wrStars')}<span class="wr-starlabel" id="wrStarLabel"></span></div>
+                            <div class="wr-err" id="wrRatingErr">Please rate the product (tap a star).</div>
+                            <div class="wr-label"><span>Review detail</span>${readOnly ? '' : `<a onclick="document.getElementById('wrTips').classList.toggle('open')">How to write a good review</a>`}</div>
+                            <div class="wr-tips" id="wrTips">Describe what you liked or disliked, how it fits your phone model, and how it works after use. Mention the quality, packaging and delivery. Photos of the real product help other buyers a lot.</div>
+                            <textarea class="wr-ta" id="wrComment" maxlength="2000" placeholder="What do you think of this product?" ${readOnly ? 'disabled' : ''}>${escapeHtmlPm((existing && existing.comment) || '')}</textarea>
+                            <div class="wr-photos" id="wrPhotos"></div>
+                            <input type="file" id="wrFile" accept="image/jpeg,image/png,image/webp" multiple style="display:none;">
+                            <div class="wr-imp">
+                                <b>Important:</b>
+                                <ul>
+                                    <li>Maximum 6 images can be uploaded (jpg, png or webp)</li>
+                                    <li>Each image can be maximum 5MB</li>
+                                    <li>Reviews and images must be about this product and your real experience. Abusive, spam or promotional content may be removed by our team</li>
+                                    <li>You can edit your review within 14 days after delivery</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="wr-right">
+                            <div class="wr-sold">Sold by ${sellerHtml(item)}</div>
+                            <div class="wr-label" style="margin-top:6px;">Rate and review your seller:</div>
+                            <div class="wr-faces ${readOnly ? 'ro' : ''}" id="wrFaces">
+                                ${['negative', 'neutral', 'positive'].map(k => `<button type="button" class="wr-face" data-v="${k}" aria-label="${FACE_LABELS[k]}" ${readOnly ? 'tabindex="-1"' : ''}>${FACE_SVG[k]}</button>`).join('')}
+                                <span class="wr-facelabel" id="wrFaceLabel"></span>
+                            </div>
+                            <div class="wr-label">Review detail</div>
+                            <textarea class="wr-ta" id="wrSellerComment" maxlength="1000" placeholder="How is your overall experience with the seller ?" ${readOnly ? 'disabled' : ''}>${escapeHtmlPm((existing && existing.sellerComment) || '')}</textarea>
+                            <div class="wr-label" style="margin-top:22px;">Rate and review delivery service:</div>
+                            <div class="wr-starsrow" style="margin-top:4px;">${wrStarsHtml('wrDelStars', true)}<span class="wr-starlabel" id="wrDelLabel"></span></div>
+                            <textarea class="wr-ta" id="wrDelComment" maxlength="1000" style="margin-top:8px;" placeholder="How is your overall delivery experience ?" ${readOnly ? 'disabled' : ''}>${escapeHtmlPm((existing && existing.deliveryComment) || '')}</textarea>
+                            ${readOnly ? '' : `
+                            <div class="wr-bottom">
+                                <div class="wr-anon">
+                                    <span>Review as ${escapeHtmlPm(custName)}</span>
+                                    <span class="sw"><label class="wr-switch"><input type="checkbox" id="wrAnon" ${wr.anonymous ? 'checked' : ''}><span class="wr-slider"></span></label><span class="wr-anonlabel" id="wrAnonLabel"></span></span>
+                                </div>
+                                <div class="wr-err" id="wrSubmitErr" style="margin:0 0 8px;"></div>
+                                <button type="button" class="wr-submit" id="wrSubmit">${existing ? 'SAVE CHANGES' : 'SUBMIT'}</button>
+                            </div>`}
+                        </div>
+                    </div>
+                </div>`;
+            wrBind(); wrPaintAll();
+        }
+
+        function wrPaintStars(boxId, labelId, val, hover) {
+            const v = hover || val;
+            document.querySelectorAll(`#${boxId} .wr-star`).forEach(s => s.classList.toggle('on', Number(s.dataset.v) <= v));
+            const lab = document.getElementById(labelId); if (lab) lab.textContent = v ? STAR_LABELS[v] : '';
+        }
+        function wrPaintFaces() {
+            document.querySelectorAll('#wrFaces .wr-face').forEach(f => f.classList.toggle('on', f.dataset.v === wr.sellerRating));
+            document.getElementById('wrFaceLabel').textContent = wr.sellerRating ? FACE_LABELS[wr.sellerRating] : '';
+        }
+        function wrPaintAnon() {
+            const l = document.getElementById('wrAnonLabel'); if (!l) return;
+            l.textContent = wr.anonymous ? 'Anonymous' : 'Public'; l.classList.toggle('on', wr.anonymous);
+        }
+        function wrPaintPhotos() {
+            const box = document.getElementById('wrPhotos');
+            const thumbs = wr.photos.map((p, i) => `<div class="wr-thumb"><img src="${p.file ? p.preview : resolveImg(p.url)}" alt="">${wr.readOnly ? '' : `<button type="button" aria-label="Remove" onclick="wrRemovePhoto(${i})">&times;</button>`}</div>`).join('');
+            const add = (!wr.readOnly && wr.photos.length < WR_MAX_IMAGES) ? `<div class="wr-drop" id="wrDrop" role="button" tabindex="0">${CAMERA_SVG}<span>Upload Photo<br>(${wr.photos.length}/${WR_MAX_IMAGES})</span></div>` : '';
+            box.innerHTML = thumbs + add;
+            const drop = document.getElementById('wrDrop');
+            if (drop) {
+                drop.onclick = () => document.getElementById('wrFile').click();
+                drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('wrFile').click(); } };
+            }
+            // থাম্বনেইল এলাকা জুড়েও ড্র্যাগ-ড্রপ চলবে
+            box.ondragover = e => { if (wr.readOnly) return; e.preventDefault(); if (drop) drop.classList.add('over'); };
+            box.ondragleave = () => { if (drop) drop.classList.remove('over'); };
+            box.ondrop = e => { if (wr.readOnly) return; e.preventDefault(); if (drop) drop.classList.remove('over'); wrAddFiles(e.dataTransfer.files); };
+        }
+        function wrPaintAll() {
+            wrPaintStars('wrStars', 'wrStarLabel', wr.rating, 0);
+            wrPaintStars('wrDelStars', 'wrDelLabel', wr.deliveryRating, 0);
+            wrPaintFaces(); wrPaintAnon(); wrPaintPhotos();
+            document.querySelectorAll('#wrStars, #wrDelStars').forEach(b => b.classList.toggle('ro', wr.readOnly));
+        }
+
+        function wrBind() {
+            if (wr.readOnly) return;
+            [['wrStars', 'wrStarLabel', 'rating'], ['wrDelStars', 'wrDelLabel', 'deliveryRating']].forEach(([boxId, labId, key]) => {
+                const box = document.getElementById(boxId);
+                box.querySelectorAll('.wr-star').forEach(s => {
+                    s.addEventListener('mouseenter', () => wrPaintStars(boxId, labId, wr[key], Number(s.dataset.v)));
+                    s.addEventListener('click', () => {
+                        wr[key] = (wr[key] === Number(s.dataset.v) && key === 'deliveryRating') ? 0 : Number(s.dataset.v); // ডেলিভারি রেটিং ঐচ্ছিক — আবার চাপলে সরে যায়
+                        wrPaintStars(boxId, labId, wr[key], 0);
+                        if (key === 'rating') document.getElementById('wrRatingErr').style.display = 'none';
+                    });
+                });
+                box.addEventListener('mouseleave', () => wrPaintStars(boxId, labId, wr[key], 0));
             });
-        });
+            document.querySelectorAll('#wrFaces .wr-face').forEach(f => f.addEventListener('click', () => {
+                wr.sellerRating = (wr.sellerRating === f.dataset.v) ? '' : f.dataset.v; wrPaintFaces();
+            }));
+            document.getElementById('wrAnon').addEventListener('change', e => { wr.anonymous = e.target.checked; wrPaintAnon(); });
+            document.getElementById('wrFile').addEventListener('change', e => { wrAddFiles(e.target.files); e.target.value = ''; });
+            document.getElementById('wrSubmit').addEventListener('click', submitWriteReview);
+        }
+
+        function wrAddFiles(fileList) {
+            const files = Array.from(fileList || []);
+            let rejected = '';
+            files.forEach(f => {
+                if (wr.photos.length >= WR_MAX_IMAGES) { rejected = `Maximum ${WR_MAX_IMAGES} images allowed.`; return; }
+                if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { rejected = `${f.name}: only jpg, png or webp images are allowed.`; return; }
+                if (f.size > WR_MAX_BYTES) { rejected = `${f.name}: image is larger than 5MB.`; return; }
+                wr.photos.push({ file: f, preview: URL.createObjectURL(f) });
+            });
+            if (rejected) showToast(rejected, true);
+            wrPaintPhotos();
+        }
+        function wrRemovePhoto(i) {
+            const p = wr.photos[i]; if (p && p.preview) URL.revokeObjectURL(p.preview);
+            wr.photos.splice(i, 1); wrPaintPhotos();
+        }
 
         // uploadReturnImages() এর মতোই — customerAuthFetch() এর ডিফল্ট JSON Content-Type এড়াতে
         // raw fetch() ব্যবহার করা হলো, শুধু Authorization হেডার দিয়ে
@@ -1669,39 +1921,43 @@
             return data.urls || [];
         }
 
-        async function submitReviewRequest() {
-            const comment = document.getElementById('reviewComment').value.trim();
-            const files = Array.from(document.getElementById('reviewImages').files || []);
-            const msg = document.getElementById('reviewModalMsg');
-            const btn = document.getElementById('reviewSubmitBtn');
-
-            msg.textContent = '';
-            if (!selectedReviewRating) {
-                msg.style.color = '#e74c3c';
-                msg.textContent = 'রেটিং (স্টার) দিন।';
+        async function submitWriteReview() {
+            if (!wr || wr.readOnly) return;
+            const btn = document.getElementById('wrSubmit');
+            const errBox = document.getElementById('wrSubmitErr'); errBox.style.display = 'none';
+            if (!wr.rating) {
+                const e = document.getElementById('wrRatingErr'); e.style.display = 'block';
+                document.getElementById('wrStars').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
-
-            btn.disabled = true;
+            const isEdit = !!wr.reviewId;
+            const label = btn.textContent; btn.disabled = true; btn.textContent = 'PLEASE WAIT...';
             try {
-                const images = await uploadReviewImages(files);
-                const res = await customerAuthFetch(`${API_BASE}/api/products/${activeReviewProductId}/reviews`, {
-                    method: 'POST',
-                    body: JSON.stringify({ rating: selectedReviewRating, comment, images })
-                });
+                const newFiles = wr.photos.filter(p => p.file).map(p => p.file);
+                const uploaded = await uploadReviewImages(newFiles);
+                let u = 0; // আপলোড হওয়া URL গুলো আগের ক্রমেই বসানো হচ্ছে — আগের ছবি (url) যেমন আছে তেমন, নতুনগুলো uploaded থেকে
+                const images = wr.photos.map(p => p.file ? uploaded[u++] : p.url).filter(Boolean);
+                const body = {
+                    rating: wr.rating, comment: document.getElementById('wrComment').value.trim(), images,
+                    sellerRating: wr.sellerRating, sellerComment: document.getElementById('wrSellerComment').value.trim(),
+                    deliveryRating: wr.deliveryRating, deliveryComment: document.getElementById('wrDelComment').value.trim(),
+                    anonymous: !!wr.anonymous
+                };
+                let res;
+                if (isEdit) res = await customerAuthFetch(`${API_BASE}/api/products/reviews/${wr.reviewId}`, { method: 'PUT', body: JSON.stringify(body) });
+                else res = await customerAuthFetch(`${API_BASE}/api/products/${activeReviewProductId}/reviews`, { method: 'POST', body: JSON.stringify(Object.assign({ orderId: wr.orderId }, body)) });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'রিভিউ জমা দেওয়া যায়নি।');
+                if (!res.ok) throw new Error(data.error || (isEdit ? 'Could not update the review.' : 'Could not submit the review.'));
 
-                myReviewedProductIds.add(String(activeReviewProductId));
-                myReviews.unshift({ productId: activeReviewProductId, rating: selectedReviewRating, comment, images: [], createdAt: new Date().toISOString() });
-                closeReviewModal();
+                wr.photos.forEach(p => { if (p.preview) URL.revokeObjectURL(p.preview); });
+                await loadMyReviews();
                 renderOrders(lastOrders);
-                alert('✅ আপনার রিভিউ জমা হয়েছে। ধন্যবাদ!');
+                reviewTab = 'done'; reviewPage.done = 1; renderReviews();
+                window.location.hash = '#reviewsSection';
+                showToast(isEdit ? 'Your review has been updated.' : 'Thank you! Your review has been submitted.');
             } catch (err) {
-                msg.style.color = '#e74c3c';
-                msg.textContent = '❌ ' + err.message;
-            } finally {
-                btn.disabled = false;
+                errBox.textContent = err.message; errBox.style.display = 'block';
+                btn.disabled = false; btn.textContent = label;
             }
         }
 
@@ -1717,7 +1973,7 @@
                 const data = await res.json();
                 if (!res.ok) return; // নন-ক্রিটিক্যাল — ব্যর্থ হলেও অর্ডার লিস্ট দেখাতে বাধা দেওয়া হচ্ছে না
                 myReviews = data;
-                myReviewedProductIds = new Set(data.map(r => String(r.productId)));
+                myReviewMap = new Map(data.map(r => [reviewKey(r.orderId, r.productId), r]));
             } catch (err) {
                 // নন-ক্রিটিক্যাল — রিভিউ-স্ট্যাটাস লোড না হলেও বাটন দেখাবে, শুধু ভুলবশত আগে-রিভিউ-করা
                 // প্রোডাক্টেও বাটন দেখাতে পারে (সাবমিট করলে ব্যাকএন্ড এমনিতেও 409 দিয়ে আটকাবে)
@@ -1768,7 +2024,7 @@
             }
         }
 
-        // অর্ডার রেন্ডার করার আগে myReturns ও myReviewedProductIds লোড হয়ে থাকা দরকার, নাহলে
+        // অর্ডার রেন্ডার করার আগে myReturns ও myReviewMap লোড হয়ে থাকা দরকার, নাহলে
         // প্রথমবার রেন্ডারে "রিটার্ন করুন"/"রিভিউ দিন" বাটন বা স্ট্যাটাস ট্যাগ সঠিকভাবে দেখাবে না
         async function loadOrdersAndReturns() {
             await Promise.all([loadReturns(), loadMyReviews()]);
