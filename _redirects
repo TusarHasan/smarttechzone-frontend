@@ -5,3 +5,6 @@
 # Merchant Center-এ নিজের ডোমেইনের URL (smarttechzone.com.bd/product-feed.xml) ব্যবহার করা যায়
 # ব্যাকএন্ডের সরাসরি Render URL-এর বদলে (routes/productFeed.js দেখুন)
 /product-feed.xml  https://smarttechzone-backend.onrender.com/product-feed.xml  200
+
+# প্রোডাক্ট শেয়ারের ছোট লিংক (smarttechzone.com.bd/s/<id>) — ব্যাকএন্ড থেকে OG প্রিভিউ পেজ প্রক্সি করে আনা হয় (routes/shortLinks.js দেখুন)
+/s/*  https://smarttechzone-backend.onrender.com/s/:splat  200

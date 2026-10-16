@@ -54,6 +54,8 @@ function stzRefreshWishlistButtons() {
         if (!id) return;
         stzApplyWishlistBtnState(btn, stzIsWishlisted(id));
     });
+    // অন্য কোনো UI (যেমন product.html-এর টাইটেলের পাশের হার্ট আইকন) যাতে নিজেকে সিঙ্ক করতে পারে
+    document.dispatchEvent(new CustomEvent('stz:wishlist-sync'));
 }
 
 // কার্ডের ওপর বসানোর ছোট ওভারলে হার্ট বাটনের HTML — index/search/brand/model পেজের রেন্ডার
@@ -90,6 +92,7 @@ async function stzToggleWishlist(productId, btnEl) {
     if (btnEl) stzApplyWishlistBtnState(btnEl, !wasActive);
     const ok = await stzSetWishlisted(productId, !wasActive);
     if (!ok && btnEl) stzApplyWishlistBtnState(btnEl, wasActive);
+    document.dispatchEvent(new CustomEvent('stz:wishlist-sync'));
 }
 
 document.addEventListener('DOMContentLoaded', stzLoadWishlistIds);
