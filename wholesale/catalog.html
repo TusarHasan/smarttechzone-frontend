@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- প্রাইভেট জোন: ইনডেক্স/ফলো নয় (netlify.toml-এ X-Robots-Tag-ও আছে); robots.txt/sitemap-এ পাথ ইচ্ছা করেই নেই -->
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="no-referrer">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <title>Wholesale Catalog - Smart Tech Zone</title>
+    <link rel="stylesheet" href="/wholesale/wholesale.css">
+    <script src="/config.js"></script>
+    <script src="/wholesale/wholesale.js"></script>
+</head>
+<body>
+    <div id="hdr"></div>
+    <main class="ws-wrap ws-wide" id="app" aria-live="polite">
+        <div class="ws-skeleton" aria-label="লোড হচ্ছে"></div>
+    </main>
+
+    <div class="ws-bar" id="bar" style="display:none">
+        <div class="ws-bar-in">
+            <div class="ws-meter">
+                <div class="ws-meter-msg" id="meterMsg"></div>
+                <div class="ws-track" id="track"><div class="ws-fill" id="fill"></div></div>
+                <div class="ws-marks-lbl" id="marksLbl"></div>
+            </div>
+            <div class="ws-bar-act">
+                <div class="ws-bar-sum"><b id="barQty">0 পিস</b><small id="barAmt"></small></div>
+                <button type="button" class="ws-btn ghost sm" id="openCart">কার্ট দেখুন</button>
+                <span class="ws-tip" id="orderTip" data-tip=""><button type="button" class="ws-btn sm is-off" id="barOrder" aria-disabled="true">Order Now</button></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ws-ov" id="ov"></div>
+    <aside class="ws-drawer" id="drawer" aria-label="কার্ট">
+        <div class="ws-dh"><h2>হোলসেল কার্ট</h2><button type="button" class="ws-x" id="closeCart" aria-label="বন্ধ করুন">&times;</button></div>
+        <div class="ws-db" id="cartBody"></div>
+        <div class="ws-df">
+            <textarea id="note" maxlength="500" placeholder="অর্ডারের নোট (ঐচ্ছিক) - যেমন ডেলিভারির সময়, বিশেষ অনুরোধ"></textarea>
+            <div class="row"><span id="cartQty"></span><b id="cartAmt"></b></div>
+            <div class="ws-note warn" style="margin:0 0 10px;font-size:12.5px">দামগুলো নমুনা (সর্বোচ্চ) দাম। চূড়ান্ত দাম অর্ডারের পরিমাণ অনুযায়ী মেমোতে জানানো হবে।</div>
+            <span class="ws-tip" id="cartTip" data-tip="" style="display:block"><button type="button" class="ws-btn block is-off" id="cartOrder" aria-disabled="true">Order Now</button></span>
+        </div>
+    </aside>
+
+    <div class="ws-modal" id="termsModal" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+        <div class="ws-modal-card" id="termsCard"></div>
+    </div>
+    <div class="ws-toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="/wholesale/catalog.js"></script>
+</body>
+</html>

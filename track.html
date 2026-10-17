@@ -190,6 +190,7 @@
                             <div>৳ ${formatPrice(i.price * i.quantity)}</div>
                         </div>`).join('')}
                     <div class="order-summary-row"><span>সাবটোটাল</span><span>৳ ${formatPrice(o.subtotal)}</span></div>
+                    ${o.discount > 0 ? `<div class="order-summary-row"><span>কুপন ছাড়${o.couponCode ? ' (' + esc(o.couponCode) + ')' : ''}</span><span style="color:#16a34a;font-weight:bold;">− ৳ ${formatPrice(o.discount)}</span></div>` : ''}
                     <div class="order-summary-row"><span>ডেলিভারি চার্জ</span><span>৳ ${formatPrice(o.deliveryCharge)}</span></div>
                     <div class="order-summary-row total"><span>মোট</span><span>৳ ${formatPrice(o.total)}</span></div>
                     <div class="track-address"><strong>ডেলিভারি ঠিকানা:</strong><br>

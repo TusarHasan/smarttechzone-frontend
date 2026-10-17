@@ -11,3 +11,5 @@
 
 # Private Wholesale Portal — রেজিস্ট্রেশন পেজের ক্লিন URL (ফাইলটা /wholesale/register.html; netlify.toml-এ noindex হেডার আছে)
 /wholesale/register  /wholesale/register.html  200
+/wholesale/catalog  /wholesale/catalog.html  200
+/wholesale/orders  /wholesale/orders.html  200

@@ -1,0 +1,13 @@
+# sitemap.xml নিজের ব্যাকএন্ড থেকে লাইভ জেনারেট হয় — নিজের ডোমেইনেই দেখানোর জন্য প্রক্সি করা হলো
+/sitemap.xml  https://smarttechzone-backend.onrender.com/sitemap.xml  200
+
+# product-feed.xml (Google Merchant Center / Meta Catalog) — একই কারণে প্রক্সি করা হলো, যাতে
+# Merchant Center-এ নিজের ডোমেইনের URL (smarttechzone.com.bd/product-feed.xml) ব্যবহার করা যায়
+# ব্যাকএন্ডের সরাসরি Render URL-এর বদলে (routes/productFeed.js দেখুন)
+/product-feed.xml  https://smarttechzone-backend.onrender.com/product-feed.xml  200
+
+# প্রোডাক্ট শেয়ারের ছোট লিংক (smarttechzone.com.bd/s/<id>) — ব্যাকএন্ড থেকে OG প্রিভিউ পেজ প্রক্সি করে আনা হয় (routes/shortLinks.js দেখুন)
+/s/*  https://smarttechzone-backend.onrender.com/s/:splat  200
+
+# Private Wholesale Portal — রেজিস্ট্রেশন পেজের ক্লিন URL (ফাইলটা /wholesale/register.html; netlify.toml-এ noindex হেডার আছে)
+/wholesale/register  /wholesale/register.html  200

@@ -1,0 +1,138 @@
+/* Private Wholesale Portal — শেয়ার্ড স্টাইল। সাইটের মূল style.css-এর উপর নির্ভর করে না (নেভবার/ফুটারে পাবলিক লিংক রাখা হয়নি) */
+:root {
+    --ws-ink: #1f2937;
+    --ws-muted: #6b7280;
+    --ws-line: #e5e7eb;
+    --ws-bg: #f3f4f6;
+    --ws-card: #ffffff;
+    --ws-brand: #e74c3c;
+    --ws-brand-dark: #c0392b;
+    --ws-ok: #15803d;
+    --ws-ok-bg: #dcfce7;
+    --ws-warn: #b45309;
+    --ws-warn-bg: #fef3c7;
+    --ws-bad: #b91c1c;
+    --ws-bad-bg: #fee2e2;
+    --ws-info: #1d4ed8;
+    --ws-info-bg: #dbeafe;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+    margin: 0; background: var(--ws-bg); color: var(--ws-ink);
+    font-family: "Segoe UI", "Noto Sans Bengali", "Hind Siliguri", Arial, sans-serif; font-size: 15px; line-height: 1.55;
+}
+a { color: var(--ws-brand); }
+
+.ws-top { background: var(--ws-ink); color: #fff; }
+.ws-top-in { max-width: 980px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ws-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .2px; color: #fff; text-decoration: none; }
+.ws-brand-mark { width: 30px; height: 30px; border-radius: 8px; background: var(--ws-brand); display: inline-flex; align-items: center; justify-content: center; }
+.ws-brand small { display: block; font-weight: 400; font-size: 11.5px; color: #9ca3af; letter-spacing: .6px; text-transform: uppercase; }
+.ws-top-actions { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.ws-top-actions a, .ws-top-actions button { color: #d1d5db; background: none; border: 1px solid #4b5563; border-radius: 6px; padding: 6px 12px; cursor: pointer; text-decoration: none; font-size: 13px; font-family: inherit; }
+.ws-top-actions a:hover, .ws-top-actions button:hover { color: #fff; border-color: #9ca3af; }
+
+.ws-wrap { max-width: 980px; margin: 0 auto; padding: 22px 18px 60px; }
+.ws-narrow { max-width: 560px; }
+
+.ws-card { background: var(--ws-card); border: 1px solid var(--ws-line); border-radius: 10px; padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.ws-card + .ws-card { margin-top: 16px; }
+.ws-card h1, .ws-card h2 { margin: 0 0 6px; line-height: 1.3; }
+.ws-card h1 { font-size: 22px; }
+.ws-card h2 { font-size: 17px; }
+.ws-sub { color: var(--ws-muted); margin: 0 0 16px; font-size: 14px; }
+.ws-center { text-align: center; }
+
+.ws-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 700; }
+.ws-badge.pending { background: var(--ws-warn-bg); color: var(--ws-warn); }
+.ws-badge.verified { background: var(--ws-ok-bg); color: var(--ws-ok); }
+.ws-badge.rejected, .ws-badge.suspended { background: var(--ws-bad-bg); color: var(--ws-bad); }
+
+.ws-icon-circle { width: 56px; height: 56px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+.ws-icon-circle.lock { background: #eef2ff; color: #4338ca; }
+.ws-icon-circle.pending { background: var(--ws-warn-bg); color: var(--ws-warn); }
+.ws-icon-circle.ok { background: var(--ws-ok-bg); color: var(--ws-ok); }
+.ws-icon-circle.bad { background: var(--ws-bad-bg); color: var(--ws-bad); }
+
+.ws-btn {
+    display: inline-block; background: var(--ws-brand); color: #fff; border: none; border-radius: 8px;
+    padding: 12px 22px; font-size: 15px; font-weight: 700; cursor: pointer; text-decoration: none; font-family: inherit;
+}
+.ws-btn:hover { background: var(--ws-brand-dark); color: #fff; }
+.ws-btn:disabled { opacity: .55; cursor: not-allowed; }
+.ws-btn.ghost { background: #fff; color: var(--ws-ink); border: 1px solid var(--ws-line); }
+.ws-btn.ghost:hover { background: #f9fafb; color: var(--ws-ink); }
+.ws-btn.block { display: block; width: 100%; text-align: center; }
+
+.ws-note { border-radius: 8px; padding: 12px 14px; font-size: 14px; margin: 14px 0; text-align: left; }
+.ws-note.info { background: var(--ws-info-bg); color: #1e3a8a; }
+.ws-note.warn { background: var(--ws-warn-bg); color: #78350f; }
+.ws-note.bad { background: var(--ws-bad-bg); color: #7f1d1d; }
+.ws-note.ok { background: var(--ws-ok-bg); color: #14532d; }
+
+.ws-steps { text-align: left; margin: 16px auto 22px; padding: 0; list-style: none; max-width: 420px; counter-reset: s; }
+.ws-steps li { counter-increment: s; position: relative; padding: 6px 0 6px 38px; font-size: 14.5px; }
+.ws-steps li::before { content: counter(s); position: absolute; left: 0; top: 5px; width: 26px; height: 26px; border-radius: 50%; background: var(--ws-ink); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+/* ফর্ম */
+.ws-form fieldset { border: none; padding: 0; margin: 0; }
+.ws-sec { margin-bottom: 22px; }
+.ws-sec-head { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--ws-line); }
+.ws-sec-no { width: 26px; height: 26px; border-radius: 50%; background: var(--ws-ink); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: none; }
+.ws-sec-head h2 { margin: 0; font-size: 16px; }
+.ws-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ws-grid .full { grid-column: 1 / -1; }
+.ws-field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+.ws-field label .req { color: var(--ws-brand); }
+.ws-field label .opt { font-weight: 400; color: var(--ws-muted); }
+.ws-field input, .ws-field select, .ws-field textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 15px; font-family: inherit; background: #fff; color: var(--ws-ink);
+}
+.ws-field input:focus, .ws-field select:focus, .ws-field textarea:focus { outline: 2px solid #fecaca; border-color: var(--ws-brand); }
+.ws-field .hint { font-size: 12.5px; color: var(--ws-muted); margin-top: 4px; }
+.ws-field.err input, .ws-field.err select, .ws-field.err textarea { border-color: var(--ws-bad); }
+.ws-field .errmsg { display: none; color: var(--ws-bad); font-size: 12.5px; margin-top: 4px; }
+.ws-field.err .errmsg { display: block; }
+
+.ws-docs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.ws-doc { border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 12px; background: #fafafa; }
+.ws-doc.err { border-color: var(--ws-bad); background: #fff7f7; }
+.ws-doc.has { border-style: solid; border-color: #86efac; background: #f0fdf4; }
+.ws-doc-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.ws-doc-title .req { color: var(--ws-brand); }
+.ws-doc-hint { font-size: 12px; color: var(--ws-muted); margin-bottom: 8px; }
+.ws-doc input[type=file] { display: none; }
+.ws-pick { display: inline-block; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.ws-pick:hover { border-color: var(--ws-brand); color: var(--ws-brand); }
+.ws-thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.ws-thumb { position: relative; width: 84px; height: 84px; border-radius: 8px; overflow: hidden; border: 1px solid var(--ws-line); background: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--ws-muted); text-align: center; }
+.ws-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ws-thumb button { position: absolute; top: 2px; right: 2px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(17,24,39,.75); color: #fff; font-size: 14px; line-height: 1; cursor: pointer; }
+.ws-thumb.pdf { flex-direction: column; font-weight: 700; color: var(--ws-bad); font-size: 13px; }
+
+.ws-consent { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; margin: 6px 0 16px; }
+.ws-consent input { margin-top: 4px; width: 18px; height: 18px; flex: none; }
+.ws-privacy { display: flex; gap: 10px; align-items: flex-start; }
+.ws-privacy svg { flex: none; margin-top: 2px; }
+
+.ws-progress { display: none; margin: 14px 0; }
+.ws-progress.on { display: block; }
+.ws-progress-bar { height: 10px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+.ws-progress-fill { height: 100%; width: 0; background: var(--ws-brand); transition: width .2s; }
+.ws-progress-txt { font-size: 13px; color: var(--ws-muted); margin-top: 6px; }
+
+/* মেম্বার জোন */
+.ws-member { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.ws-member h1 { margin-bottom: 4px; }
+.ws-skeleton { height: 120px; border-radius: 10px; background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%); background-size: 200% 100%; animation: wsSk 1.2s infinite; }
+@keyframes wsSk { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+@media (max-width: 640px) {
+    .ws-wrap { padding: 14px 12px 50px; }
+    .ws-card { padding: 18px 16px; }
+    .ws-grid { grid-template-columns: 1fr; }
+    .ws-docs { grid-template-columns: 1fr; }
+    .ws-top-in { padding: 12px; }
+    .ws-brand small { display: none; }
+}

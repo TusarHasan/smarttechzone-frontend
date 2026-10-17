@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="no-referrer">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <title>My Wholesale Orders - Smart Tech Zone</title>
+    <link rel="stylesheet" href="/wholesale/wholesale.css">
+    <script src="/config.js"></script>
+    <script src="/wholesale/wholesale.js"></script>
+</head>
+<body>
+    <div id="hdr"></div>
+    <main class="ws-wrap" id="app" aria-live="polite">
+        <div class="ws-skeleton" aria-label="লোড হচ্ছে"></div>
+    </main>
+    <script>
+    (function () {
+        var app = document.getElementById('app'), E = WS.esc;
+        document.getElementById('hdr').innerHTML = WS.header();
+        var LABEL = { requested: 'রিকোয়েস্ট জমা হয়েছে', memo_sent: 'মেমো পাঠানো হয়েছে', confirmed: 'কনফার্মড', completed: 'সম্পন্ন', cancelled: 'বাতিল' };
+        function money(n) { return '৳' + Number(n || 0).toLocaleString('en-US'); }
+        function date(d) { try { return new Date(d).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+        function safeImg(u) { return /^https:\/\//i.test(u || '') ? u : ''; }
+        function fail(msg) { app.innerHTML = '<div class="ws-card ws-center"><div class="ws-icon-circle bad">' + WS.icons.alert + '</div><h1>সমস্যা হয়েছে</h1><p class="ws-sub">' + E(msg) + '</p><button class="ws-btn" onclick="location.reload()">আবার চেষ্টা করুন</button></div>'; }
+        function orderHtml(o, open) {
+            var memo = o.memo, hasFinal = !!memo;
+            var rows = o.lines.map(function (l) {
+                return '<tr><td>' + E(l.title) + '<br><small style="color:#6b7280">' + E(l.option) + '</small></td><td class="n">' + l.qty + '</td><td class="n">' + money(l.unitPrice) + '</td>' +
+                    (hasFinal ? '<td class="n"><b>' + (l.finalUnitPrice != null ? money(l.finalUnitPrice) : '-') + '</b></td>' : '') + '</tr>';
+            }).join('');
+            return '<div class="ws-ord' + (open ? ' open' : '') + '"><div class="ws-ord-h" data-toggle><div><b>' + E(o.orderNumber) + '</b><small>' + date(o.createdAt) + ' &middot; ' + o.totalQty + ' পিস</small></div>' +
+                '<span class="ws-badge ' + E(o.status) + '">' + E(LABEL[o.status] || o.status) + '</span></div>' +
+                '<div class="ws-ord-b"><table><thead><tr><th>পণ্য</th><th class="n">পিস</th><th class="n">নমুনা দাম</th>' + (hasFinal ? '<th class="n">মেমোর দাম</th>' : '') + '</tr></thead><tbody>' + rows + '</tbody></table>' +
+                '<p style="text-align:right;margin:10px 0 0">নমুনা দামে মোট: <b>' + money(o.subtotal) + '</b></p>' +
+                (hasFinal ? '<div class="ws-note ok" style="margin-top:12px"><strong>মেমো (চূড়ান্ত): ' + money(memo.total) + '</strong>' + (memo.note ? '<br>' + E(memo.note) : '') + '<br><small>পেমেন্ট ও ডেলিভারি নিয়ে আমাদের টিম যোগাযোগ করবে।</small></div>'
+                    : (o.status === 'cancelled' ? '' : '<div class="ws-note info" style="margin-top:12px">আমাদের টিম আপনার অর্ডার দেখে আসল দামসহ মেমো পাঠাবে। মেমো এলে এখানেই দেখতে পাবেন।</div>')) +
+                (o.customerNote ? '<p class="ws-sub" style="margin-top:10px">আপনার নোট: ' + E(o.customerNote) + '</p>' : '') + '</div></div>';
+        }
+        if (!WS.token()) { location.replace('/wholesale/'); return; }
+        WS.api('/orders').then(function (r) {
+            if (r.status === 401 || r.status === 403) { location.replace('/wholesale/'); return; }
+            if (!r.ok) return fail((r.data && r.data.error) || 'সার্ভারে সমস্যা হয়েছে।');
+            var list = r.data.orders || [];
+            app.innerHTML = '<div class="ws-member ws-card"><div><h1>আমার হোলসেল অর্ডার</h1><p class="ws-sub" style="margin:0">আপনার সব রিকোয়েস্ট ও মেমো এখানে</p></div><a class="ws-btn" href="/wholesale/catalog">ক্যাটালগে ফিরুন</a></div>' +
+                '<div style="margin-top:16px">' + (list.length ? list.map(function (o, i) { return orderHtml(o, i === 0); }).join('') : '<div class="ws-card ws-center"><p class="ws-sub" style="margin:0">এখনো কোনো অর্ডার রিকোয়েস্ট নেই।</p></div>') + '</div>';
+            app.addEventListener('click', function (e) { var h = e.target.closest('[data-toggle]'); if (h) h.parentNode.classList.toggle('open'); });
+        });
+    })();
+    </script>
+</body>
+</html>

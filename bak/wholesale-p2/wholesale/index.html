@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- প্রাইভেট জোন: সার্চ ইঞ্জিন ইনডেক্স/ফলো করবে না (netlify.toml-এ একই সাথে X-Robots-Tag হেডারও আছে)।
+         ইচ্ছা করেই robots.txt বা sitemap-এ এই পাথ নেই — সেখানে লিখলে পাথটাই সবাইকে জানিয়ে দেওয়া হয় -->
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="no-referrer">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <title>Business Portal - Smart Tech Zone</title>
+    <link rel="stylesheet" href="/wholesale/wholesale.css">
+    <script src="/config.js"></script>
+    <script src="/wholesale/wholesale.js"></script>
+</head>
+<body>
+    <div id="hdr"></div>
+    <main class="ws-wrap ws-narrow" id="app" aria-live="polite">
+        <div class="ws-skeleton" aria-label="লোড হচ্ছে"></div>
+    </main>
+
+    <script>
+    (function () {
+        var app = document.getElementById('app');
+        document.getElementById('hdr').innerHTML = WS.header();
+        var E = WS.esc;
+
+        function fmtDate(d) {
+            try { return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return ''; }
+        }
+
+        function view(html) { app.innerHTML = html; }
+
+        function signedOut() {
+            view('<div class="ws-card ws-center">' +
+                '<div class="ws-icon-circle lock">' + WS.icons.lock + '</div>' +
+                '<h1>Business Portal</h1>' +
+                '<p class="ws-sub">এটা শুধু ভেরিফাইড ব্যবসায়ী সদস্যদের জন্য একটা প্রাইভেট এলাকা। চালিয়ে যেতে আপনার অ্যাকাউন্টে সাইন ইন করুন।</p>' +
+                '<a class="ws-btn block" href="' + E(WS.loginUrl()) + '">সাইন ইন করুন</a>' +
+                '<p class="ws-sub" style="margin-top:14px">অ্যাকাউন্ট নেই? <a href="/register.html?redirect=' + encodeURIComponent('/wholesale/') + '">নতুন অ্যাকাউন্ট খুলুন</a></p>' +
+                '</div>');
+        }
+
+        function none() {
+            view('<div class="ws-card ws-center">' +
+                '<div class="ws-icon-circle lock">' + WS.icons.lock + '</div>' +
+                '<h1>Business Portal</h1>' +
+                '<p class="ws-sub">দোকানদার ও বাল্ক ক্রেতাদের জন্য ভেরিফাইড এলাকা। প্রবেশের জন্য আপনার ব্যবসার তথ্য ও ডকুমেন্ট জমা দিয়ে অনুমোদন নিতে হয়।</p>' +
+                '<ol class="ws-steps">' +
+                '<li>দোকানের তথ্য ও ডকুমেন্ট জমা দিন (ট্রেড লাইসেন্স, NID, দোকানের ছবি)</li>' +
+                '<li>আমাদের টিম ডকুমেন্ট যাচাই করবে</li>' +
+                '<li>অনুমোদন পেলে পোর্টালে প্রবেশ করতে পারবেন</li>' +
+                '</ol>' +
+                '<a class="ws-btn block" href="/wholesale/register">আবেদন শুরু করুন</a>' +
+                '</div>');
+        }
+
+        function pending(s) {
+            view('<div class="ws-card ws-center">' +
+                '<div class="ws-icon-circle pending">' + WS.icons.clock + '</div>' +
+                '<span class="ws-badge pending">Pending Review</span>' +
+                '<h1 style="margin-top:12px">আবেদন রিভিউয়ের অপেক্ষায়</h1>' +
+                '<p class="ws-sub">' + (s.shopName ? '<strong>' + E(s.shopName) + '</strong> এর আবেদন ' : 'আপনার আবেদন ') + (s.submittedAt ? fmtDate(s.submittedAt) + ' তারিখে ' : '') + 'জমা হয়েছে। আমাদের টিম ডকুমেন্ট যাচাই করছে, অনুমোদন হলে এখানেই প্রবেশের সুযোগ পাবেন।</p>' +
+                '</div>');
+        }
+
+        function rejected(s) {
+            view('<div class="ws-card ws-center">' +
+                '<div class="ws-icon-circle bad">' + WS.icons.alert + '</div>' +
+                '<span class="ws-badge rejected">অনুমোদন হয়নি</span>' +
+                '<h1 style="margin-top:12px">আবেদন গ্রহণ করা যায়নি</h1>' +
+                (s.reason ? '<div class="ws-note bad"><strong>কারণ:</strong> ' + E(s.reason) + '</div>' : '') +
+                '<p class="ws-sub">সমস্যাটা ঠিক করে সঠিক ডকুমেন্টসহ আবার আবেদন করতে পারেন।</p>' +
+                '<a class="ws-btn block" href="/wholesale/register">আবার আবেদন করুন</a>' +
+                '</div>');
+        }
+
+        function suspended(s) {
+            view('<div class="ws-card ws-center">' +
+                '<div class="ws-icon-circle bad">' + WS.icons.alert + '</div>' +
+                '<span class="ws-badge suspended">Suspended</span>' +
+                '<h1 style="margin-top:12px">অ্যাকাউন্ট সাময়িক বন্ধ</h1>' +
+                (s.reason ? '<div class="ws-note bad"><strong>কারণ:</strong> ' + E(s.reason) + '</div>' : '') +
+                '<p class="ws-sub">বিস্তারিত জানতে সরাসরি আমাদের সাথে যোগাযোগ করুন।</p>' +
+                '</div>');
+        }
+
+        // ভেরিফাইড — আলাদাভাবে /portal কল করে নিশ্চিত হওয়া হয় (এই এন্ডপয়েন্ট সার্ভারে verified ছাড়া ৪০৩ দেয়)
+        function member(p) {
+            var m = p.member || {};
+            view('<div class="ws-card ws-member">' +
+                '<div><span class="ws-badge verified">Verified Wholesale Member</span>' +
+                '<h1 style="margin-top:10px">' + E(m.shopName) + '</h1>' +
+                '<p class="ws-sub" style="margin:0">' + E(m.ownerName) + (m.verifiedAt ? ' &middot; সদস্য হয়েছেন ' + fmtDate(m.verifiedAt) : '') + '</p></div>' +
+                '<div class="ws-icon-circle ok" style="margin:0">' + WS.icons.check + '</div>' +
+                '</div>' +
+                '<div class="ws-card ws-center" id="catalogSlot">' +
+                '<h2>হোলসেল ক্যাটালগ</h2>' +
+                '<p class="ws-sub" style="margin:0">আপনার অ্যাকাউন্ট অনুমোদিত। হোলসেল দাম ও বাল্ক অর্ডারের ক্যাটালগ খুব শিগগিরই এই এলাকায় চালু হবে।</p>' +
+                '</div>');
+        }
+
+        function failure(msg) {
+            view('<div class="ws-card ws-center"><div class="ws-icon-circle bad">' + WS.icons.alert + '</div>' +
+                '<h1>সমস্যা হয়েছে</h1><p class="ws-sub">' + E(msg) + '</p>' +
+                '<button class="ws-btn" onclick="location.reload()">আবার চেষ্টা করুন</button></div>');
+        }
+
+        if (!WS.token()) { signedOut(); return; }
+
+        WS.api('/me').then(function (r) {
+            if (r.status === 401) { signedOut(); return; }
+            if (!r.ok) { failure((r.data && r.data.error) || 'সার্ভারে সমস্যা হয়েছে।'); return; }
+            var s = r.data || {};
+            if (s.status === 'none') return none();
+            if (s.status === 'pending') return pending(s);
+            if (s.status === 'rejected') return rejected(s);
+            if (s.status === 'suspended') return suspended(s);
+            if (s.status === 'verified') {
+                WS.api('/portal').then(function (p) {
+                    if (p.ok) member(p.data);
+                    else if (p.status === 403) failure('এই এলাকায় প্রবেশের অনুমতি নেই।');
+                    else failure((p.data && p.data.error) || 'সার্ভারে সমস্যা হয়েছে।');
+                });
+                return;
+            }
+            failure('অজানা অবস্থা। পরে আবার চেষ্টা করুন।');
+        });
+    })();
+    </script>
+</body>
+</html>

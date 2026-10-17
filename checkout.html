@@ -51,6 +51,19 @@
         .wallet-box.disabled { opacity: .55; }
         .wallet-box.disabled label { cursor: not-allowed; }
         .order-summary-row.wallet-line span:last-child { color: #16a34a; font-weight: bold; }
+        .coupon-box { margin: 4px 0 14px; padding: 12px 14px; border: 1.5px dashed #cbd5e1; border-radius: 6px; background: #fafafa; }
+        .coupon-box .cp-row { display: flex; gap: 8px; }
+        .coupon-box input { flex: 1; min-width: 0; margin: 0; text-transform: uppercase; letter-spacing: .5px; }
+        .coupon-box button { flex: none; padding: 0 16px; border: none; border-radius: 6px; background: #333; color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; }
+        .coupon-box button:disabled { opacity: .55; cursor: not-allowed; }
+        .coupon-box .cp-msg { font-size: 12.5px; margin-top: 6px; }
+        .coupon-box .cp-msg.err { color: #e74c3c; }
+        .coupon-box .cp-applied { display: none; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; color: #166534; font-weight: 700; }
+        .coupon-box .cp-applied button { background: none; color: #e74c3c; padding: 4px 6px; font-size: 13px; font-weight: 600; text-decoration: underline; }
+        .coupon-box.applied { border-style: solid; border-color: #86efac; background: #f0fdf4; }
+        .coupon-box.applied .cp-row, .coupon-box.applied .cp-msg { display: none; }
+        .coupon-box.applied .cp-applied { display: flex; }
+        .order-summary-row.coupon-line span:last-child { color: #16a34a; font-weight: bold; }
         .payment-option .po-text span { font-size: 12.5px; color: #888; }
         #statusMsg { margin-top: 12px; font-size: 14px; text-align: center; }
         .empty-cart { text-align: center; padding: 60px 20px; color: #888; }
@@ -198,6 +211,14 @@
         <div class="checkout-card">
             <h3>অর্ডার সামারি</h3>
             <div id="orderItemsList"></div>
+            <div class="coupon-box" id="couponBox">
+                <div class="cp-row">
+                    <input type="text" id="couponInput" placeholder="কুপন কোড (থাকলে)" autocomplete="off" maxlength="30" aria-label="কুপন কোড">
+                    <button type="button" id="couponApplyBtn">প্রয়োগ করুন</button>
+                </div>
+                <div class="cp-msg" id="couponMsg"></div>
+                <div class="cp-applied"><span id="couponAppliedText"></span><button type="button" id="couponRemoveBtn">সরান</button></div>
+            </div>
             <div id="orderSummary"></div>
         </div>
 
@@ -324,13 +345,13 @@
         function walletUseAmount() {
             const cb = document.getElementById('useWallet');
             if (!cb || !cb.checked || !walletAllowedNow()) return 0;
-            const total = getCartTotal() + estimateDelivery(getSelectedArea());
+            const total = getCartTotal() - currentDiscount() + estimateDelivery(getSelectedArea());
             return Math.min(walletBalance, total);
         }
 
         function walletCoversAll() {
             const use = walletUseAmount();
-            return use > 0 && use >= getCartTotal() + estimateDelivery(getSelectedArea());
+            return use > 0 && use >= getCartTotal() - currentDiscount() + estimateDelivery(getSelectedArea());
         }
 
         function syncWalletBox() {
@@ -489,18 +510,20 @@
             if (isSameDaySelected()) {
                 document.getElementById('orderSummary').innerHTML = `
                     <div class="order-summary-row"><span>সাবটোটাল</span><span>৳ ${formatPrice(subtotal)}</span></div>
+                    ${currentDiscount() > 0 ? `<div class="order-summary-row coupon-line"><span>কুপন ছাড় (${couponState.code})</span><span>− ৳ ${formatPrice(currentDiscount())}</span></div>` : ''}
                     <div class="order-summary-row"><span>ডেলিভারি চার্জ</span><span>অর্ডার কনফার্ম হওয়ার পর জানানো হবে</span></div>
-                    <div class="order-summary-row total"><span>মোট (ডেলিভারি চার্জ ছাড়া)</span><span>৳ ${formatPrice(subtotal)}</span></div>
+                    <div class="order-summary-row total"><span>মোট (ডেলিভারি চার্জ ছাড়া)</span><span>৳ ${formatPrice(subtotal - currentDiscount())}</span></div>
                 `;
                 return;
             }
 
             const delivery = estimateDelivery(getSelectedArea());
-            const total = subtotal + delivery;
+            const total = subtotal - currentDiscount() + delivery;
             const wUse = walletUseAmount();
 
             document.getElementById('orderSummary').innerHTML = `
                 <div class="order-summary-row"><span>সাবটোটাল</span><span>৳ ${formatPrice(subtotal)}</span></div>
+                ${currentDiscount() > 0 ? `<div class="order-summary-row coupon-line"><span>কুপন ছাড় (${couponState.code})</span><span>− ৳ ${formatPrice(currentDiscount())}</span></div>` : ''}
                 <div class="order-summary-row"><span>ডেলিভারি চার্জ</span><span>৳ ${formatPrice(delivery)}</span></div>
                 <div class="order-summary-row total"><span>মোট</span><span>৳ ${formatPrice(total)}</span></div>
                 ${wUse > 0 ? `
@@ -582,6 +605,7 @@
                         paymentMethod: isCod ? 'cod' : 'online',
                         deliveryType: sameDay ? 'sameday' : 'standard',
                         useWallet: walletUseAmount() > 0,
+                        couponCode: couponState.code || undefined,
                         items: cart.map(item => ({
                             productId: item.productId,
                             variantLabel: item.variantLabel,
@@ -599,6 +623,7 @@
                         blockErr.advance = Number(data.advanceCharge) || 0;
                         throw blockErr;
                     }
+                    if (data.code === 'COUPON_INVALID') clearCoupon(data.error); // কুপন আর চলছে না — বাদ দিয়ে কাস্টমার আবার কনফার্ম করবে
                     throw new Error(data.error || 'অর্ডার করা যায়নি।');
                 }
 
@@ -627,6 +652,88 @@
                 updatePlaceOrderBtnText();
             }
         }
+
+
+        // ===== ডিসকাউন্ট কুপন =====
+        // ছাড়ের সংখ্যা সবসময় সার্ভার (POST /api/coupons/validate) থেকে আসে; অর্ডার দেওয়ার সময় সার্ভার আবার যাচাই করে।
+        // কার্ট বা ফোন নাম্বার বদলালে (নির্দিষ্ট কাস্টমারের কুপন ফোনের সাথে বাঁধা) নিঃশব্দে আবার যাচাই হয়।
+        let couponState = { code: '', discount: 0 };
+
+        function currentDiscount() { return couponState.code ? Math.max(0, couponState.discount) : 0; }
+
+        function setCouponMsg(text, isErr) {
+            const el = document.getElementById('couponMsg');
+            el.textContent = text || '';
+            el.className = 'cp-msg' + (isErr ? ' err' : '');
+        }
+
+        function renderCouponBox() {
+            const box = document.getElementById('couponBox');
+            if (!box) return;
+            const on = !!couponState.code;
+            box.classList.toggle('applied', on);
+            if (on) document.getElementById('couponAppliedText').textContent = '✓ ' + couponState.code + ' প্রয়োগ হয়েছে (− ৳ ' + formatPrice(couponState.discount) + ')';
+        }
+
+        function clearCoupon(msg) {
+            couponState = { code: '', discount: 0 };
+            renderCouponBox();
+            setCouponMsg(msg || '', !!msg);
+            updateSummaryTotals();
+            updatePlaceOrderBtnText();
+        }
+
+        async function fetchCouponQuote(code) {
+            const cart = getCart();
+            const res = await fetch(`${API_BASE}/api/coupons/validate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code,
+                    phone: document.getElementById('custPhone').value.trim(),
+                    items: cart.map(item => ({ productId: item.productId, variantLabel: item.variantLabel, quantity: item.quantity }))
+                })
+            });
+            const data = await res.json().catch(() => ({}));
+            return res.ok && data.ok ? { ok: true, code: data.code, discount: Number(data.discount) || 0 } : { ok: false, error: data.error || 'কুপন যাচাই করা যায়নি।' };
+        }
+
+        async function applyCoupon() {
+            const input = document.getElementById('couponInput');
+            const btn = document.getElementById('couponApplyBtn');
+            const code = input.value.trim();
+            if (!code) { setCouponMsg('কুপন কোড লিখুন।', true); return; }
+            btn.disabled = true; setCouponMsg('যাচাই হচ্ছে...', false);
+            try {
+                const r = await fetchCouponQuote(code);
+                if (!r.ok) { setCouponMsg(r.error, true); return; }
+                couponState = { code: r.code, discount: r.discount };
+                input.value = '';
+                setCouponMsg('', false);
+                renderCouponBox();
+                updateSummaryTotals();
+                updatePlaceOrderBtnText();
+            } catch (e) {
+                setCouponMsg('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন।', true);
+            } finally { btn.disabled = false; }
+        }
+
+        async function revalidateCoupon() {
+            if (!couponState.code) return;
+            try {
+                const r = await fetchCouponQuote(couponState.code);
+                if (!r.ok) { clearCoupon(r.error); return; }
+                if (r.discount !== couponState.discount) {
+                    couponState.discount = r.discount;
+                    renderCouponBox(); updateSummaryTotals(); updatePlaceOrderBtnText();
+                }
+            } catch (e) { /* নেটওয়ার্ক এরর — আগের ছাড় থাকে, অর্ডারের সময় সার্ভার যাচাই করবে */ }
+        }
+
+        document.getElementById('couponApplyBtn').addEventListener('click', applyCoupon);
+        document.getElementById('couponInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); } });
+        document.getElementById('couponRemoveBtn').addEventListener('click', function () { clearCoupon(''); });
+        document.getElementById('custPhone').addEventListener('change', revalidateCoupon);
 
         renderSummary();
     </script>
