@@ -26,6 +26,13 @@
 const BACKEND_URL = 'https://smarttechzone-backend.onrender.com';
 const SITE_URL = 'https://smarttechzone.com.bd';
 const FETCH_TIMEOUT_MS = 2500;
+const RELATED_TIMEOUT_MS = 1800;
+const SITE_NAME = 'Smart Tech Zone';
+// একই এজ-আইসোলেটে বারবার একই প্রোডাক্টের রিকোয়েস্ট এলে (Googlebot একটানা অনেক পেজ ক্রল করে) ব্যাকএন্ডে
+// (Render) বারবার না গিয়ে ১০ মিনিট পর্যন্ত মেমোরি থেকে সার্ভ করা হয়
+const SSR_CACHE_TTL_MS = 10 * 60 * 1000;
+const SSR_CACHE_MAX = 400;
+const ssrCache = new Map();
 
 // ============ SEO: কিওয়ার্ডসহ পরিষ্কার URL — /product/<slug>-i<id> ============
 // *** এই ফাংশনগুলো হুবহু (byte-for-byte) কপি আছে: product.html, index.html, search.html,
@@ -93,15 +100,159 @@ function setTagTextById(html, tag, id, text) {
     return html.replace(re, (_m, pre, _old, post) => pre + text + post);
 }
 
+// ============ SEO: শিরোনাম/বিবরণ/স্কিমা সবই এক জায়গা (এই ফাইল) থেকে ============
+// product.html-এর ক্লায়েন্ট-সাইড updateSeoTags() এখন data-ssr="1" দেখলে নিজে এসব বদলায় না (শুধু রিভিউ
+// রেটিং যোগ করে) — তাই raw HTML আর JS-রেন্ডার করা HTML-এ title/description/canonical একই থাকে।
+
+function formatBdt(n) {
+    const v = Number(n) || 0;
+    return '৳' + v.toLocaleString('en-US');
+}
+
+// লম্বা কিওয়ার্ড-ভর্তি নাম থেকে ছোট নাম: নামের শেষে " - <মডেল কোডের তালিকা>" থাকলে সেটা বাদ, তারপর শব্দের
+// সীমানায় কেটে max অক্ষরে আনা। পুরো নাম H1, Product স্কিমা ও পেজের ভেতরে অপরিবর্তিত থাকে।
+function shortProductName(name, max) {
+    let s = String(name || '').replace(/\s+/g, ' ').trim();
+    const dash = s.indexOf(' - ');
+    if (dash > 20) s = s.slice(0, dash);
+    if (s.length > max) {
+        const cut = s.slice(0, max);
+        const sp = cut.lastIndexOf(' ');
+        s = sp > 20 ? cut.slice(0, sp) : cut;
+    }
+    return s;
+}
+
+function trimAtWord(text, max) {
+    const t = String(text || '').replace(/\s+/g, ' ').trim();
+    if (t.length <= max) return t;
+    const cut = t.slice(0, max);
+    const sp = cut.lastIndexOf(' ');
+    return (sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[\s,;:\-–(]+$/, '');
+}
+
+function linkableBrandOf(product) {
+    return (product.phoneBrand && product.phoneBrand !== 'Others') ? product.phoneBrand : '';
+}
+
+// স্টক: ভ্যারিয়েন্ট থাকলে Active ভ্যারিয়েন্টগুলোর স্টক যোগফল; ভ্যারিয়েন্ট না থাকলে প্রোডাক্টের নিজের stock ফিল্ড (না থাকলে স্টকে আছে ধরা)
+function activeVariantsOf(product) {
+    return (product.variants || []).filter(v => v && v.isActive !== false);
+}
+function stockInfoOf(product) {
+    const vs = activeVariantsOf(product);
+    if (vs.length) {
+        const total = vs.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
+        return { inStock: total > 0, total };
+    }
+    if (product.stock !== undefined && product.stock !== null) {
+        const t = Number(product.stock) || 0;
+        return { inStock: t > 0, total: t };
+    }
+    return { inStock: true, total: null };
+}
+
+function buildSeoTitle(product) {
+    return `${shortProductName(product.name, 70)} Price in Bangladesh | ${SITE_NAME}`;
+}
+
+function buildMetaDescription(product) {
+    const short = shortProductName(product.name, 80);
+    const { inStock } = stockInfoOf(product);
+    const brand = linkableBrandOf(product) || (product.brand && !/^no\s*brand$/i.test(product.brand) ? product.brand : '');
+    const compat = [brand, product.model].filter(Boolean).join(' ').trim();
+    const parts = [`Buy ${short} in Bangladesh for ${formatBdt(product.price)}.`];
+    parts.push(inStock ? 'In stock.' : 'Currently out of stock.');
+    if (compat) parts.push(`${product.partType ? product.partType + ' replacement' : 'Replacement part'} for ${compat}.`);
+    else if (product.partType) parts.push(`${product.partType} replacement part.`);
+    parts.push('Cash on delivery and home delivery all over Bangladesh from ' + SITE_NAME + '.');
+    return trimAtWord(parts.join(' '), 158);
+}
+
+// ============ বিবরণের HTML নিরাপদ করা (শুধু কয়েকটা সাধারণ ট্যাগ, কোনো attribute/ছবি/স্ক্রিপ্ট নয়) ============
+const ALLOWED_TAGS = new Set(['p', 'br', 'ul', 'ol', 'li', 'strong', 'b', 'em', 'i', 'h3', 'h4']);
+const VOID_TAGS = new Set(['br']);
+function sanitizeDescriptionHtml(html) {
+    let src = String(html || '')
+        .replace(/<(script|style|iframe|object|embed|svg|noscript)[\s\S]*?<\/\1\s*>/gi, ' ')
+        .replace(/<!--[\s\S]*?-->/g, ' ');
+    const stack = [];
+    let out = '';
+    let last = 0;
+    const re = /<(\/?)([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g;
+    let m;
+    const pushText = (t) => { out += t.replace(/&nbsp;| /g, ' ').replace(/<(?![a-zA-Z/!])/g, '&lt;'); };
+    while ((m = re.exec(src))) {
+        pushText(src.slice(last, m.index));
+        last = re.lastIndex;
+        let tag = m[2].toLowerCase();
+        const closing = m[1] === '/';
+        if (tag === 'div' || tag === 'h1' || tag === 'h2' || tag === 'h5' || tag === 'h6') tag = (tag === 'div') ? 'p' : 'h3';
+        if (!ALLOWED_TAGS.has(tag)) { out += ' '; continue; }
+        if (VOID_TAGS.has(tag)) { if (!closing) out += '<br>'; continue; }
+        if (!closing) { stack.push(tag); out += `<${tag}>`; }
+        else {
+            const idx = stack.lastIndexOf(tag);
+            if (idx === -1) continue;
+            while (stack.length > idx) out += `</${stack.pop()}>`;
+        }
+    }
+    pushText(src.slice(last));
+    while (stack.length) out += `</${stack.pop()}>`;
+    return out.replace(/(<p>\s*<\/p>)+/g, '').trim();
+}
+
+// প্লেইন টেক্সট বিবরণ (Key Features:/Why Choose.../Conclusion: ধরনের) → সহজ অনুচ্ছেদ/লিস্ট
+function plainDescriptionToHtml(raw) {
+    const HEAD = /^(Key Features:|Why Choose [^?:\n]{1,60}\?|Conclusion:|Highlights:|Specifications?:|What(?:'|’)s in the Box:?|Package Includes:?)\s*(.*)$/i;
+    const lines = String(raw || '').replace(/\r\n?/g, '\n')
+        .replace(/[ \t]*[•●▪]\s*/g, '\n• ')
+        .split('\n').map(l => l.trim()).filter(Boolean);
+    let out = '', inList = false;
+    const closeList = () => { if (inList) { out += '</ul>'; inList = false; } };
+    for (const line of lines) {
+        const h = line.match(HEAD);
+        if (h) { closeList(); out += `<h3>${escapeHtml(h[1])}</h3>`; if (h[2]) out += `<p>${escapeHtml(h[2])}</p>`; continue; }
+        if (line.startsWith('• ')) { if (!inList) { out += '<ul>'; inList = true; } out += `<li>${escapeHtml(line.slice(2))}</li>`; continue; }
+        closeList(); out += `<p>${escapeHtml(line)}</p>`;
+    }
+    closeList();
+    return out;
+}
+
+function descriptionToSafeHtml(raw) {
+    if (!raw) return '';
+    const text = String(raw).slice(0, 12000);
+    const html = /<\/?[a-zA-Z][^>]*>/.test(text) ? sanitizeDescriptionHtml(text) : plainDescriptionToHtml(text);
+    return html;
+}
+
+// ============ JSON-LD (Product + BreadcrumbList) ============
+function breadcrumbItems(product, pageUrl) {
+    const items = [{ name: 'Home', url: `${SITE_URL}/` }];
+    const brand = linkableBrandOf(product);
+    if (brand) {
+        items.push({ name: brand, url: `${SITE_URL}/brands/brand.html?name=${encodeURIComponent(brand)}` });
+        if (product.model) items.push({ name: product.model, url: `${SITE_URL}/models/model.html?brand=${encodeURIComponent(brand)}&model=${encodeURIComponent(product.model)}` });
+    }
+    items.push({ name: shortProductName(product.name, 90), url: pageUrl });
+    return items;
+}
+
+function buildBreadcrumbJsonLd(product, pageUrl) {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: breadcrumbItems(product, pageUrl).map((it, i) => ({ '@type': 'ListItem', position: i + 1, name: it.name, item: it.url }))
+    };
+}
+
 function buildProductJsonLd(product, images, pageUrl, desc) {
     const mainImage = images.length ? images[0] : `${SITE_URL}/images/logo.png`;
-    const variants = product.variants || [];
-    // ভ্যারিয়েন্ট থাকলে সবগুলোর স্টক যোগ করে মোট স্টক বের করা হয়, নাহলে বেস প্রোডাক্টের নিজের স্টক
-    // (দেখুন backend/models/product.js — ভ্যারিয়েন্ট আর নন-ভ্যারিয়েন্ট প্রোডাক্টের ডেটা শেপ আলাদা)
-    const totalStock = variants.length
-        ? variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
-        : (Number(product.stock) || 0);
-    const availability = totalStock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
+    const { inStock } = stockInfoOf(product);
+    const brandName = (product.brand && !/^no\s*brand$/i.test(product.brand)) ? product.brand : linkableBrandOf(product);
+    const validUntil = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+    const sku = product.sku || (activeVariantsOf(product).find(v => v.sku) || {}).sku || String(product._id);
 
     const jsonLd = {
         '@context': 'https://schema.org',
@@ -109,35 +260,84 @@ function buildProductJsonLd(product, images, pageUrl, desc) {
         name: product.name,
         image: images.length ? images : [mainImage],
         description: desc,
+        sku,
         offers: {
             '@type': 'Offer',
             url: pageUrl,
             priceCurrency: 'BDT',
             price: product.price,
-            availability
+            priceValidUntil: validUntil,
+            itemCondition: 'https://schema.org/NewCondition',
+            availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            seller: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+            hasMerchantReturnPolicy: {
+                '@type': 'MerchantReturnPolicy',
+                applicableCountry: 'BD',
+                returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                merchantReturnDays: 14
+            }
         }
     };
-    if (product.brand) jsonLd.brand = { '@type': 'Brand', name: product.brand };
-    if (product.sku) jsonLd.sku = product.sku;
-    // রিভিউ ডেটা এখানে নেই (এক্সট্রা ব্যাকএন্ড কল এড়াতে) — client-side JS-ই যেমন আগে করতো, রিভিউ
-    // লোড হওয়ার পর aggregateRating যোগ হবে; raw HTML-এ শুধু বেস তথ্যটুকু ঠিকভাবে থাকাই যথেষ্ট
+    if (brandName) jsonLd.brand = { '@type': 'Brand', name: brandName };
+    if (product.category && product.category !== 'Other Parts') jsonLd.category = product.category;
+    // রিভিউ ডেটা এখানে নেই — ক্লায়েন্ট-সাইড JS রিভিউ লোড হওয়ার পর aggregateRating যোগ করে
     return jsonLd;
 }
 
-function computeSeoFields(product) {
-    const images = (product.images && product.images.length) ? product.images.map(resolveImageUrl) : [];
-    const mainImage = images.length ? images[0] : `${SITE_URL}/images/logo.png`;
-    const title = `${product.name} - Smart Tech Zone`;
-    const desc = (stripHtml(product.description) || `${product.name} — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`).substring(0, 160);
-    // canonical সবসময় নতুন সুন্দর URL-টাই দেখাবে — যেভাবেই পেজটা রিকোয়েস্ট হোক না কেন (পুরোনো
-    // product.html?id= বা নতুন /product/<slug>-i<id>), যাতে Google একটাই URL-কে "আসল" ধরে
-    const pageUrl = `${SITE_URL}${buildProductPath(product.name, product._id)}`;
-    const jsonLd = buildProductJsonLd(product, images, pageUrl, desc);
-    return { images, mainImage, title, desc, pageUrl, jsonLd };
+// <script type="application/ld+json">-এর ভেতরে "</script>" লেখা থাকলে JSON ভেঙে পেজ নষ্ট হতো — '<' এস্কেপ করা হচ্ছে
+function jsonForScript(obj) {
+    return JSON.stringify(obj).replace(/</g, '\\u003c').split(String.fromCharCode(0x2028)).join('\\u2028').split(String.fromCharCode(0x2029)).join('\\u2029');
 }
 
-function injectSeoIntoHtml(html, product) {
-    const { mainImage, title, desc, pageUrl, jsonLd } = computeSeoFields(product);
+// ============ সার্ভার-রেন্ডার করা দৃশ্যমান কনটেন্ট (Googlebot-এর প্রথম পড়াতেই পুরো তথ্য) ============
+function buildSsrBlock(product, related, pageUrl) {
+    const brand = linkableBrandOf(product);
+    const { inStock } = stockInfoOf(product);
+    const crumbs = breadcrumbItems(product, pageUrl);
+    const nav = '<nav aria-label="Breadcrumb" style="font-size:13px;color:#666;margin-bottom:12px;">' + crumbs.map((c, i) =>
+        i === crumbs.length - 1 ? `<span>${escapeHtml(c.name)}</span>` : `<a href="${escapeAttr(c.url.replace(SITE_URL, ''))}">${escapeHtml(c.name)}</a> &rsaquo; `).join('') + '</nav>';
+
+    const specRows = [];
+    if (brand) specRows.push(['Phone brand', `<a href="/brands/brand.html?name=${encodeURIComponent(brand)}">${escapeHtml(brand)}</a>`]);
+    if (product.model) specRows.push(['Model', brand ? `<a href="/models/model.html?brand=${encodeURIComponent(brand)}&amp;model=${encodeURIComponent(product.model)}">${escapeHtml(product.model)}</a>` : escapeHtml(product.model)]);
+    if (product.partType) specRows.push(['Part type', escapeHtml(product.partType)]);
+    if (product.brand && !/^no\s*brand$/i.test(product.brand)) specRows.push(['Brand', escapeHtml(product.brand)]);
+    if (product.sku) specRows.push(['SKU', escapeHtml(product.sku)]);
+    if (product.warrantyDuration) specRows.push(['Warranty', escapeHtml(product.warrantyDuration)]);
+    const specs = specRows.length ? '<table style="border-collapse:collapse;margin:10px 0;">' + specRows.map(([k, v]) => `<tr><td style="padding:4px 14px 4px 0;color:#666;">${k}</td><td style="padding:4px 0;">${v}</td></tr>`).join('') + '</table>' : '';
+
+    const vs = activeVariantsOf(product).filter(v => !(activeVariantsOf(product).length === 1 && /^default$/i.test(v.label || '')));
+    const variants = vs.length ? '<h3>Available options</h3><ul>' + vs.slice(0, 40).map(v =>
+        `<li>${escapeHtml(v.label)} &ndash; ${formatBdt(v.price)} &ndash; ${(Number(v.stock) || 0) > 0 ? 'In stock' : 'Out of stock'}</li>`).join('') + '</ul>' : '';
+
+    const descHtml = descriptionToSafeHtml(product.description);
+    const rel = (related && related.length) ? `<h3>More parts${product.model ? ' for ' + escapeHtml((brand ? brand + ' ' : '') + product.model) : ''}</h3><ul>` +
+        related.map(r => `<li><a href="${escapeAttr(buildProductPath(r.name, r._id))}">${escapeHtml(shortProductName(r.name, 110))}</a>${r.price ? ' &ndash; ' + formatBdt(r.price) : ''}</li>`).join('') + '</ul>' : '';
+
+    return `<div id="ssrProduct" style="text-align:left;line-height:1.6;color:#222;">${nav}` +
+        `<h2 style="font-size:20px;margin:0 0 8px;">${escapeHtml(product.name)}</h2>` +
+        `<p style="font-size:22px;font-weight:700;color:#e74c3c;margin:6px 0;">${formatBdt(product.price)} <span style="font-size:14px;font-weight:400;color:#555;">${inStock ? 'In stock' : 'Out of stock'}</span></p>` +
+        specs + variants +
+        (descHtml ? `<h3>Product details</h3><div>${descHtml}</div>` : '') +
+        `<p style="font-size:13px;color:#555;">Home delivery all over Bangladesh. Cash on delivery available. Returns accepted within 14 days of delivery. Sold by ${SITE_NAME}, Mohammadpur, Dhaka.</p>` +
+        rel + '</div>';
+}
+
+function computeSeoFields(product, related) {
+    const images = (product.images && product.images.length) ? product.images.map(resolveImageUrl) : [];
+    const mainImage = images.length ? images[0] : `${SITE_URL}/images/logo.png`;
+    const title = buildSeoTitle(product);
+    const desc = buildMetaDescription(product);
+    // canonical সবসময় নতুন সুন্দর URL-টাই — যেভাবেই পেজটা রিকোয়েস্ট হোক (পুরোনো product.html?id= বা নতুন /product/<slug>-i<id>)
+    const pageUrl = `${SITE_URL}${buildProductPath(product.name, product._id)}`;
+    const schemaDesc = trimAtWord(stripHtml(product.description) || desc, 1000) || desc;
+    const jsonLd = buildProductJsonLd(product, images, pageUrl, schemaDesc);
+    const breadcrumbLd = buildBreadcrumbJsonLd(product, pageUrl);
+    return { images, mainImage, title, desc, pageUrl, jsonLd, breadcrumbLd, related: related || [] };
+}
+
+function injectSeoIntoHtml(html, product, related) {
+    const { mainImage, title, desc, pageUrl, jsonLd, breadcrumbLd } = computeSeoFields(product, related);
     let out = html;
     out = setTagTextById(out, 'title', 'pageTitle', escapeHtml(title));
     out = setAttrById(out, 'metaDescription', 'content', escapeAttr(desc));
@@ -145,65 +345,115 @@ function injectSeoIntoHtml(html, product) {
     out = setAttrById(out, 'ogDescTag', 'content', escapeAttr(desc));
     out = setAttrById(out, 'ogImageTag', 'content', escapeAttr(mainImage));
     out = setAttrById(out, 'canonicalTag', 'href', escapeAttr(pageUrl));
-    out = setTagTextById(out, 'script', 'productJsonLd', JSON.stringify(jsonLd));
+    out = setTagTextById(out, 'script', 'productJsonLd', jsonForScript(jsonLd));
+    // ক্লায়েন্ট-সাইড JS এই চিহ্ন দেখে title/meta/canonical আর স্কিমার ভিত্তি নিজে বদলায় না
+    out = out.replace(/<script id="productJsonLd"/i, '<script id="productJsonLd" data-ssr="1"');
 
-    // Google Image Search-এর জন্য: raw HTML-এ H1 (id="productName") আগে খালি থাকতো, আর মূল
-    // ছবির (id="mainImage") src/alt-ও খালি থাকতো — দুটোই শুধু JS রান হওয়ার পরে বসতো। এখন সার্ভার
-    // লেভেলেই বসিয়ে দেওয়া হচ্ছে, ঠিক client-side renderProduct() যা করে তারই সমতুল্য।
+    // Twitter Card, og:url, product:price ট্যাগ + BreadcrumbList স্কিমা + SSR কনটেন্টের স্টাইল — </head>-এর ঠিক আগে
+    const extra =
+        `<meta name="twitter:card" content="summary_large_image">` +
+        `<meta name="twitter:title" content="${escapeAttr(title)}">` +
+        `<meta name="twitter:description" content="${escapeAttr(desc)}">` +
+        `<meta name="twitter:image" content="${escapeAttr(mainImage)}">` +
+        `<meta property="og:url" content="${escapeAttr(pageUrl)}">` +
+        `<meta property="product:price:amount" content="${escapeAttr(product.price)}">` +
+        `<meta property="product:price:currency" content="BDT">` +
+        `<script type="application/ld+json" id="breadcrumbJsonLd">${jsonForScript(breadcrumbLd)}</script>` +
+        ((product.status && product.status !== 'published') ? '<meta name="robots" content="noindex,follow">' : '');
+    out = out.replace(/<\/head>/i, extra + '</head>');
+
+    // Google Image Search-এর জন্য: H1 ও মূল ছবির src/alt
     out = setTagTextById(out, 'h1', 'productName', escapeHtml(product.name));
     out = setAttrById(out, 'mainImage', 'src', escapeAttr(mainImage));
     out = setAttrById(out, 'mainImage', 'alt', escapeAttr(product.name));
+
+    // "লোড হচ্ছে..." বার্তার জায়গায় পুরো পণ্যের তথ্য (দাম, স্পেক, বিবরণ, ব্রেডক্রাম্ব, সম্পর্কিত লিংক) — ভিজিটরও JS লোড হওয়া
+    // পর্যন্ত এটাই দেখে, তারপর renderProduct() #loadingMsg লুকিয়ে আসল UI দেখায়
+    out = out.replace(/(<div id="loadingMsg"[^>]*>)[\s\S]*?(<\/div>)/i, (_m, a, b) => a + buildSsrBlock(product, related, pageUrl) + b);
     return out;
+}
+
+// ============ ডেটা আনা (ব্যাকএন্ড) ============
+async function fetchJson(url, timeoutMs) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const res = await fetch(url, { signal: controller.signal });
+        return { status: res.status, ok: res.ok, data: res.ok ? await res.json() : null };
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+async function fetchRelated(product) {
+    const brand = linkableBrandOf(product);
+    if (!brand) return [];
+    const q = product.model
+        ? `phoneBrand=${encodeURIComponent(brand)}&model=${encodeURIComponent(product.model)}`
+        : (product.category ? `phoneBrand=${encodeURIComponent(brand)}&category=${encodeURIComponent(product.category)}` : '');
+    if (!q) return [];
+    try {
+        const r = await fetchJson(`${BACKEND_URL}/api/products?status=published&fields=summary&${q}`, RELATED_TIMEOUT_MS);
+        const list = Array.isArray(r.data) ? r.data : ((r.data && r.data.products) || []);
+        return list.filter(p => p && p._id && p.name && String(p._id) !== String(product._id)).slice(0, 12);
+    } catch (e) {
+        return []; // সম্পর্কিত লিংক না পেলেও পেজ ঠিকই যাবে
+    }
+}
+
+async function loadProductForSeo(productId) {
+    const hit = ssrCache.get(productId);
+    if (hit && Date.now() - hit.at < SSR_CACHE_TTL_MS) return hit;
+    const r = await fetchJson(`${BACKEND_URL}/api/products/${productId}`, FETCH_TIMEOUT_MS);
+    if (r.status === 404) return { notFound: true };
+    if (!r.ok) return null;
+    const product = r.data;
+    if (!product || !product._id || !product.name) return null;
+    const related = await fetchRelated(product);
+    const entry = { product, related, at: Date.now() };
+    if (ssrCache.size >= SSR_CACHE_MAX) ssrCache.delete(ssrCache.keys().next().value);
+    ssrCache.set(productId, entry);
+    return entry;
 }
 
 export default async (request, context) => {
     const url = new URL(request.url);
-    // /product/<slug>-i<id> — নতুন সুন্দর URL, এর জন্য কোনো static ফাইল নেই, তাই product.html-এর
-    // কনটেন্টই ভেতরে ভেতরে সার্ভ করা হচ্ছে (context.rewrite) — ব্রাউজারের ঠিকানা বার-এ সুন্দর
-    // URL-টাই দেখা যাবে। /product.html?id= — পুরোনো URL, এটা নিজেই একটা real static ফাইল
-    // (context.next())।
+    // /product/<slug>-i<id> — নতুন সুন্দর URL (static ফাইল নেই, তাই product.html ভেতরে ভেতরে সার্ভ হয়);
+    // /product.html?id= — পুরোনো URL (real static ফাইল)
     const isPrettyPath = url.pathname !== '/product.html';
     const productId = isPrettyPath
         ? extractProductIdFromPath(url.pathname)
         : url.searchParams.get('id');
 
-    // আগে এখানে থেকে নিচ পর্যন্ত কোনো try/catch ছিল না — মাঝে (context.rewrite/next,
-    // response.text(), ইত্যাদি) কোথাও কোনো অপ্রত্যাশিত/transient এরর হলে (Netlify/Deno এজ
-    // রানটাইমের কোনো ক্ষণস্থায়ী সমস্যা, ব্যাকএন্ড থেকে অদ্ভুত রেসপন্স, ইত্যাদি) পুরো রিকোয়েস্টটাই
-    // ভিজিটরের সামনে "This edge function has crashed" এরর পেজ হয়ে যেতো — প্রথমবার প্রোডাক্ট
-    // পেজে ঢুকতে গেলে এই এরর দেখা যেতো, রিলোড দিলে ঠিক হয়ে যেতো (কারণ ততক্ষণে ক্ষণস্থায়ী
-    // সমস্যাটা কেটে যেতো)। এখন পুরো লজিকটা try/catch দিয়ে মোড়ানো হলো — SEO ট্যাগ বসানো ব্যর্থ
-    // হলেও ভিজিটর সবসময় আসল (অপরিবর্তিত) প্রোডাক্ট পেজটাই দেখবে, কখনো crash পেজ দেখবে না।
+    // পুরো লজিক try/catch-এ: SEO বসানো ব্যর্থ হলেও ভিজিটর সবসময় আসল (অপরিবর্তিত) পেজটাই পাবে, কখনো crash পেজ নয়
     try {
         const response = isPrettyPath ? await context.rewrite('/product.html') : await context.next();
         if (!productId) return response;
 
-        let product;
+        let entry;
         try {
-            const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-            const apiRes = await fetch(`${BACKEND_URL}/api/products/${productId}`, { signal: controller.signal });
-            clearTimeout(timer);
-            if (!apiRes.ok) return response;
-            product = await apiRes.json();
+            entry = await loadProductForSeo(productId);
         } catch (err) {
-            // ব্যাকএন্ড স্লো/ডাউন/টাইমআউট — মূল পেজটাই অপরিবর্তিতভাবে পাঠিয়ে দাও, কাউকে বসিয়ে রাখা যাবে না
+            // ব্যাকএন্ড স্লো/ডাউন/টাইমআউট — মূল পেজ অপরিবর্তিত, কাউকে অপেক্ষা করানো হয় না
             return response;
         }
-        if (!product || !product._id || !product.name) return response;
+        if (!entry) return response;
 
         const html = await response.text();
-        const newHtml = injectSeoIntoHtml(html, product);
-
         const newHeaders = new Headers(response.headers);
         newHeaders.delete('content-length');
         newHeaders.set('content-type', 'text/html; charset=UTF-8');
 
+        // প্রোডাক্ট সত্যিই নেই/মুছে ফেলা/Inactive (ব্যাকএন্ড 404) — আগে পেজ 200 দিয়ে "লোড হচ্ছে" দেখাতো (Google-এর কাছে soft 404);
+        // এখন আসল 404 + noindex, যাতে Google মৃত URL দ্রুত বাদ দেয়। ভিজিটর আগের মতোই "প্রোডাক্টটি খুঁজে পাওয়া যায়নি" দেখে।
+        if (entry.notFound) {
+            newHeaders.set('x-robots-tag', 'noindex');
+            return new Response(html, { status: 404, headers: newHeaders });
+        }
+
+        const newHtml = injectSeoIntoHtml(html, entry.product, entry.related);
         return new Response(newHtml, { status: response.status, headers: newHeaders });
     } catch (err) {
-        // শেষ ভরসা: উপরের যেকোনো ধাপে অপ্রত্যাশিত এরর হলে সরাসরি আসল, অপরিবর্তিত পেজটাই ফেরত
-        // দেওয়া হচ্ছে — ভিজিটর কখনো crash পেজ দেখবে না, বড়জোর SEO ট্যাগগুলো (title/description
-        // ইত্যাদি) generic থেকে যাবে এই একটা রিকোয়েস্টের জন্য
         console.error('product-seo edge function এ অপ্রত্যাশিত এরর, আসল পেজ পাঠানো হচ্ছে:', err);
         try {
             return isPrettyPath ? await context.rewrite('/product.html') : await context.next();
@@ -216,10 +466,7 @@ export default async (request, context) => {
     }
 };
 
-// রাউটিং এখন netlify.toml-এ দুইটা আলাদা [[edge_functions]] এন্ট্রি দিয়ে হয় (/product.html আর
-// /product/*, দুটোই এই একই ফাংশনে) — এখানে আলাদা করে export const config দিলে netlify.toml-এর
-// এন্ট্রির সাথে ডুপ্লিকেট হয়ে /product.html-এ ফাংশনটা দুইবার চলতে পারতো, তাই এটা বাদ দেওয়া হলো
+// রাউটিং netlify.toml-এ ([[edge_functions]] এন্ট্রি /product.html ও /product/*) — এখানে আলাদা config export নেই
 
-// টেস্টিং-এর জন্য (Node দিয়ে যাচাই করার সুবিধার্থে) — Netlify আসলে শুধু default export ও
-// config-ই ব্যবহার করে, বাকি এক্সপোর্টগুলো deploy-এর সময় নিরাপদে উপেক্ষা করা হবে
-export { injectSeoIntoHtml, computeSeoFields, stripHtml, escapeHtml, escapeAttr, setAttrById, setTagTextById };
+// টেস্টিং-এর জন্য (Node দিয়ে যাচাই) — Netlify শুধু default export ও config ব্যবহার করে
+export { injectSeoIntoHtml, computeSeoFields, stripHtml, escapeHtml, escapeAttr, setAttrById, setTagTextById, buildSeoTitle, buildMetaDescription, shortProductName, sanitizeDescriptionHtml, descriptionToSafeHtml, buildSsrBlock, buildProductJsonLd, buildBreadcrumbJsonLd, stockInfoOf };

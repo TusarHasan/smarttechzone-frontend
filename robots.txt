@@ -1,4 +1,18 @@
 User-agent: *
 Allow: /
 
+# ব্যক্তিগত/ট্রানজ্যাকশন পেজ ও ইন্টারনাল সার্চ রেজাল্ট — ইনডেক্স করার মতো কিছু নেই, ক্রল-বাজেট বাঁচাতে বাদ
+Disallow: /cart.html
+Disallow: /checkout.html
+Disallow: /account.html
+Disallow: /login.html
+Disallow: /register.html
+Disallow: /forgot-password.html
+Disallow: /reset-password.html
+Disallow: /messages.html
+Disallow: /order-success.html
+Disallow: /order-failed.html
+Disallow: /track.html
+Disallow: /search.html
+
 Sitemap: https://smarttechzone.com.bd/sitemap.xml

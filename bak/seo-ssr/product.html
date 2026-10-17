@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<!-- /product/<slug>-i<id> পরিষ্কার URL-এ (নেটলিফাই edge function দিয়ে ভেতরে ভেতরে এই ফাইলটাই সার্ভ হয়)
+     নিচের সব relative স্ক্রিপ্ট/লিংক (config.js, cart.js, images/... ইত্যাদি) ব্রাউজার ভুলভাবে
+     "/product/" ফোল্ডারের ভেতরের ফাইল ধরে রিকোয়েস্ট করত (যেমন /product/config.js), যেটা আসলে
+     নেই — ফলে BACKEND_URL is not defined এরর দিয়ে পুরো পেজ "লোড হচ্ছে..." তে আটকে থাকতো।
+     <base href="/"> দিয়ে সব relative URL সবসময় ডোমেইনের রুট থেকেই resolve হবে, /product.html
+     ইউআরএল থেকে অ্যাক্সেস করলে আগের মতোই কাজ করবে। -->
+<base href="/">
+<script src="analytics.js" defer></script>
+<meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<title id="pageTitle">Product Details - Smart Tech Zone</title>
+<meta id="metaDescription" name="description" content="Smart Tech Zone থেকে অরিজিনাল মোবাইল রিপ্লেসমেন্ট পার্টস কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।">
+<meta id="ogTitle" property="og:type" content="product">
+<meta id="ogSiteName" property="og:site_name" content="Smart Tech Zone">
+<meta id="ogTitleTag" property="og:title" content="Product Details - Smart Tech Zone">
+<meta id="ogDescTag" property="og:description" content="Smart Tech Zone থেকে অরিজিনাল মোবাইল রিপ্লেসমেন্ট পার্টস কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।">
+<meta id="ogImageTag" property="og:image" content="https://smarttechzone.com.bd/images/logo.png">
+<link id="canonicalTag" rel="canonical" href="https://smarttechzone.com.bd/product.html">
+<script id="productJsonLd" type="application/ld+json"></script>
+<style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; }
+    .container { max-width: 900px; margin: 30px auto; background: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .product-layout { display: flex; gap: 30px; flex-wrap: wrap; }
+    .image-section { flex: 1; min-width: 280px; }
+    .main-image { width: 100%; border-radius: 8px; border: 1px solid #eee; }
+    /* দারাজের মতো হোভার-ম্যাগনিফায়ার — শুধু মাউস/ডেস্কটপে কাজ করে (টাচ ডিভাইসে স্বাভাবিক
+       পিঞ্চ-জুম ই থাকে, এখানে হাত দেওয়া হয়নি) */
+    .image-section { position: relative; }
+    .zoom-lens {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border: 1px solid rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+        pointer-events: none;
+        display: none;
+    }
+    /* দারাজের মতো — প্রোডাক্ট ছবির উপর হোভার করলে কাস্টম সার্কুলার ম্যাগনিফায়ার কার্সর
+       (সাদা ব্যাজ + গাঢ় ধূসর ম্যাগনিফাইং-গ্লাস আইকন) দেখানো হয় */
+    @media (hover: hover) and (pointer: fine) {
+        .main-image {
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18.5' fill='white' fill-opacity='0.95' stroke='%23555555' stroke-width='2'/%3E%3Ccircle cx='17' cy='17' r='7' fill='none' stroke='%23555555' stroke-width='2.3'/%3E%3Cline x1='22' y1='22' x2='28.5' y2='28.5' stroke='%23555555' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='17' y1='13.5' x2='17' y2='20.5' stroke='%23555555' stroke-width='1.8' stroke-linecap='round'/%3E%3Cline x1='13.5' y1='17' x2='20.5' y2='17' stroke='%23555555' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") 20 20, zoom-in;
+        }
+    }
+    .zoom-result {
+        position: absolute;
+        top: 0;
+        left: calc(100% + 16px);
+        width: 400px;
+        height: 400px;
+        background-color: #fff;
+        background-repeat: no-repeat;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        display: none;
+        z-index: 50;
+    }
+    @media (max-width: 1000px) {
+        .zoom-result { display: none !important; }
+    }
+    /* Daraz-এর মতো — গ্যালারির প্রথম থাম্বনেইলে ভিডিও থাকলে ক্লিক করলে মেইন এরিয়াতে এমবেড হয়ে প্লে হয় */
+    .main-video-wrap { width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; border: 1px solid #eee; background: #000; }
+    .main-video-wrap iframe { width: 100%; height: 100%; display: block; }
+    .thumb-row .video-thumb { position: relative; cursor: pointer; }
+    .thumb-row .video-thumb::after {
+        content: "▶"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        color: #fff; background: rgba(0,0,0,.35); font-size: 18px; border-radius: 4px;
+    }
+    .thumb-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .thumb-row img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; }
+    .info-section { flex: 1; min-width: 280px; }
+    h1 { font-size: 22px; color: #333; margin-top: 0; margin-bottom: 4px; }
+    /* প্রোডাক্ট নামের ঠিক নিচে AI-অনূদিত বাংলা নাম (Admin প্যানেলের "AI বাংলা" থেকে আসলে) — না থাকলে আড়াল থাকে */
+    .product-name-bn { font-size: 15px; color: #666; margin-bottom: 10px; line-height: 1.5; }
+    .price-block { margin: 14px 0; }
+    .price { font-size: 26px; color: #e74c3c; font-weight: bold; }
+    .original-price { font-size: 14px; color: #999; text-decoration: line-through; font-weight: normal; }
+    .discount-badge { font-size: 13px; color: #e74c3c; background: #fdf1f0; padding: 1px 6px; border-radius: 3px; margin-left: 8px; font-weight: bold; }
+    .meta { color: #666; font-size: 14px; margin-bottom: 6px; }
+    .meta a { color: #666; text-decoration: underline; text-decoration-color: #ccc; }
+    .meta a:hover { color: #e74c3c; text-decoration-color: #e74c3c; }
+    .sold-by-row {
+        display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #555;
+        margin: 10px 0 6px; padding: 8px 10px; background: #fafafa; border-radius: 6px;
+    }
+    .chat-seller-btn {
+        background: #fff; border: 1px solid #e74c3c; color: #e74c3c; border-radius: 16px;
+        padding: 5px 14px; font-size: 12.5px; font-weight: bold; cursor: pointer; margin-left: auto;
+    }
+    .chat-seller-btn:hover { background: #fdf1f0; }
+    /* Daraz-এর ডেস্কটপ প্রোডাক্ট পেজের মতো দুই-কলাম লে-আউট — বামে ফিক্সড-উইথ লেবেল
+       ("Compatibility by Model", "Color Family" ইত্যাদি), ডানে সেই ভ্যারিয়েন্টের অপশনগুলো।
+       লেবেল না থাকলে (hideNameLabel — যেমন জেনেরিক "Option" নাম) .attr-group-label ডিভটাই
+       DOM-এ থাকে না, তাই খালি জায়গা তৈরি হয় না — .attr-group-content তখন পুরো width নেয়। */
+    .attr-group { margin-top: 16px; display: flex; align-items: flex-start; gap: 14px; }
+    .attr-group-label { font-size: 13px; color: #666; font-weight: bold; flex: 0 0 104px; padding-top: 8px; }
+    .attr-group-content { flex: 1; min-width: 0; }
+    .attr-selected-value { display: block; font-size: 13px; color: #333; margin-bottom: 8px; }
+    .attr-swatch-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .attr-swatch {
+        width: 36px; height: 36px; padding: 2px; box-sizing: border-box;
+        border: 1px solid #ddd; border-radius: 4px; cursor: pointer; background: #fff;
+    }
+    .attr-swatch img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; display: block; }
+    .attr-swatch.active { border-color: #e74c3c; border-width: 2px; padding: 1px; }
+    .attr-btn-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .attr-btn {
+        display: inline-flex; align-items: center; padding: 6px 14px;
+        border: 1px solid #ddd; border-radius: 4px;
+        cursor: pointer; background: #fff; font-size: 13px;
+    }
+    /* কোনো ভ্যারিয়েন্টের attributes ডেটা ফাঁকা থাকলে (legacy fallback) এখানে একটা ছবি বসতে পারে —
+       সাইজ বেঁধে না দিলে ছবিটা তার আসল বড় সাইজেই দেখাতো, তাই ছোট আইকনের মতো দেখানো হচ্ছে */
+    .attr-btn img { width: 22px; height: 22px; object-fit: cover; border-radius: 3px; margin-right: 6px; display: inline-block; }
+    .attr-btn.active { border-color: #e74c3c; color: #e74c3c; background: #fdf1f0; }
+    .qty-row { display: flex; align-items: center; gap: 15px; margin-top: 16px; }
+    .qty-box { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; }
+    .qty-box button { padding: 6px 14px; background: #f5f5f5; border: none; cursor: pointer; font-size: 16px; }
+    .qty-box span { padding: 0 15px; font-weight: bold; }
+    .action-row { display: flex; gap: 15px; margin-top: 20px; }
+    /* Daraz-এর নিজের Buy Now (#2ABBE8) ও Add to Cart (#F57224) বাটনের হুবহু কালার/স্টাইল —
+       radius 2px, ফ্ল্যাট (কোনো shadow/icon নেই), font-weight 500 (readability-র জন্য Daraz-এর
+       400 থেকে সামান্য বাড়ানো হয়েছে) */
+    .btn-buy { flex: 1; background: #2ABBE8; color: #fff; border: none; padding: 13px; font-size: 16px; font-weight: 500; border-radius: 2px; cursor: pointer; transition: opacity 0.2s ease; }
+    .btn-cart { flex: 1; background: #F57224; color: #fff; border: none; padding: 13px; font-size: 16px; font-weight: 500; border-radius: 2px; cursor: pointer; transition: opacity 0.2s ease; }
+    .btn-buy:hover:not(:disabled), .btn-cart:hover:not(:disabled) { opacity: 0.9; }
+    /* স্টকে না থাকলে বাটন দুটো এবং Quantity স্টেপার ধূসর/অচল দেখানোর জন্য */
+    .btn-buy:disabled, .btn-cart:disabled { background: #ccc; color: #888; cursor: not-allowed; }
+    .qty-box button:disabled { color: #bbb; cursor: not-allowed; background: #f5f5f5; }
+    .stock-note { font-size: 13px; color: #888; margin-top: 6px; }
+    .oos-label { color: #e74c3c; font-weight: 700; font-size: 14px; margin-top: 8px; }
+
+    .lower-section { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+    .section-title { font-size: 17px; color: #333; margin: 0 0 14px; font-weight: bold; }
+    /* Add Products-এর রিচ-টেক্সট এডিটর থেকে আসা HTML (প্যারাগ্রাফ/লিস্ট/ছবি) রেন্ডার হয় বলে আর
+       white-space: pre-wrap লাগে না (আগে প্লেইন টেক্সটে লাইন-ব্রেক ধরে রাখার জন্য দরকার ছিল) */
+    .description { line-height: 1.7; color: #444; font-size: 14px; overflow-wrap: break-word; max-width: 100%; }
+    .description ul, .description ol { margin: 8px 0; padding-left: 24px; }
+    .description img { max-width: 100%; border-radius: 6px; margin: 8px 0; display: block; }
+    .description p { margin: 0 0 10px; }
+    .description.collapsed { max-height: 260px; overflow: hidden; position: relative; }
+    .description.collapsed::after {
+        content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+        background: linear-gradient(to bottom, transparent, #fff);
+    }
+    .view-more-btn {
+        display: block; margin: 14px auto 0; background: #fff; border: 1px solid #e74c3c; color: #e74c3c;
+        padding: 8px 24px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;
+    }
+
+    .spec-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+    .spec-table tr { border-bottom: 1px solid #f0f0f0; }
+    .spec-table td { padding: 10px 8px; }
+    .spec-table td:first-child { color: #888; width: 160px; }
+    .spec-table td:last-child { color: #333; font-weight: bold; }
+
+    .box-content { font-size: 14px; color: #444; margin-top: 8px; }
+
+    .review-summary { display: flex; gap: 40px; align-items: center; flex-wrap: wrap; }
+    .review-score-box { text-align: center; min-width: 100px; }
+    .review-score-num { font-size: 40px; font-weight: bold; color: #333; }
+    .review-score-max { font-size: 16px; color: #999; }
+    .review-stars-display { color: #f5a623; font-size: 18px; margin: 6px 0; }
+    .review-count-text { font-size: 13px; color: #888; }
+    .review-breakdown { flex: 1; min-width: 220px; }
+    .breakdown-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+    .breakdown-row .star-num { width: 40px; color: #666; }
+    .breakdown-bar-bg { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+    .breakdown-bar-fill { height: 100%; background: #f5a623; }
+    .breakdown-row .count { width: 30px; text-align: right; color: #888; }
+
+    .review-list { margin-top: 24px; }
+    .review-item { padding: 16px 0; border-bottom: 1px solid #f0f0f0; }
+    .review-item-header { display: flex; justify-content: space-between; align-items: center; }
+    .review-customer { font-weight: bold; font-size: 14px; color: #333; }
+    /* ফেক রিভিউ ঠেকাতে এখন প্রতিটা রিভিউ আসল ডেলিভারি-সম্পন্ন অর্ডারের সাথে যাচাই করেই বসে —
+       তাই প্রতিটা রিভিউয়ের পাশে এই "Verified Purchase" ব্যাজ, কাস্টমারদের কাছে বিশ্বাসযোগ্যতা বাড়ায় */
+    .verified-badge {
+        display: inline-flex; align-items: center; gap: 3px; margin-left: 8px;
+        background: #eafaf1; color: #27ae60; font-size: 11px; font-weight: 700;
+        padding: 2px 8px; border-radius: 10px; vertical-align: middle;
+    }
+    .review-date { font-size: 12px; color: #999; }
+    .review-stars { color: #f5a623; font-size: 14px; margin: 4px 0; }
+    .review-comment { font-size: 14px; color: #444; line-height: 1.6; }
+    .no-reviews { color: #888; font-size: 14px; padding: 20px 0; }
+
+    .write-review-box { margin-top: 24px; padding: 18px; background: #fafafa; border-radius: 8px; }
+    .write-review-box h4 { margin: 0 0 4px; font-size: 15px; color: #333; }
+    .write-review-note { font-size: 12.5px; color: #888; margin: 0 0 10px; }
+    .star-input { font-size: 26px; cursor: pointer; }
+    .star-input span { color: #ddd; margin-right: 4px; }
+    .star-input span.selected { color: #f5a623; }
+    .write-review-box input[type=text], .write-review-box input[type=tel], .write-review-box textarea {
+        width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ddd; border-radius: 4px;
+        font-family: Arial, sans-serif; font-size: 14px; box-sizing: border-box;
+    }
+    .write-review-box textarea { min-height: 70px; resize: vertical; }
+    .submit-review-btn {
+        margin-top: 12px; background: #e74c3c; color: #fff; border: none; padding: 10px 24px;
+        border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;
+    }
+    .review-status-msg { margin-top: 10px; font-size: 13px; }
+    /* কেউ এই প্রোডাক্টটি অর্ডার/ডেলিভারি না নিয়ে থাকলে, অথবা আগেই একবার রিভিউ দিয়ে থাকলে —
+       "Write a Review" ফর্মের বদলে এই মেসেজ বক্সটা দেখানো হয় */
+    .review-not-eligible-box {
+        margin-top: 24px; padding: 16px 18px; background: #fdf6ec; border: 1px solid #f5e3c4;
+        border-radius: 8px; font-size: 13.5px; color: #8a6d3b; line-height: 1.6;
+    }
+
+    .qa-list { margin-top: 10px; }
+    .qa-item { padding: 14px 0; border-bottom: 1px solid #f0f0f0; }
+    .qa-question { font-size: 14px; color: #333; font-weight: bold; }
+    .qa-question::before { content: 'Q: '; color: #e74c3c; }
+    .qa-meta { font-size: 12px; color: #999; margin-top: 2px; }
+    .qa-answer { font-size: 14px; color: #444; margin-top: 8px; padding: 10px 12px; background: #f7f7f7; border-radius: 4px; }
+    .qa-answer::before { content: 'A: '; color: #27ae60; font-weight: bold; }
+    .qa-no-answer { font-size: 13px; color: #aaa; margin-top: 6px; font-style: italic; }
+    .no-questions { color: #888; font-size: 14px; padding: 10px 0; }
+    .ask-question-box { margin-top: 20px; padding: 18px; background: #fafafa; border-radius: 8px; }
+    .ask-question-box h4 { margin: 0 0 12px; font-size: 15px; color: #333; }
+    .ask-question-box input[type=text], .ask-question-box textarea {
+        width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ddd; border-radius: 4px;
+        font-family: Arial, sans-serif; font-size: 14px; box-sizing: border-box;
+    }
+    .ask-question-box textarea { min-height: 60px; resize: vertical; }
+    .submit-question-btn {
+        margin-top: 12px; background: #2bbef9; color: #fff; border: none; padding: 10px 24px;
+        border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;
+    }
+    .question-status-msg { margin-top: 10px; font-size: 13px; }
+
+    #loadingMsg, #errorMsg { text-align: center; padding: 60px 0; color: #888; }
+
+    /* ============ মোবাইল ভ্যারিয়েন্ট বটম-শীট (Daraz অ্যাপ/মোবাইল সাইটের মতো) ============
+       ডেস্কটপে #attrGroupsWrapper আর .qty-row সবসময় ইনলাইনই দেখা যায় (উপরের দুই-কলাম লে-আউটে)।
+       মোবাইলে (≤768px) Buy Now/Add to Cart চাপলে এই একই দুইটা নোড (কপি না করে, সরাসরি সরিয়ে)
+       এই বটম-শীটের ভেতরে চলে আসে — তাই ভ্যারিয়েন্ট-সিলেকশনের আসল লজিক একদম অপরিবর্তিত থাকে,
+       শুধু জায়গা বদলায়। ডেস্কটপে এই শীট কখনো display:none থেকে বেরই হয় না (JS-ও কখনো খোলে না)। */
+    .variant-sheet-backdrop {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5);
+        z-index: 1000; opacity: 0; transition: opacity .25s ease;
+    }
+    .variant-sheet-backdrop.open { opacity: 1; }
+    .variant-sheet {
+        display: none; flex-direction: column; position: fixed; left: 0; right: 0; bottom: 0;
+        max-height: 85vh; background: #fff; border-radius: 14px 14px 0 0; z-index: 1001;
+        transform: translateY(100%); transition: transform .28s ease;
+        box-shadow: 0 -4px 20px rgba(0,0,0,.15);
+    }
+    .variant-sheet.open { transform: translateY(0); }
+    body.variant-sheet-locked { overflow: hidden; }
+    .variant-sheet-header {
+        display: flex; align-items: center; gap: 12px; padding: 16px;
+        border-bottom: 1px solid #eee; flex-shrink: 0;
+    }
+    .variant-sheet-thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; flex-shrink: 0; }
+    .variant-sheet-price-wrap { flex: 1; min-width: 0; }
+    .variant-sheet-price { font-size: 20px; color: #e74c3c; font-weight: bold; }
+    .variant-sheet-original { font-size: 12px; color: #999; text-decoration: line-through; margin-top: 2px; }
+    .variant-sheet-close {
+        background: none; border: none; font-size: 26px; line-height: 1; color: #999;
+        cursor: pointer; padding: 4px 8px; flex-shrink: 0;
+    }
+    .variant-sheet-body { padding: 16px; overflow-y: auto; flex: 1; }
+    .variant-sheet-footer { padding: 14px 16px; border-top: 1px solid #eee; flex-shrink: 0; }
+    .variant-sheet-confirm { width: 100%; }
+    /* শীটের ভেতরে গেলে ডেস্কটপের দুই-কলাম (.attr-group flex row) লে-আউট ভেঙে Daraz-এর মোবাইল
+       মতো উপরে লেবেল, নিচে অপশন — একের পর এক স্ট্যাক হয়ে দেখায় */
+    #variantSheetBody .attr-group { display: block; margin-top: 0; margin-bottom: 20px; }
+    #variantSheetBody .attr-group:last-child { margin-bottom: 0; }
+    #variantSheetBody .attr-group-label { flex: none; padding-top: 0; margin-bottom: 10px; }
+    #variantSheetBody .qty-row { margin-top: 20px; }
+
+    /* ============ মোবাইল প্রোডাক্ট পেজ — Daraz অ্যাপ স্টাইল (শুধু ≤768px; ডেস্কটপ অপরিবর্তিত) ============
+       নতুন এলিমেন্টগুলো (.m-*) ডেস্কটপে display:none। মোবাইলে: সোয়াইপযোগ্য ছবির গ্যালারি (1/N),
+       দাম → ছাড়ের ট্যাগ → নাম → ব্র্যান্ড/মডেল → রেটিং ও sold → রিটার্ন রো, আর নিচে ফিক্সড অ্যাকশন বার
+       (Store | Chat | Buy Now | Add to Cart)। Buy Now/Add to Cart আগের buyNow()/addToCartClick() ই কল
+       করে, তাই ভ্যারিয়েন্ট বটম-শীট, স্টক চেক, Pixel ইভেন্ট সব আগের মতোই কাজ করে। */
+    .m-gallery, .m-actionbar, .m-promo-row, .m-rating-row, .m-return-row { display: none; }
+    @media (max-width: 768px) {
+        html, body { overflow-x: hidden; max-width: 100%; }
+        body { background: #f2f2f2; padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+        .container { margin: 0; padding: 0; max-width: 100%; border-radius: 0; box-shadow: none; background: transparent; }
+        .product-layout { display: block; gap: 0; }
+        .image-section { min-width: 0; padding: 0; }
+        /* পুরনো একক ছবি + থাম্বনেইল সারি লুকানো (JS এখনো #mainImage ব্যবহার করে — DOM-এ থাকছে) */
+        .main-image, .thumb-row, .main-video-wrap { display: none !important; }
+
+        .m-gallery { display: block; position: relative; background: #fff; overflow: hidden; }
+        .m-gallery-track {
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+            -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+        }
+        .m-gallery-track::-webkit-scrollbar { display: none; }
+        .m-slide {
+            flex: 0 0 100%; width: 100%; aspect-ratio: 1 / 1; scroll-snap-align: center; scroll-snap-stop: always;
+            display: flex; align-items: center; justify-content: center; background: #fff; position: relative;
+        }
+        .m-slide img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .m-slide.m-video-slide { background: #000; }
+        .m-slide.m-video-slide img { object-fit: cover; opacity: .85; }
+        .m-slide.m-video-slide iframe { width: 100%; height: 100%; border: 0; display: block; }
+        .m-video-play {
+            position: absolute; inset: 0; margin: auto; width: 64px; height: 64px; border-radius: 50%;
+            background: rgba(0,0,0,.6); color: #fff; border: 2px solid #fff; font-size: 26px; line-height: 1; cursor: pointer;
+        }
+        .m-gallery-count {
+            position: absolute; right: 12px; bottom: 12px; background: rgba(0,0,0,.55); color: #fff;
+            font-size: 12.5px; padding: 3px 10px; border-radius: 3px; pointer-events: none;
+        }
+        .m-badges { position: absolute; left: 0; bottom: 12px; display: flex; max-width: calc(100% - 90px); pointer-events: none; }
+        .m-badge { font-size: 12px; font-weight: 700; color: #fff; padding: 5px 10px; background: #e74c3c; white-space: nowrap; }
+        .m-badge.m-badge-pack { background: #1f8a5b; }
+        .m-badge:first-child { border-radius: 0 0 0 0; }
+
+        .info-section { display: flex; flex-direction: column; min-width: 0; background: #fff; padding: 12px 14px 14px; }
+        .info-section > * { min-width: 0; }
+        .price-block { order: 1; margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+        .price { font-size: 30px; line-height: 1.1; }
+        #originalPriceWrap { display: inline-block; }
+        .original-price { font-size: 15px; }
+        .discount-badge { display: none; }
+        .m-promo-row { order: 2; display: none; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .m-promo-row.show { display: flex; }
+        .m-tag { font-size: 12.5px; font-weight: 700; padding: 3px 9px; border-radius: 3px; }
+        .m-tag-save { color: #e74c3c; background: #fdf1f0; }
+        .m-tag-pct { color: #c2185b; background: #fde7ef; }
+        h1 { order: 3; font-size: 17px; line-height: 1.4; font-weight: 600; margin: 12px 0 2px; overflow-wrap: anywhere; }
+        .product-name-bn { order: 4; font-size: 14px; margin-bottom: 4px; overflow-wrap: anywhere; }
+        .meta { order: 5; font-size: 13px; margin: 2px 0; overflow-wrap: anywhere; }
+        .m-rating-row { order: 6; display: none; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-top: 10px; font-size: 14px; color: #555; cursor: pointer; }
+        .m-rating-row.show { display: flex; }
+        .m-rating-row .m-stars { color: #f5a623; letter-spacing: 1px; font-size: 15px; }
+        .m-rating-row .m-sep { width: 1px; height: 14px; background: #ddd; }
+        .m-return-row {
+            order: 7; display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px;
+            background: #f7f7f9; border-radius: 6px; color: #333; font-size: 14px; text-decoration: none; min-height: 44px; box-sizing: border-box;
+        }
+        .m-return-row svg { flex: 0 0 auto; }
+        .m-return-row .m-chev { margin-left: auto; color: #999; font-size: 20px; line-height: 1; }
+        .sold-by-row { order: 8; }
+        .chat-seller-btn { display: none; }
+        #attrGroupsWrapper { order: 9; }
+        .stock-note { order: 10; }
+        .qty-row { order: 11; }
+        .action-row { order: 12; margin-top: 0; }
+        /* নিচের ফিক্সড বারে Buy Now/Add to Cart আছে, তাই পেজের ভেতরের বাটন দুটো লুকানো */
+        .action-row .btn-buy, .action-row .btn-cart { display: none !important; }
+        .action-row .btn-wishlist { margin-top: 14px; }
+
+        .lower-section { margin-top: 8px; border-top: 0; padding: 14px; background: #fff; overflow-wrap: anywhere; min-width: 0; }
+        .lower-section img, .lower-section video, .lower-section iframe { max-width: 100%; height: auto; }
+        .lower-section table { max-width: 100%; }
+        .description table { display: block; overflow-x: auto; }
+        .spec-table { width: 100%; table-layout: fixed; }
+        .spec-table td { overflow-wrap: anywhere; }
+
+        .m-actionbar {
+            display: flex; position: fixed; left: 0; bottom: 0; width: 100%; z-index: 999; box-sizing: border-box;
+            gap: 8px; align-items: stretch; background: #fff; border-top: 1px solid #eee;
+            padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); box-shadow: 0 -2px 10px rgba(0,0,0,.08);
+        }
+        .m-ab-icon {
+            flex: 0 0 54px; min-height: 48px; padding: 0; background: none; border: none; color: #555;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+            font-size: 11.5px; text-decoration: none; cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent;
+        }
+        .m-ab-btn {
+            flex: 1; min-height: 48px; border: none; border-radius: 4px; color: #fff; font-size: 15px; font-weight: 700;
+            cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; padding: 0 6px;
+        }
+        .m-ab-buy { background: #f29900; }
+        .m-ab-cart { background: #f57224; }
+        .m-ab-btn:active { opacity: .85; }
+        .m-ab-btn:disabled { background: #ccc; color: #777; cursor: not-allowed; }
+        /* মোবাইল প্রোডাক্ট পেজ: ভাসমান চ্যাট বাটন লুকানো, কারণ নিচের বারেই Chat আছে (সেটা সরাসরি
+           openVendorChat() চালায়, ভাসমান বাটনের উপর নির্ভর করে না)। */
+        #stzChatFab { display: none !important; }
+        /* ভাসমান "অর্ডার ট্র্যাক" এখন ডান প্রান্তের মাঝখানে লম্বা ট্যাব: স্ক্রিনের দেয়ালে আধা-গোঁজা, বাঁ দিকের কোণা গোল।
+           track-widget.js বদলানো হয়নি, তাই অন্য পেজে আগের বাটনই থাকে। */
+        #stzTwFab {
+            left: auto !important; bottom: auto !important; right: -3px !important; top: 50% !important;
+            transform: translateY(-50%) !important; z-index: 1000 !important;
+            flex-direction: column !important; gap: 8px !important; align-items: center !important;
+            width: 40px !important; padding: 12px 6px 12px 3px !important; box-sizing: border-box !important;
+            background: linear-gradient(180deg, #ee5a45 0%, #d93a28 100%) !important; color: #fff !important; border: none !important;
+            border-radius: 14px 0 0 14px !important; box-shadow: -2px 3px 12px rgba(0,0,0,.25) !important;
+            font: 700 12px/1 Arial, sans-serif !important; letter-spacing: .3px; -webkit-tap-highlight-color: transparent;
+            transition: right .18s ease, box-shadow .18s ease !important;
+        }
+        #stzTwFab:hover { background: linear-gradient(180deg, #ee5a45 0%, #d93a28 100%) !important; color: #fff !important; }
+        #stzTwFab:active { right: 0 !important; box-shadow: -1px 2px 8px rgba(0,0,0,.3) !important; }
+        #stzTwFab svg { width: 20px !important; height: 20px !important; flex: none; }
+        #stzTwFab span { display: none !important; }
+        #stzTwFab::after { content: "Track Order"; writing-mode: vertical-rl; white-space: nowrap; }
+        /* ট্র্যাক প্যানেল ডান প্রান্ত থেকে ট্যাবের পাশে খোলে */
+        #stzTwPanel {
+            left: auto !important; right: 48px !important; bottom: auto !important; top: 50% !important;
+            transform: translateY(-50%) !important; width: min(330px, calc(100vw - 64px)) !important; max-height: 80vh; overflow-y: auto !important;
+        }
+        /* ভ্যারিয়েন্ট শীট খোলা থাকলে ট্যাব শীটের উপর না এসে লুকানো থাকে */
+        body:has(.variant-sheet.open) #stzTwFab, body:has(.variant-sheet.open) #stzTwPanel { display: none !important; }
+    }
+
+    /* ===== টাইটেলের পাশে Share ও Wishlist আইকন (Daraz-স্টাইল, মনোক্রোম আউটলাইন) + শেয়ার মডাল ও টোস্ট ===== */
+    .title-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
+    .title-row h1 { flex: 1; min-width: 0; margin: 0; overflow-wrap: anywhere; }
+    .title-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; margin: -4px -6px 0 0; }
+    .ta-btn {
+        display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0;
+        background: transparent; border: 0; border-radius: 50%; color: #757575; cursor: pointer; -webkit-tap-highlight-color: transparent;
+        transition: color .18s ease, background-color .18s ease, transform .18s ease;
+    }
+    .ta-btn svg { display: block; transition: transform .18s ease; }
+    @media (hover: hover) { .ta-btn:hover { color: #212121; background: #f3f3f3; } .ta-heart.on:hover { color: #d63a2a; background: #fdf1f0; } }
+    .ta-btn:active svg { transform: scale(.88); }
+    .ta-btn:focus-visible { outline: 2px solid #212121; outline-offset: 1px; }
+    .ta-heart.on { color: #e74c3c; }
+    .ta-heart.on svg path { fill: currentColor; }
+    .ta-heart.pop svg { animation: taPop .38s ease; }
+    @keyframes taPop { 0% { transform: scale(1); } 40% { transform: scale(1.3); } 100% { transform: scale(1); } }
+    @media (prefers-reduced-motion: reduce) { .ta-btn, .ta-btn svg { transition: none; } .ta-heart.pop svg { animation: none; } }
+    @media (max-width: 768px) {
+        .title-row { order: 3; margin: 12px 0 2px; }
+        .title-row h1 { order: 0; font-size: 17px; line-height: 1.4; font-weight: 600; }
+        .title-actions { margin: -6px -8px 0 0; }
+    }
+
+    body.stz-lock { overflow: hidden; }
+    /* ----- Daraz-স্টাইল শেয়ার শীট: উপরে প্রোডাক্ট প্রিভিউ কার্ড, নিচে "Share this product with friends!" শীট ----- */
+    #stzShareOv { position: fixed; inset: 0; z-index: 100000; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.55); }
+    #stzShareOv.open { display: flex; animation: stzFade .18s ease; }
+    @keyframes stzFade { from { opacity: 0; } to { opacity: 1; } }
+    .sh-wrap { width: 100%; max-width: 420px; max-height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding: 16px; box-sizing: border-box; overscroll-behavior: contain; }
+    .sh-card { align-self: center; width: min(300px, 100%); background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 34px rgba(0,0,0,.28); animation: stzRise .22s ease; flex-shrink: 0; }
+    .sh-card-img { background: #fff; padding: 12px 12px 4px; display: flex; justify-content: center; }
+    .sh-card-img img { display: block; width: 100%; height: auto; max-height: min(34vh, 250px); object-fit: contain; }
+    .sh-card-body { padding: 2px 14px 12px; }
+    .sh-card-title { font-size: 14px; font-weight: 700; color: #212121; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+    .sh-card-price { margin-top: 4px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+    .sh-card-price b { font-size: 18px; color: #e74c3c; }
+    .sh-card-price s { font-size: 12.5px; color: #9e9e9e; }
+    .sh-card-price em { font-style: normal; font-size: 12px; font-weight: 700; color: #c2185b; background: #fde7ef; padding: 1px 6px; border-radius: 3px; }
+    .sh-ribbon { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 14px; color: #fff; font-size: 13.5px; font-weight: 700; background: linear-gradient(135deg, #ff7a6b 0%, #e74c3c 55%, #d6336c 100%); }
+    .sh-ribbon svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .sh-sheet { background: #fff; border-radius: 16px; padding: 14px 8px 8px; box-shadow: 0 10px 34px rgba(0,0,0,.28); animation: stzRise .24s ease; flex-shrink: 0; }
+    @keyframes stzRise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .sh-head { position: relative; display: flex; align-items: center; justify-content: center; padding: 0 44px 12px; }
+    .sh-head h2 { margin: 0; font-size: 15px; color: #212121; font-weight: 700; text-align: center; }
+    .sh-x { position: absolute; right: 6px; top: -6px; width: 38px; height: 38px; border: 0; background: transparent; border-radius: 50%; font-size: 26px; line-height: 1; color: #616161; cursor: pointer; }
+    .sh-x:hover { background: #f3f3f3; color: #212121; }
+    .sh-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px 0; padding: 4px 4px 8px; }
+    .sh-item {
+        display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 2px; background: transparent; border: 0; border-radius: 10px;
+        color: #333; font: inherit; font-size: 12px; line-height: 1.25; text-decoration: none; text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent;
+        transition: background-color .15s ease;
+    }
+    @media (hover: hover) { .sh-item:hover { background: #f6f6f6; } .sh-item:hover .sh-ic { transform: translateY(-2px); } }
+    .sh-item:active .sh-ic { transform: scale(.94); }
+    .sh-item:focus-visible { outline: 2px solid #212121; outline-offset: 1px; }
+    .sh-ic { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: transform .15s ease; }
+    .sh-ic svg { width: 26px; height: 26px; display: block; }
+    .sh-ic.fb { background: #1877f2; color: #fff; }
+    .sh-ic.ms { background: linear-gradient(135deg, #00b2ff 0%, #006aff 45%, #a334fa 80%, #ff5c87 100%); color: #fff; }
+    .sh-ic.wa { background: #25d366; color: #fff; }
+    .sh-ic.ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%); color: #fff; }
+    .sh-ic.plain { color: #333; }
+    .sh-ic.plain svg { width: 30px; height: 30px; }
+    .sh-busy { opacity: .6; pointer-events: none; }
+    @media (max-width: 600px) {
+        #stzShareOv.open { align-items: flex-end; }
+        .sh-wrap { max-width: none; padding: 0; gap: 14px; }
+        .sh-sheet { border-radius: 16px 16px 0 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); animation: stzSlide .26s ease; }
+        @keyframes stzSlide { from { transform: translateY(100%); } to { transform: none; } }
+    }
+    @media (prefers-reduced-motion: reduce) { .sh-card, .sh-sheet, #stzShareOv.open { animation: none !important; } .sh-ic { transition: none; } }
+
+    #stzToastBox { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 100001; display: flex; flex-direction: column; align-items: center; pointer-events: none; width: max-content; max-width: calc(100vw - 32px); }
+    .stz-toast {
+        display: flex; align-items: center; gap: 12px; background: #323232; color: #fff; font-size: 14px; line-height: 1.4; padding: 11px 16px; border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0,0,0,.28); opacity: 0; transform: translateY(10px); transition: opacity .2s ease, transform .2s ease; pointer-events: auto;
+    }
+    .stz-toast.show { opacity: 1; transform: none; }
+    .stz-toast a { color: #ffb4ab; font-weight: 700; text-decoration: none; white-space: nowrap; }
+    .stz-toast a:hover { text-decoration: underline; }
+    @media (max-width: 768px) { #stzToastBox { bottom: calc(84px + env(safe-area-inset-bottom)); } }
+    body.stz-lock #stzToastBox { top: 20px; bottom: auto; } /* শেয়ার মডাল খোলা থাকলে টোস্ট উপরে, যাতে মডালের আইকন না ঢাকে */
+</style>
+    <script src="config.js"></script>
+    <script src="visitor-track.js" defer></script>
+    <script src="cart.js"></script>
+    <script src="customer-auth.js"></script>
+    <script src="wishlist.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" defer></script>
+    <script src="chat-widget.js" defer></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
+            <a href="cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
+        </div>
+    </nav>
+    <main>
+
+<div class="container">
+    <div id="loadingMsg">লোড হচ্ছে...</div>
+    <div id="errorMsg" style="display:none;">প্রোডাক্টটি খুঁজে পাওয়া যায়নি।</div>
+
+    <div id="productContent" style="display:none;">
+        <div class="product-layout">
+            <div class="image-section">
+                <!-- মোবাইল গ্যালারি (≤768px): JS এখানে স্লাইড বসায়; ডেস্কটপে display:none -->
+                <div class="m-gallery" id="mGallery" aria-label="প্রোডাক্ট ছবি">
+                    <div class="m-gallery-track" id="mGalleryTrack"></div>
+                    <div class="m-badges" id="mBadges"></div>
+                    <div class="m-gallery-count" id="mGalleryCount">1/1</div>
+                </div>
+                <img id="mainImage" class="main-image" src="" alt="" onerror="this.src='https://via.placeholder.com/400?text=No+Image'">
+                <div class="main-video-wrap" id="mainVideoWrap" style="display:none;">
+                    <iframe id="mainVideoFrame" src="" title="Product Video" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="thumb-row" id="thumbRow"></div>
+            </div>
+            <div class="info-section">
+                <div class="title-row">
+                    <h1 id="productName"></h1>
+                    <div class="title-actions">
+                        <button type="button" class="ta-btn" id="shareBtn" aria-label="Share this product" title="Share" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.3M8.3 13.3l7.4 4.3"/></svg></button>
+                        <button type="button" class="ta-btn ta-heart" id="pdWishBtn" aria-label="Add to wishlist" title="Add to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.4S3.2 15 3.2 8.9A4.7 4.7 0 0 1 12 6.6a4.7 4.7 0 0 1 8.8 2.3c0 6.1-8.8 11.5-8.8 11.5z"/></svg></button>
+                    </div>
+                </div>
+                <div class="product-name-bn" id="productNameBn" style="display:none;"></div>
+                <div class="meta">Brand: <a id="productBrand" href="#"></a> | Model: <a id="productModel" href="#"></a></div>
+                <div class="meta">Part Type: <span id="productPartType"></span></div>
+                <div class="sold-by-row">
+                    Sold by <strong>Smart Tech Zone</strong>
+                    <button class="chat-seller-btn" onclick="openVendorChat(productId, document.getElementById('productName').textContent)">💬 চ্যাট করুন</button>
+                </div>
+                <div class="price-block">
+                    <div class="price">৳<span id="productPrice"></span></div>
+                    <div id="originalPriceWrap" style="display:none;">
+                        <span class="original-price">৳<span id="originalPrice"></span></span>
+                        <span class="discount-badge" id="discountBadge"></span>
+                    </div>
+                </div>
+
+                <div class="m-promo-row" id="mPromoRow"></div>
+                <div class="m-rating-row" id="mRatingRow" onclick="document.querySelector('#reviewAvg').scrollIntoView({behavior:'smooth', block:'center'})"></div>
+                <a class="m-return-row" href="returns-refunds.html">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#6b7280" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3zm-1.2 14.2-3.5-3.5 1.4-1.4 2.1 2.1 4.6-4.6 1.4 1.4-6 6z"/></svg>
+                    <span>ডেলিভারির ১৪ দিনের মধ্যে সহজ রিটার্ন</span>
+                    <span class="m-chev">&rsaquo;</span>
+                </a>
+                <div id="attrGroupsWrapper"></div>
+
+                <div class="stock-note" id="stockNote"></div>
+
+                <div class="qty-row">
+                    <label style="font-weight:bold; font-size:14px;">Quantity:</label>
+                    <div class="qty-box">
+                        <button onclick="updateQty(-1)">-</button>
+                        <span id="qtyValue">1</span>
+                        <button onclick="updateQty(1)">+</button>
+                    </div>
+                </div>
+
+                <div class="action-row">
+                    <button class="btn-buy" onclick="buyNow()">Buy Now</button>
+                    <button class="btn-cart" onclick="addToCartClick()">Add to Cart</button>
+                    <button type="button" id="wishlistBtn" class="btn-wishlist" style="display:none;" data-label-off="♡ Add to Wishlist" data-label-on="♥ Wishlisted" onclick="stzToggleWishlist(productId, this)">♡ Add to Wishlist</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="lower-section">
+            <div class="section-title">Product Description</div>
+            <div class="description collapsed" id="productDescription"></div>
+            <button class="view-more-btn" id="viewMoreBtn" onclick="toggleDescription()">VIEW MORE</button>
+        </div>
+
+        <div class="lower-section" id="specSection">
+            <div class="section-title">Specifications</div>
+            <table class="spec-table" id="specTable"></table>
+        </div>
+
+        <div class="lower-section" id="boxSection">
+            <div class="section-title">What's in the Box</div>
+            <div class="box-content" id="boxContent"></div>
+        </div>
+
+        <!-- Daraz-এর প্রোডাক্ট পেজের Warranty ইনফো-বক্সের মতো — অ্যাডমিন প্যানেলের Shipping & Warranty
+             কার্ডের Warranty Type/Warranty/Warranty Policy/Return Policy ফিল্ড থাকলেই এখানে দেখানো হয় -->
+        <div class="lower-section" id="warrantySection">
+            <div class="section-title">Warranty &amp; Return</div>
+            <table class="spec-table" id="warrantyTable"></table>
+            <div class="box-content" id="warrantyPolicyText" style="display:none; margin-top:4px;"></div>
+            <div class="box-content" id="returnPolicyText" style="display:none; margin-top:4px;"></div>
+        </div>
+
+        <div class="lower-section">
+            <div class="section-title">Ratings &amp; Reviews</div>
+            <div class="review-summary">
+                <div class="review-score-box">
+                    <span class="review-score-num" id="reviewAvg">0</span><span class="review-score-max">/5</span>
+                    <div class="review-stars-display" id="reviewAvgStars"></div>
+                    <div class="review-count-text" id="reviewCountText">0 Ratings</div>
+                </div>
+                <div class="review-breakdown" id="reviewBreakdown"></div>
+            </div>
+
+            <div class="review-list" id="reviewList"></div>
+
+            <div class="write-review-box" id="writeReviewBox" style="display:none;">
+                <h4>Write a Review</h4>
+                <p class="write-review-note">শুধুমাত্র যারা এই প্রোডাক্টটি অর্ডার করে ডেলিভারি পেয়েছেন, তারাই রিভিউ দিতে পারবেন — ফেক রিভিউ ঠেকাতে এই ব্যবস্থা।</p>
+                <div class="star-input" id="starInput">
+                    <span data-val="1">&#9733;</span><span data-val="2">&#9733;</span><span data-val="3">&#9733;</span><span data-val="4">&#9733;</span><span data-val="5">&#9733;</span>
+                </div>
+                <!-- লগইন করা কাস্টমারের জন্য এই ফিল্ডটা দেখানো হয় না (অ্যাকাউন্ট দিয়েই যাচাই হয়ে যায়),
+                     গেস্ট চেকআউটে অর্ডার করা থাকলে যাচাইয়ের জন্য সেই ফোন নম্বরটা লাগবে -->
+                <input type="tel" id="reviewerPhone" placeholder="অর্ডারের সময় ব্যবহৃত ফোন নম্বর (যাচাইয়ের জন্য)" style="display:none;">
+                <textarea id="reviewComment" placeholder="প্রোডাক্ট নিয়ে আপনার মতামত লিখুন (ঐচ্ছিক)"></textarea>
+                <button class="submit-review-btn" onclick="submitReview()">Submit Review</button>
+                <div class="review-status-msg" id="reviewStatusMsg"></div>
+            </div>
+            <div class="review-not-eligible-box" id="reviewNotEligibleBox" style="display:none;"></div>
+        </div>
+
+        <div class="lower-section">
+            <div class="section-title">Questions about this product</div>
+            <div class="qa-list" id="qaList"></div>
+
+            <div class="ask-question-box">
+                <h4>Ask a Question</h4>
+                <input type="text" id="askerName" placeholder="আপনার নাম">
+                <textarea id="questionText" placeholder="প্রোডাক্টটা নিয়ে আপনার প্রশ্ন লিখুন..."></textarea>
+                <button class="submit-question-btn" onclick="submitQuestion()">Submit Question</button>
+                <div class="question-status-msg" id="questionStatusMsg"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- মোবাইল ভ্যারিয়েন্ট বটম-শীট — ডিফল্টভাবে বন্ধ থাকে (CSS-এ display:none), JS দিয়ে খোলা/বন্ধ হয়।
+     openVariantSheet()/closeVariantSheet() নিচের জাভাস্ক্রিপ্ট ব্লকে সংজ্ঞায়িত। -->
+<!-- মোবাইল ফিক্সড অ্যাকশন বার (≤768px) — Store | Chat | Buy Now | Add to Cart। ডেস্কটপে display:none -->
+<div class="m-actionbar" id="mActionBar">
+    <a class="m-ab-icon" href="index.html" aria-label="Store">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M10 20v-6h4v6"/></svg>
+        <span>Store</span>
+    </a>
+    <button type="button" class="m-ab-icon" aria-label="Chat" onclick="openVendorChat(productId, document.getElementById('productName').textContent)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01" stroke-width="2.4"/></svg>
+        <span>Chat</span>
+    </button>
+    <button type="button" class="m-ab-btn m-ab-buy" id="mBuyBtn" onclick="buyNow()">Buy Now</button>
+    <button type="button" class="m-ab-btn m-ab-cart" id="mCartBtn" onclick="addToCartClick()">Add to Cart</button>
+</div>
+
+<div class="variant-sheet-backdrop" id="variantSheetBackdrop" onclick="closeVariantSheet()"></div>
+<div class="variant-sheet" id="variantSheet" role="dialog" aria-modal="true" aria-label="ভ্যারিয়েন্ট বাছাই করুন">
+    <div class="variant-sheet-header">
+        <img id="sheetThumb" class="variant-sheet-thumb" src="" alt="">
+        <div class="variant-sheet-price-wrap">
+            <div class="variant-sheet-price">৳<span id="sheetPrice"></span></div>
+            <div class="variant-sheet-original" id="sheetOriginalPrice" style="display:none;">৳<span id="sheetOriginalPriceValue"></span></div>
+        </div>
+        <button type="button" class="variant-sheet-close" onclick="closeVariantSheet()" aria-label="বন্ধ করুন">&times;</button>
+    </div>
+    <div class="variant-sheet-body" id="variantSheetBody"></div>
+    <div class="variant-sheet-footer">
+        <button type="button" class="btn-buy variant-sheet-confirm" id="variantSheetConfirmBtn" onclick="confirmVariantSheet()">Confirm</button>
+    </div>
+</div>
+
+<script>
+    const API_BASE = BACKEND_URL;
+
+    function resolveImageUrl(url) {
+        if (!url) return 'https://via.placeholder.com/400?text=No+Image';
+        return url.startsWith('http') ? url : `${API_BASE}${url}`;
+    }
+
+    // ============ Product Description ফরম্যাটিং ============
+    // Add Products-এর রিচ-টেক্সট এডিটর থেকে আসা description আসলে HTML (<p>, <ul> ইত্যাদি) — সেটা যেমন আছে তেমনই
+    // দেখানো হয়। কিন্তু Daraz/AI/Excel ইমপোর্ট বা সাধারণ টেক্সটবক্স থেকে আসা description প্লেইন টেক্সট: HTML-এ
+    // লাইন-ব্রেক (\n) কোনো কাজ করে না, তাই পুরোটা একটা বড় অনুচ্ছেদ হয়ে যেত ("Key Features: • ... • ... Why Choose ...").
+    // এখানে প্লেইন টেক্সট হলে: লাইন-ব্রেক রাখা হয়, Key Features / Why Choose ...? / Conclusion: ইত্যাদি শিরোনাম
+    // আলাদা লাইনে বোল্ড করা হয়, আর • দিয়ে লেখা অংশগুলো বুলেট লিস্ট হয়। ডেটাবেজের কিছু বদলায় না।
+    function formatDescription(raw) {
+        if (!raw) return raw;
+        if (/<\/?[a-z][^>]*>/i.test(raw)) return raw; // আগে থেকেই HTML — হাত দেওয়া হয় না
+        const esc = String(raw).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const HEAD = "(?:Key Features:|Why Choose [^?:\\n]{1,60}\\?|Conclusion:|Highlights:|Specifications?:|What(?:'|’)s in the Box:?|Package Includes:?)";
+        let t = esc.replace(/\r\n?/g, '\n')
+            .replace(new RegExp('[ \\t]*(' + HEAD + ')', 'gi'), '\n$1')
+            .replace(/[ \t]*[•●▪]\s*/g, '\n• ');
+        const headRe = new RegExp('^(' + HEAD + ')\\s*(.*)$', 'i');
+        const lines = t.split('\n').map(l => l.trim()).filter(Boolean);
+        let out = '', inList = false;
+        const closeList = () => { if (inList) { out += '</ul>'; inList = false; } };
+        lines.forEach(line => {
+            const bullet = line.match(/^(?:•|[-*])\s+(.*)$/);
+            if (bullet) {
+                if (!inList) { out += '<ul>'; inList = true; }
+                const body = bullet[1].replace(/^([^:]{2,45}:)(\s|$)/, '<strong>$1</strong> ');
+                out += '<li>' + body + '</li>';
+                return;
+            }
+            closeList();
+            const h = line.match(headRe);
+            if (h) {
+                out += '<p style="margin:14px 0 6px"><strong>' + h[1] + '</strong></p>';
+                if (h[2]) out += '<p>' + h[2] + '</p>';
+            } else {
+                out += '<p>' + line + '</p>';
+            }
+        });
+        closeList();
+        return out;
+    }
+
+    // Add Products-এর রিচ-টেক্সট এডিটর থেকে আসা description-এ ছবি থাকলে সেগুলো রিলেটিভ পাথে সেভ
+    // থাকে (দেখুন backend/models/product.js) — এখানে দেখানোর আগে resolveImageUrl() দিয়ে অ্যাবসোলিউট
+    // করে নেওয়া হচ্ছে, ঠিক মূল প্রোডাক্ট গ্যালারির ছবির মতোই
+    function resolveDescriptionImages(html) {
+        if (!html) return html;
+        const wrap = document.createElement('div');
+        wrap.innerHTML = html;
+        // কিছু description-এ প্রতিটা স্পেস &nbsp; (নন-ব্রেকিং) হয়ে সেভ আছে (এডিটরে পেস্ট/টাইপ থেকে) — তখন লাইন কোথাও
+        // ভাঙতে পারে না, লেখা কার্ডের বাইরে দৌড়ায়। দেখানোর সময় সেগুলো সাধারণ স্পেসে বদলানো হয় (ডেটাবেজ অপরিবর্তিত)।
+        const NBSP = String.fromCharCode(160);
+        const tw = document.createTreeWalker(wrap, NodeFilter.SHOW_TEXT);
+        let tn;
+        while ((tn = tw.nextNode())) {
+            if (tn.nodeValue.indexOf(NBSP) !== -1) tn.nodeValue = tn.nodeValue.split(NBSP).join(' ');
+        }
+        wrap.querySelectorAll('img[src]').forEach(img => {
+            img.setAttribute('src', resolveImageUrl(img.getAttribute('src')));
+        });
+        return wrap.innerHTML;
+    }
+
+    // মেটা ডেসক্রিপশন/স্ট্রাকচার্ড ডেটার জন্য HTML ট্যাগ বাদ দিয়ে শুধু আসল লেখাটুকু বের করা
+    function stripHtml(html) {
+        if (!html) return '';
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        return (div.textContent || '').replace(/\s+/g, ' ').trim();
+    }
+
+    // gallery/swatch থাম্বনেইলের alt="..." এর ভেতরে প্রোডাক্টের নাম বসানোর সময় ব্যবহারের জন্য —
+    // প্রোডাক্ট নামে ডাবল-কোট (") থাকলে যেন attribute ভেঙে না যায় (escapeHtml() শুধু টেক্সট
+    // কনটেন্টের জন্য নিরাপদ, কোট এস্কেপ করে না — attribute-এর ভেতরে এটাই ব্যবহার করতে হবে)
+    function escapeAttr(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    // ============ প্রোডাক্ট ভিডিও (Daraz-এর "YouTube Link" এর মতো) ============
+    function getYoutubeEmbedId(url) {
+        if (!url) return null;
+        const m = String(url).match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        return m ? m[1] : null;
+    }
+
+    function showProductVideo() {
+        if (!window.productVideoEmbedUrl) return;
+        document.getElementById('mainImage').style.display = 'none';
+        const wrap = document.getElementById('mainVideoWrap');
+        document.getElementById('mainVideoFrame').src = window.productVideoEmbedUrl + '?autoplay=1';
+        wrap.style.display = 'block';
+    }
+
+    function showProductImage(src) {
+        // ভিডিও চলতে থাকলে iframe src খালি করে বন্ধ করে দেওয়া হচ্ছে, নাহলে আড়ালেও অডিও চলতে থাকবে
+        document.getElementById('mainVideoFrame').src = '';
+        document.getElementById('mainVideoWrap').style.display = 'none';
+        document.getElementById('mainImage').style.display = 'block';
+        document.getElementById('mainImage').src = src;
+    }
+
+    function formatPrice(n) {
+        return Number(n).toLocaleString('en-IN');
+    }
+
+    function updatePriceDisplay(price, originalPrice) {
+        updateMobilePromo(price, originalPrice);
+        const wrap = document.getElementById('originalPriceWrap');
+        if (originalPrice && originalPrice > price) {
+            document.getElementById('originalPrice').textContent = formatPrice(originalPrice);
+            const pct = Math.round(((originalPrice - price) / originalPrice) * 100);
+            document.getElementById('discountBadge').textContent = `-${pct}%`;
+            wrap.style.display = 'block';
+        } else {
+            wrap.style.display = 'none';
+        }
+    }
+
+    // ============ SEO: কিওয়ার্ডসহ পরিষ্কার URL — /product/<slug>-i<id> ============
+    // আগে সব প্রোডাক্ট পেজের URL ছিল product.html?id=xxxxx — কোনো কিওয়ার্ড ছাড়াই। এখন
+    // /product/battery-for-xiaomi-redmi-note-9-i<id> এর মতো URL ব্যবহার হবে, যেটা canonical/
+    // sitemap/internal-লিংকে বসবে। পুরোনো product.html?id= URL-ও কাজ করতে থাকবে (কোনো পুরোনো
+    // লিংক/বুকমার্ক ভাঙবে না), কিন্তু canonical ট্যাগ সবসময় নতুন সুন্দর URL-টাই দেখাবে।
+    //
+    // *** এই ফাংশনটা হুবহু (byte-for-byte) নিচের জায়গাগুলোতেও কপি করা আছে — এখানে বদলালে
+    // ওই সব জায়গাতেও বদলাতে হবে: index.html, search.html, brands/brand.html, models/model.html,
+    // netlify/edge-functions/product-seo.js, netlify/edge-functions/model-seo.js,
+    // backend/routes/sitemap.js ***
+    function slugifyProductName(name) {
+        let s = String(name || '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        if (s.length > 70) {
+            const cut = s.slice(0, 70);
+            const lastDash = cut.lastIndexOf('-');
+            s = lastDash > 20 ? cut.slice(0, lastDash) : cut;
+        }
+        return s || 'product';
+    }
+    function buildProductPath(name, id) {
+        return `/product/${slugifyProductName(name)}-i${id}`;
+    }
+    function extractProductIdFromPath(pathname) {
+        const m = pathname.match(/-i([a-f0-9]{24})$/);
+        return m ? m[1] : null;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    // নতুন /product/<slug>-i<id> URL হলে pathname থেকে, পুরোনো product.html?id= URL হলে
+    // query string থেকে — দুই ধরনের URLই কাজ করবে
+    const productId = params.get('id') || extractProductIdFromPath(window.location.pathname);
+
+    // উইশলিস্ট বাটনে data-wishlist-id বসিয়ে দেওয়া হচ্ছে যাতে wishlist.js এর
+    // stzRefreshWishlistButtons() (উইশলিস্ট ডেটা লোড হওয়ার পর) এই বাটনটাও ঠিক অবস্থায়
+    // (♥ Wishlisted / ♡ Add to Wishlist) আপডেট করতে পারে
+    if (productId) {
+        const wishlistBtnEl = document.getElementById('wishlistBtn');
+        if (wishlistBtnEl) wishlistBtnEl.setAttribute('data-wishlist-id', productId);
+    }
+
+    let quantity = 1;
+    let currentProduct = null;
+    let currentProductImages = []; // SEO: রিভিউ ডেটা এলে JSON-LD আবার বানানোর সময় ছবিগুলো লাগবে
+    let selectedAttrs = {};
+    let selectedStars = 0;
+    let isOutOfStock = false; // বর্তমানে সিলেক্ট করা ভ্যারিয়েন্ট স্টকে নেই কিনা — Buy Now/Add to Cart গার্ড করতে ব্যবহৃত
+
+    async function loadProduct() {
+        if (!productId) {
+            showError();
+            return;
+        }
+        try {
+            const res = await fetch(`${API_BASE}/api/products/${productId}`);
+            if (!res.ok) {
+                showError();
+                return;
+            }
+            const product = await res.json();
+            currentProduct = product;
+            renderProduct(product);
+            loadReviews();
+            loadQuestions();
+            initReviewForm();
+            trackProductView(productId);
+            trackMetaViewContent(product);
+        } catch (err) {
+            showError();
+        }
+    }
+
+    // প্রোডাক্ট পেজ ভিউ ট্র্যাকিং (Manage Products-এ ভবিষ্যতে "কতজন দেখেছে" দেখানোর জন্য) — silent
+    // fire-and-forget, ব্যর্থ হলেও কাস্টমারের পেজ লোডে কোনো প্রভাব পড়বে না
+    function trackProductView(id) {
+        fetch(`${API_BASE}/api/products/${id}/track-view`, { method: 'POST' }).catch(() => {});
+    }
+
+    // Meta Pixel — ViewContent ইভেন্ট (কেউ এই প্রোডাক্ট পেজ দেখলো)। analytics.js-এ বেস পিক্সেল কোড
+    // আর PageView আগেই পাঠানো হয়ে গেছে, এখানে শুধু প্রোডাক্টের নির্দিষ্ট ডাটা (দাম, আইডি) দিয়ে
+    // ViewContent পাঠানো হচ্ছে — এটা Meta-কে "এই ভিজিটর কোন প্রোডাক্টে আগ্রহী" বুঝতে সাহায্য করে,
+    // পরে Dynamic Product Ads/রিটার্গেটিং-এ কাজে লাগবে। fbq না থাকলে (অ্যাড-ব্লকার ইত্যাদি) silently স্কিপ হয়।
+    function trackMetaViewContent(product) {
+        if (typeof window.fbq !== 'function') return;
+        window.fbq('track', 'ViewContent', {
+            content_ids: [product._id],
+            content_name: product.name,
+            content_type: 'product',
+            value: product.price,
+            currency: 'BDT'
+        });
+    }
+
+    function renderProduct(product) {
+        document.getElementById('loadingMsg').style.display = 'none';
+        document.getElementById('productContent').style.display = 'block';
+
+        document.getElementById('productName').textContent = product.name;
+        const nameBnEl = document.getElementById('productNameBn');
+        if (product.nameBn && product.nameBn.trim()) {
+            nameBnEl.textContent = product.nameBn.trim();
+            nameBnEl.style.display = 'block';
+        } else {
+            nameBnEl.style.display = 'none';
+        }
+        // SEO (internal linking): আগে এখানে শুধু প্লেইন টেক্সট দেখানো হতো, আর অনির্ভরযোগ্য
+        // product.brand ফিল্ড (বেশিরভাগ প্রোডাক্টেই খালি/"No Brand") ব্যবহার হতো। এখন নির্ভরযোগ্য
+        // phoneBrand ফিল্ড দিয়ে Brand/Model-কে brands/brand.html ও models/model.html পেজের
+        // লিংকে পরিণত করা হলো — আগে এই পেজগুলো শুধু sitemap.xml দিয়েই খুঁজে পাওয়া যেতো, সাইটের
+        // ভেতরে কোনো লিংক ছিলো না, যা Google-এর কাছে এগুলোকে কম গুরুত্বপূর্ণ মনে করাতো। প্রতিটা
+        // প্রোডাক্ট পেজ থেকে এখন একটা করে আসল internal link তৈরি হচ্ছে।
+        const linkableBrand = (product.phoneBrand && product.phoneBrand !== 'Others') ? product.phoneBrand : '';
+        const brandEl = document.getElementById('productBrand');
+        brandEl.textContent = linkableBrand || product.brand || '-';
+        if (linkableBrand) {
+            brandEl.href = `brands/brand.html?name=${encodeURIComponent(linkableBrand)}`;
+        } else {
+            brandEl.removeAttribute('href');
+        }
+        const modelEl = document.getElementById('productModel');
+        modelEl.textContent = product.model || '-';
+        if (linkableBrand && product.model) {
+            modelEl.href = `models/model.html?brand=${encodeURIComponent(linkableBrand)}&model=${encodeURIComponent(product.model)}`;
+        } else {
+            modelEl.removeAttribute('href');
+        }
+        document.getElementById('productPartType').textContent = product.partType || '-';
+        document.getElementById('productPrice').textContent = formatPrice(product.price);
+        updatePriceDisplay(product.price, product.originalPrice);
+
+        const descBox = document.getElementById('productDescription');
+        const viewMoreBtn = document.getElementById('viewMoreBtn');
+        if (product.description) {
+            descBox.innerHTML = resolveDescriptionImages(formatDescription(product.description));
+        } else {
+            descBox.textContent = 'এই প্রোডাক্টের জন্য এখনো কোনো বিস্তারিত বিবরণ যোগ করা হয়নি।';
+        }
+        // HTML ট্যাগ বাদ দিয়ে আসল লেখার দৈর্ঘ্য দেখে VIEW MORE লাগবে কিনা ঠিক করা হচ্ছে (ট্যাগ ধরলে
+        // কম লেখাতেও দৈর্ঘ্য বেশি দেখাতো)
+        if (stripHtml(product.description).length < 400) {
+            descBox.classList.remove('collapsed');
+            viewMoreBtn.style.display = 'none';
+        } else {
+            descBox.classList.add('collapsed');
+            viewMoreBtn.style.display = 'block';
+            viewMoreBtn.textContent = 'VIEW MORE';
+        }
+
+        const specRows = [];
+        if (product.brand) specRows.push(['Brand', product.brand]);
+        if (product.sku) specRows.push(['SKU', product.sku]);
+        if (product.model) specRows.push(['Model', product.model]);
+        const specTable = document.getElementById('specTable');
+        if (specRows.length) {
+            specTable.innerHTML = specRows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+            document.getElementById('specSection').style.display = 'block';
+        } else {
+            document.getElementById('specSection').style.display = 'none';
+        }
+
+        if (product.whatsInBox) {
+            document.getElementById('boxContent').textContent = product.whatsInBox;
+            document.getElementById('boxSection').style.display = 'block';
+        } else {
+            document.getElementById('boxSection').style.display = 'none';
+        }
+
+        // Warranty & Return — Warranty Type/Warranty/Warranty Policy/Return Policy-র যেকোনো একটা থাকলেই দেখানো হয়
+        const warrantyRows = [];
+        if (product.warrantyType) warrantyRows.push(['Warranty Type', product.warrantyType]);
+        if (product.warrantyDuration) warrantyRows.push(['Warranty', product.warrantyDuration]);
+        const warrantyPolicyEl = document.getElementById('warrantyPolicyText');
+        const returnPolicyEl = document.getElementById('returnPolicyText');
+        if (product.warrantyPolicy) {
+            warrantyPolicyEl.textContent = 'Warranty Policy: ' + product.warrantyPolicy;
+            warrantyPolicyEl.style.display = 'block';
+        } else {
+            warrantyPolicyEl.style.display = 'none';
+        }
+        if (product.returnPolicy) {
+            returnPolicyEl.textContent = 'Return Policy: ' + product.returnPolicy;
+            returnPolicyEl.style.display = 'block';
+        } else {
+            returnPolicyEl.style.display = 'none';
+        }
+        const warrantyTable = document.getElementById('warrantyTable');
+        warrantyTable.innerHTML = warrantyRows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+        const hasWarrantyInfo = warrantyRows.length || product.warrantyPolicy || product.returnPolicy;
+        document.getElementById('warrantySection').style.display = hasWarrantyInfo ? 'block' : 'none';
+
+        const images = (product.images && product.images.length) ? product.images.map(resolveImageUrl) : [];
+        const mainImg = document.getElementById('mainImage');
+        mainImg.src = images.length ? images[0] : 'https://via.placeholder.com/400?text=No+Image';
+        // SEO/অ্যাক্সেসিবিলিটি: মূল ছবিতে আগে কোনো alt টেক্সট বসতোই না (JS দিয়েও না) — Google Image
+        // Search-এ এই ছবি খুঁজে পাওয়ার জন্য আর স্ক্রিন-রিডারের জন্য এটা জরুরি
+        mainImg.alt = product.name;
+
+        // Daraz-এর মতো — YouTube ভিডিও থাকলে গ্যালারির প্রথম থাম্বনেইল হিসেবে দেখানো হয়, ক্লিক করলে
+        // মেইন এরিয়াতে এমবেড হয়ে প্লে হয়; কোনো ছবি থাম্বনেইলে ক্লিক করলে আবার ছবিতে ফিরে যায়
+        const youtubeId = getYoutubeEmbedId(product.videoUrl);
+        window.productVideoEmbedUrl = youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : null;
+        const videoThumbHtml = youtubeId
+            ? `<img class="video-thumb" src="https://img.youtube.com/vi/${youtubeId}/default.jpg" alt="${escapeAttr(product.name)} - video" onclick="showProductVideo()">`
+            : '';
+
+        const thumbRow = document.getElementById('thumbRow');
+        // SEO: গ্যালারির থাম্বনেইলগুলোতে আগে কোনো alt টেক্সট ছিল না (এই এলিমেন্টগুলো সম্পূর্ণ JS দিয়ে
+        // তৈরি হয়, raw HTML-এ কখনোই থাকে না) — Google Image Search-এ ধরা পড়ার জন্য প্রতিটা ছবিতে
+        // প্রোডাক্টের নাম + নম্বর দেওয়া হলো
+        thumbRow.innerHTML = videoThumbHtml + images.map((url, i) =>
+            `<img src="${url}" alt="${escapeAttr(product.name)} - ছবি ${i + 1}" ${i > 0 ? 'loading="lazy" decoding="async"' : ''} onerror="this.src='https://via.placeholder.com/100?text=No+Image'" onclick="showProductImage(this.src)">`
+        ).join('');
+
+        buildMobileGallery(images, product);
+        mRatingState.sold = Number(product.soldCount) || 0;
+        renderMobileRatingRow();
+
+        renderAttributeGroups(product);
+        updateSeoTags(product, images);
+    }
+
+    // ============ SEO: প্রতিটা প্রোডাক্ট পেজের জন্য আলাদা টাইটেল/মেটা/স্ট্রাকচার্ড ডেটা ============
+    // এতদিন সব প্রোডাক্ট পেজেই একই জেনেরিক টাইটেল ছিল ("Product Details - SmartTechZone"),
+    // তাই Google প্রতিটা পেজকে আলাদা করে ইনডেক্স/র‍্যাংক করতে পারছিল না। এখন প্রতিটা পেজের
+    // টাইটেল, মেটা ডেসক্রিপশন ও Product structured data (JSON-LD) প্রোডাক্ট অনুযায়ী বসছে।
+    function updateSeoTags(product, images) {
+        currentProductImages = images;
+        const title = `${product.name} - Smart Tech Zone`;
+        // description এখন রিচ-টেক্সট এডিটরের HTML — মেটা ট্যাগ/স্ট্রাকচার্ড ডেটায় ট্যাগ বাদ দিয়ে শুধু লেখাটুকু লাগে
+        const desc = (stripHtml(product.description) || `${product.name} — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`).substring(0, 160);
+        const mainImage = images.length ? images[0] : 'https://smarttechzone.com.bd/images/logo.png';
+        const pageUrl = `https://smarttechzone.com.bd${buildProductPath(product.name, product._id)}`;
+
+        document.getElementById('pageTitle').textContent = title;
+        document.getElementById('metaDescription').setAttribute('content', desc);
+        document.getElementById('ogTitleTag').setAttribute('content', title);
+        document.getElementById('ogDescTag').setAttribute('content', desc);
+        document.getElementById('ogImageTag').setAttribute('content', mainImage);
+        document.getElementById('canonicalTag').setAttribute('href', pageUrl);
+
+        // রিভিউ ডেটা তখনও আসেনি (loadReviews() আলাদাভাবে, পরে রান হয়) — তাই প্রথমে রেটিং ছাড়াই বসানো হচ্ছে,
+        // রিভিউ লোড হওয়ার পর renderReviews() আবার কল করে aggregateRating যোগ করে দেবে
+        renderProductJsonLd(product, images, null);
+    }
+
+    // ============ SEO: Product JSON-LD আলাদা ফাংশনে রাখা হলো যাতে রিভিউ লোড হওয়ার পর ============
+    // স্টার রেটিং (aggregateRating) যোগ করার জন্য আবার কল করা যায় — শুরুতে stock-ভিত্তিক
+    // availability সবসময় "InStock" হার্ডকোডেড ছিল, এখন ভ্যারিয়েন্টগুলোর আসল স্টক যোগফল দেখে ঠিক করা হচ্ছে।
+    function renderProductJsonLd(product, images, reviewData) {
+        const desc = (stripHtml(product.description) || `${product.name} — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`).substring(0, 160);
+        const mainImage = images.length ? images[0] : 'https://smarttechzone.com.bd/images/logo.png';
+        const pageUrl = `https://smarttechzone.com.bd${buildProductPath(product.name, product._id)}`;
+
+        const variants = product.variants || [];
+        const totalStock = variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
+        const availability = totalStock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
+
+        const jsonLd = {
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.name,
+            image: images.length ? images : [mainImage],
+            description: desc,
+            brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
+            sku: product.sku || undefined,
+            offers: {
+                '@type': 'Offer',
+                url: pageUrl,
+                priceCurrency: 'BDT',
+                price: product.price,
+                availability
+            }
+        };
+
+        // Google-এর নিয়ম: রিভিউ না থাকলে aggregateRating বসানো যাবে না (নাহলে Search Console এ
+        // "স্ট্রাকচার্ড ডেটা ইস্যু" দেখাতে পারে) — তাই কমপক্ষে ১টা রিভিউ থাকলেই শুধু যোগ করা হচ্ছে
+        if (reviewData && reviewData.total > 0) {
+            jsonLd.aggregateRating = {
+                '@type': 'AggregateRating',
+                ratingValue: reviewData.average,
+                reviewCount: reviewData.total
+            };
+        }
+
+        document.getElementById('productJsonLd').textContent = JSON.stringify(jsonLd);
+    }
+
+    function renderAttributeGroups(product) {
+        const wrapper = document.getElementById('attrGroupsWrapper');
+        wrapper.innerHTML = '';
+
+        const variants = product.variants || [];
+        const hasAttributes = variants.length && variants[0].attributes && variants[0].attributes.length;
+
+        if (!hasAttributes) {
+            if (variants.length > 1 || (variants.length === 1 && variants[0].label !== 'Default')) {
+                const group = document.createElement('div');
+                group.className = 'attr-group';
+                group.innerHTML = `<div class="attr-group-label">Variant</div><div class="attr-group-content"><div class="attr-btn-grid">` +
+                    variants.map((v, i) => `
+                        <span class="attr-btn" onclick="selectLegacyVariant(${i})" id="legacy-btn-${i}">
+                            <img src="${resolveImageUrl((v.images && v.images[0]) || product.images[0])}" alt="${escapeAttr(product.name)} - ${escapeAttr(v.label)}" onerror="this.style.display='none'">
+                            <span>${v.label}</span>
+                        </span>
+                    `).join('') + `</div></div>`;
+                wrapper.appendChild(group);
+                // আগে এখানে কোনো ভ্যারিয়েন্ট প্রাথমিকভাবে সিলেক্ট/হাইলাইট করা হতো না, ফলে পেজ লোড হওয়ার সাথে
+                // সাথে দাম ও স্টক তথ্য (এবং Buy বাটনের স্টক-গেটিং) আপডেট হতো না যতক্ষণ না ইউজার নিজে ক্লিক করতো।
+                selectLegacyVariant(0);
+            } else if (variants.length === 1) {
+                // এখানে কোনো ভ্যারিয়েন্ট বাটন দেখানো হচ্ছে না (single "Default" variant), কিন্তু স্টক-তথ্য এখনো
+                // ওই ভ্যারিয়েন্ট থেকেই আসে — তাই বাটন না থাকলেও স্টক-গেটিং প্রয়োগ করা দরকার, নাহলে স্টক ০ থাকা
+                // সত্ত্বেও Buy Now/Add to Cart সবসময় সক্রিয় থেকে যায়।
+                document.getElementById('productPrice').textContent = formatPrice(variants[0].price);
+                updatePriceDisplay(variants[0].price, variants[0].originalPrice);
+                updateStockAndButtons(typeof variants[0].stock === 'number' ? variants[0].stock : null);
+            } else {
+                updateStockAndButtons(null);
+            }
+            return;
+        }
+
+        const attrNames = [];
+        variants[0].attributes.forEach(a => {
+            if (!attrNames.includes(a.name)) attrNames.push(a.name);
+        });
+
+        selectedAttrs = {};
+        attrNames.forEach(name => {
+            const first = variants[0].attributes.find(a => a.name === name);
+            if (first) selectedAttrs[name] = first.value;
+        });
+
+        // কোন attribute-এ ছবির swatch দেখানো হবে — আগে "প্রথম যেটা ছবির যোগ্য" সেটাতেই দেখানো হতো। সমস্যা: প্রথম
+        // attribute যদি "Compatibility by Model"-এর মতো এমন কিছু হয় যার মাত্র একটাই মান (বাছাই করার কিছু নেই), তাও
+        // সেটাই ছবি পেয়ে যেত, আর আসল বাছাইয়ের attribute (যেমন Option: Gray/Green/Blue, প্রতিটার নিজস্ব ছবি আছে)
+        // শুধু টেক্সট বাটন হয়ে থাকত — বাকি ভ্যারিয়েন্টের থাম্বনেইল দেখা যেত না (রিপোর্ট করা বাগ)।
+        // এখন: একাধিক মান আছে এমন ছবির-যোগ্য attribute অগ্রাধিকার পায়; সেরকম কিছু না থাকলে আগের নিয়মই বহাল।
+        const attrValuesOf = (name) => {
+            const vals = [];
+            variants.forEach(v => {
+                const found = (v.attributes || []).find(a => a.name === name);
+                if (found && !vals.includes(found.value)) vals.push(found.value);
+            });
+            return vals;
+        };
+        const attrWantsThumb = (name) => {
+            const hasOwn = attrValuesOf(name).some(val => {
+                const mv = variants.find(v => (v.attributes || []).some(a => a.name === name && a.value === val));
+                return mv && mv.images && mv.images.length;
+            });
+            return hasOwn || name.toLowerCase().includes('option') || name.toLowerCase().includes('color');
+        };
+        const isOptionOrColor = (n) => n.toLowerCase().includes('option') || n.toLowerCase().includes('color');
+        const thumbAttrName =
+            attrNames.find(n => isOptionOrColor(n) && attrValuesOf(n).length > 1) ||
+            attrNames.find(n => attrWantsThumb(n) && attrValuesOf(n).length > 1) ||
+            attrNames.find(n => attrWantsThumb(n)) ||
+            null;
+
+        let thumbAlreadyShown = false;
+        // রং/Option (ছবি-সহ swatch) গ্রুপ সবার উপরে, বাকি গ্রুপ (যেমন Compatibility by Model) তার নিচে
+        const renderOrder = thumbAttrName
+            ? [thumbAttrName, ...attrNames.filter(n => n !== thumbAttrName)]
+            : attrNames;
+        renderOrder.forEach(name => {
+            const values = attrValuesOf(name);
+
+            const group = document.createElement('div');
+            group.className = 'attr-group';
+            // শুধু প্রথম যেই attribute কে "Option"/"Color" মনে হচ্ছে, সেটাতেই ছবি দেখানো হবে —
+            // একই প্রোডাক্টে একাধিক attribute (যেমন Option 1, Option 2) একসাথে "option" শব্দ ধারণ করলেও
+            // দ্বিতীয়টায় আর ছবি দেখানো হবে না (ডুপ্লিকেট ছবি এড়াতে)
+            //
+            // আগে শুধু নামের মধ্যে "option"/"color" শব্দ থাকলেই ছবি (swatch) দেখানো হতো — কিন্তু
+            // "Compatibility by Model"-এর মতো attribute নাম (add-products-form.js এর assignAttributeNames()
+            // ফোন-মডেল/পার্টের নামের ভ্যারিয়েন্টে অটো এই নাম বসায়) এই দুইটার কোনোটাই না হওয়ায়, প্রতিটা
+            // ভ্যারিয়েন্টে আলাদা আলাদা আসল ছবি আপলোড করা থাকা সত্ত্বেও কখনো swatch হিসেবে দেখানো হতো না,
+            // শুধু টেক্সট বাটন হিসেবে দেখাতো (রিপোর্ট করা বাগ — Oppo Reno2 Power Volume Flex Cable প্রোডাক্টে)।
+            // এখন থেকে নাম যাই হোক না কেন, যদি এই attribute এর অন্তত একটা ভ্যালুর জন্য ম্যাচিং ভ্যারিয়েন্টে
+            // নিজস্ব (আলাদা) ছবি আপলোড করা থাকে, তাহলে সেটাকে swatch হিসেবেই দেখানো হবে।
+            const showThumb = name === thumbAttrName && !thumbAlreadyShown;
+            if (showThumb) thumbAlreadyShown = true;
+            const currentVal = selectedAttrs[name] || '';
+            // "Option"-জাতীয় জেনেরিক attribute নামের (যেমন "Option", "Option 2") লেবেল আর দেখানো হবে না,
+            // শুধু ভ্যারিয়েন্টের আসল মান (যেমন "3.2") দেখাবে — "Color"/"Model" এর মতো অর্থবহ নাম থাকলে সেটা থাকবে
+            const hideNameLabel = name.toLowerCase().includes('option');
+
+            if (showThumb) {
+                // Daraz এর মতো: বামে লেবেল (যদি থাকে), ডানে বর্তমান মান (টেক্সট) + নিচে ছোট ছবির swatch (টেক্সট ছাড়া)
+                const labelHtml = hideNameLabel ? '' : `<div class="attr-group-label">${name}</div>`;
+                group.innerHTML = labelHtml + `<div class="attr-group-content"><span class="attr-selected-value" id="selectedValue-${name.replace(/\s+/g, '_')}">${currentVal}</span>
+                    <div class="attr-swatch-row">` +
+                    values.map(val => {
+                        const matchingVariant = variants.find(v => (v.attributes || []).some(a => a.name === name && a.value === val));
+                        const thumbUrl = matchingVariant && matchingVariant.images && matchingVariant.images.length
+                            ? resolveImageUrl(matchingVariant.images[0]) : resolveImageUrl(product.images[0]);
+                        const safeId = `attr-${name.replace(/\s+/g, '_')}-${val.replace(/\s+/g, '_')}`;
+                        return `<span class="attr-swatch" onclick="selectAttribute('${name.replace(/'/g, "\\'")}', '${val.replace(/'/g, "\\'")}')" id="${safeId}" title="${val}">
+                            <img src="${thumbUrl}" alt="${escapeAttr(product.name)} - ${escapeAttr(val)}" onerror="this.style.display='none'">
+                        </span>`;
+                    }).join('') + `</div></div>`;
+            } else {
+                // টেক্সট-ভিত্তিক attribute (যেমন Model) — বামে লেবেল (যদি থাকে), ডানে শুধু টেক্সট বক্স, ছবি ছাড়া
+                const labelHtml = hideNameLabel ? '' : `<div class="attr-group-label">${name}</div>`;
+                group.innerHTML = labelHtml + `<div class="attr-group-content"><div class="attr-btn-grid">` +
+                    values.map(val => {
+                        const safeId = `attr-${name.replace(/\s+/g, '_')}-${val.replace(/\s+/g, '_')}`;
+                        return `<span class="attr-btn" onclick="selectAttribute('${name.replace(/'/g, "\\'")}', '${val.replace(/'/g, "\\'")}')" id="${safeId}">${val}</span>`;
+                    }).join('') + `</div></div>`;
+            }
+            wrapper.appendChild(group);
+        });
+
+        updateAttrButtonStates();
+        applySelectedVariant();
+    }
+
+    function selectAttribute(name, value) {
+        selectedAttrs[name] = value;
+        updateAttrButtonStates();
+        applySelectedVariant();
+    }
+
+    function updateAttrButtonStates() {
+        document.querySelectorAll('.attr-btn, .attr-swatch').forEach(btn => btn.classList.remove('active'));
+        Object.entries(selectedAttrs).forEach(([name, val]) => {
+            const safeId = `attr-${name.replace(/\s+/g, '_')}-${val.replace(/\s+/g, '_')}`;
+            const btn = document.getElementById(safeId);
+            if (btn) btn.classList.add('active');
+            const valLabel = document.getElementById(`selectedValue-${name.replace(/\s+/g, '_')}`);
+            if (valLabel) valLabel.textContent = val;
+        });
+    }
+
+    function findMatchingVariant() {
+        const variants = currentProduct.variants || [];
+        let match = variants.find(v =>
+            (v.attributes || []).length &&
+            Object.keys(selectedAttrs).every(name => (v.attributes || []).some(a => a.name === name && a.value === selectedAttrs[name]))
+        );
+        return match || variants[0];
+    }
+
+    function applySelectedVariant() {
+        const v = findMatchingVariant();
+        if (!v) return;
+        document.getElementById('productPrice').textContent = formatPrice(v.price);
+        updatePriceDisplay(v.price, v.originalPrice);
+        if (v.images && v.images.length) {
+            document.getElementById('mainImage').src = resolveImageUrl(v.images[0]);
+        }
+        updateStockAndButtons(typeof v.stock === 'number' ? v.stock : null);
+        syncVariantSheetHeader();
+    }
+
+    // স্টক অনুযায়ী "স্টকে আছে/নেই" টেক্সট দেখানো এবং Buy Now/Add to Cart/Quantity বাটন অচল করা —
+    // আগে শুধু একটা তথ্যমূলক নোট দেখানো হতো, বাটনগুলো স্টক ০ থাকলেও সবসময় সক্রিয়ই থেকে যেত এবং অর্ডার
+    // করা যেত। এখন Daraz এর মতো স্টক শেষ হলে বাটনগুলো ধূসর/অচল হয়ে যায় এবং লাল করে "স্টকে নেই" দেখায়।
+    function updateStockAndButtons(stock) {
+        const stockNote = document.getElementById('stockNote');
+        // কাস্টমারকে স্টকের সংখ্যা/স্ট্যাটাস টেক্সট (যেমন "স্টকে আছে (৫০ পিস)") আর দেখানো হচ্ছে না —
+        // স্টক ভিজিবিলিটি বন্ধ রাখার জন্য। স্টক শেষ হলে নিচের oosLabel ("❌ বর্তমানে স্টকে নেই") ব্যানার
+        // ও disabled বাটন দিয়েই বোঝানো হয়, কোনো সংখ্যা/স্ট্যাটাস টেক্সট প্রকাশ না করেই।
+        stockNote.textContent = '';
+
+        isOutOfStock = typeof stock === 'number' && stock <= 0;
+
+        const buyBtn = document.querySelector('.btn-buy');
+        const cartBtn = document.querySelector('.btn-cart');
+        const wishlistBtn = document.getElementById('wishlistBtn');
+        const qtyButtons = document.querySelectorAll('.qty-box button');
+        if (buyBtn) buyBtn.disabled = isOutOfStock;
+        if (cartBtn) cartBtn.disabled = isOutOfStock;
+        // মোবাইলের ফিক্সড অ্যাকশন বারের বাটনও একই স্টক-অবস্থা মানে
+        const mBuy = document.getElementById('mBuyBtn');
+        const mCart = document.getElementById('mCartBtn');
+        if (mBuy) { mBuy.disabled = isOutOfStock; mBuy.textContent = isOutOfStock ? 'স্টকে নেই' : 'Buy Now'; }
+        if (mCart) mCart.style.display = isOutOfStock ? 'none' : '';
+        qtyButtons.forEach(btn => { btn.disabled = isOutOfStock; });
+
+        // Daraz-এর মতো — স্টকে থাকা অবস্থায় Buy Now/Add to Cart এর পাশে উইশলিস্ট বাটন একসাথে
+        // দেখানোয় সারিটা বাজেভাবে গাদাগাদি দেখাচ্ছিল, তাই স্টকে থাকলে উইশলিস্ট বাটন লুকানো থাকে।
+        // স্টক শেষ হলে উল্টো — কেনার কোনো উপায় নেই বলে Buy Now/Add to Cart পুরোপুরি লুকিয়ে তার
+        // জায়গায় ফুল-উইথ "উইশলিস্টে যোগ করুন" বাটন দেখানো হয় (Daraz-এর আউট-অফ-স্টক প্রোডাক্ট
+        // পেজের মতোই — স্ক্রিনশট দেখুন)।
+        if (buyBtn) buyBtn.style.display = isOutOfStock ? 'none' : '';
+        if (cartBtn) cartBtn.style.display = isOutOfStock ? 'none' : '';
+        if (wishlistBtn) wishlistBtn.style.display = isOutOfStock ? '' : 'none';
+
+        let oosLabel = document.getElementById('oosLabel');
+        if (isOutOfStock) {
+            if (!oosLabel) {
+                oosLabel = document.createElement('div');
+                oosLabel.id = 'oosLabel';
+                oosLabel.className = 'oos-label';
+                // Daraz-এর মতো ইংরেজিতেই "Out of Stock" দেখানো হচ্ছে — Buy Now/Add to Cart বাটনও
+                // ইংরেজিতে, তাই এটাও একই সাথে মিলিয়ে রাখা হলো (আগে বাংলায় ছিল)
+                oosLabel.textContent = 'Out of Stock';
+                const actionRow = document.querySelector('.action-row');
+                actionRow.parentNode.insertBefore(oosLabel, actionRow);
+            }
+        } else if (oosLabel) {
+            oosLabel.remove();
+        }
+    }
+
+    function selectLegacyVariant(i) {
+        const v = currentProduct.variants[i];
+        document.querySelectorAll('.attr-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`legacy-btn-${i}`).classList.add('active');
+        document.getElementById('productPrice').textContent = formatPrice(v.price);
+        updatePriceDisplay(v.price, v.originalPrice);
+        if (v.images && v.images.length) {
+            document.getElementById('mainImage').src = resolveImageUrl(v.images[0]);
+        }
+        updateStockAndButtons(typeof v.stock === 'number' ? v.stock : null);
+        syncVariantSheetHeader();
+    }
+
+    function toggleDescription() {
+        const descBox = document.getElementById('productDescription');
+        const btn = document.getElementById('viewMoreBtn');
+        const collapsed = descBox.classList.toggle('collapsed');
+        btn.textContent = collapsed ? 'VIEW MORE' : 'VIEW LESS';
+    }
+
+    function updateQty(change) {
+        quantity += change;
+        if (quantity < 1) quantity = 1;
+        document.getElementById('qtyValue').textContent = quantity;
+    }
+
+    function getSelectedVariantInfo() {
+        const variants = currentProduct.variants || [];
+        if (!variants.length) {
+            return {
+                price: currentProduct.price,
+                variantLabel: '',
+                image: (currentProduct.images && currentProduct.images[0]) || ''
+            };
+        }
+        const v = findMatchingVariant();
+        if (!v) {
+            return {
+                price: currentProduct.price,
+                variantLabel: '',
+                image: (currentProduct.images && currentProduct.images[0]) || ''
+            };
+        }
+        const image = (v.images && v.images[0]) || (currentProduct.images && currentProduct.images[0]) || '';
+        // "Default" নামের variant থাকলে সেটাকে আলাদা variant হিসেবে না দেখিয়ে মূল প্রোডাক্ট হিসেবেই কার্টে রাখা হচ্ছে
+        return { price: v.price, variantLabel: v.label && v.label !== 'Default' ? v.label : '', image };
+    }
+
+    function addCurrentToCart() {
+        if (!currentProduct) return;
+        // UI তে বাটন disable করা থাকলেও, সরাসরি ফাংশন কল হয়ে গেলে (যেমন কনসোল থেকে) যাতে অর্ডার না হয়ে
+        // যায় তার জন্য এখানেও একটা সেফটি-চেক রাখা হলো
+        if (isOutOfStock) { alert('❌ এই প্রোডাক্টটি বর্তমানে স্টকে নেই।'); return; }
+        const info = getSelectedVariantInfo();
+        const imageUrl = resolveImageUrl(info.image);
+        addToCart({
+            productId: currentProduct._id,
+            name: currentProduct.name,
+            price: info.price,
+            variantLabel: info.variantLabel,
+            image: imageUrl,
+            quantity: quantity
+        });
+        flyToCart(imageUrl, currentProduct.name, (window.innerWidth <= 768 && document.querySelector('#mGalleryTrack .m-slide img')) || document.getElementById('mainImage'));
+    }
+
+    // ============ Daraz-স্টাইল মোবাইল ভ্যারিয়েন্ট বটম-শীট ============
+    // ডেস্কটপে #attrGroupsWrapper/.qty-row সবসময় পেজেই (দুই-কলাম লে-আউটে) দেখা যায় — সেই আচরণ
+    // অপরিবর্তিত। মোবাইলে (≤768px) Buy Now/Add to Cart চাপলে এই একই দুইটা DOM নোড কপি না করে
+    // সরাসরি সরিয়ে (appendChild) এই বটম-শীটের ভেতরে নেওয়া হয় — তাই id-নির্ভর আসল ভ্যারিয়েন্ট-
+    // সিলেকশন লজিক (selectAttribute/applySelectedVariant/updateQty ইত্যাদি) একদম অপরিবর্তিত থাকে,
+    // শুধু নোডগুলোর জায়গা বদলায়। বন্ধ করলে বা ডেস্কটপ সাইজে রিসাইজ হলে আবার আগের জায়গায় ফিরে যায়।
+    const MOBILE_SHEET_BREAKPOINT = 768;
+    let pendingSheetAction = null; // 'buy' | 'cart' — Confirm বাটনে কোন কাজটা করতে হবে মনে রাখার জন্য
+    let attrWrapperHomeMarker = null, qtyRowHomeMarker = null; // নোডগুলো ফিরিয়ে আনার আসল জায়গা মনে রাখতে
+
+    function shouldUseVariantSheet() {
+        return window.innerWidth <= MOBILE_SHEET_BREAKPOINT;
+    }
+
+    // শীটের হেডারে থাম্বনেইল/দাম — ভ্যারিয়েন্ট পাল্টালে (applySelectedVariant/selectLegacyVariant
+    // থেকে কল হয়) এটাও লাইভ আপডেট হয়, ঠিক Daraz-এর মতো
+    function syncVariantSheetHeader() {
+        const sheetThumb = document.getElementById('sheetThumb');
+        if (!sheetThumb) return;
+        const mainImg = document.getElementById('mainImage');
+        if (mainImg && mainImg.src) sheetThumb.src = mainImg.src;
+        document.getElementById('sheetPrice').textContent = document.getElementById('productPrice').textContent;
+        const originalWrap = document.getElementById('originalPriceWrap');
+        const sheetOriginalWrap = document.getElementById('sheetOriginalPrice');
+        if (originalWrap && originalWrap.style.display !== 'none') {
+            document.getElementById('sheetOriginalPriceValue').textContent = document.getElementById('originalPrice').textContent;
+            sheetOriginalWrap.style.display = 'block';
+        } else {
+            sheetOriginalWrap.style.display = 'none';
+        }
+    }
+
+    function openVariantSheet(action) {
+        pendingSheetAction = action;
+        const wrapper = document.getElementById('attrGroupsWrapper');
+        const qtyRow = document.querySelector('.qty-row');
+        const body = document.getElementById('variantSheetBody');
+        // প্রথমবার খোলার সময় নোডগুলোর আসল জায়গায় একটা খালি comment marker রেখে দেওয়া হচ্ছে,
+        // যাতে বন্ধ করার সময় ঠিক সেই জায়গাতেই ফিরিয়ে আনা যায়
+        if (!attrWrapperHomeMarker) {
+            attrWrapperHomeMarker = document.createComment('attr-groups-home');
+            wrapper.parentNode.insertBefore(attrWrapperHomeMarker, wrapper);
+        }
+        if (!qtyRowHomeMarker) {
+            qtyRowHomeMarker = document.createComment('qty-row-home');
+            qtyRow.parentNode.insertBefore(qtyRowHomeMarker, qtyRow);
+        }
+        body.appendChild(wrapper);
+        body.appendChild(qtyRow);
+        syncVariantSheetHeader();
+
+        const backdrop = document.getElementById('variantSheetBackdrop');
+        const sheet = document.getElementById('variantSheet');
+        backdrop.style.display = 'block';
+        sheet.style.display = 'flex';
+        document.body.classList.add('variant-sheet-locked');
+        // পরের ফ্রেমে .open ক্লাস যোগ করলে slide-up/fade transition স্মুথভাবে প্লে হয়
+        requestAnimationFrame(() => {
+            backdrop.classList.add('open');
+            sheet.classList.add('open');
+        });
+    }
+
+    function restoreVariantSheetNodes() {
+        const wrapper = document.getElementById('attrGroupsWrapper');
+        const qtyRow = document.querySelector('.qty-row');
+        if (attrWrapperHomeMarker && attrWrapperHomeMarker.parentNode) {
+            attrWrapperHomeMarker.parentNode.insertBefore(wrapper, attrWrapperHomeMarker);
+        }
+        if (qtyRowHomeMarker && qtyRowHomeMarker.parentNode) {
+            qtyRowHomeMarker.parentNode.insertBefore(qtyRow, qtyRowHomeMarker);
+        }
+    }
+
+    function closeVariantSheet() {
+        const backdrop = document.getElementById('variantSheetBackdrop');
+        const sheet = document.getElementById('variantSheet');
+        if (!backdrop || backdrop.style.display === 'none' || backdrop.style.display === '') return;
+        backdrop.classList.remove('open');
+        sheet.classList.remove('open');
+        document.body.classList.remove('variant-sheet-locked');
+        pendingSheetAction = null;
+        setTimeout(() => {
+            backdrop.style.display = 'none';
+            sheet.style.display = 'none';
+            restoreVariantSheetNodes();
+        }, 280);
+    }
+
+    function confirmVariantSheet() {
+        const action = pendingSheetAction;
+        closeVariantSheet();
+        if (action === 'buy') {
+            executeBuyNow();
+        } else {
+            addCurrentToCart();
+        }
+    }
+
+    // মোবাইলে (≤768px) ডিভাইস রোটেট বা উইন্ডো রিসাইজ করে ডেস্কটপ সাইজে গেলে, শীট খোলা থাকলে সেটা
+    // বন্ধ করে নোডগুলো স্বাভাবিক জায়গায় ফিরিয়ে আনা হচ্ছে — নাহলে ডেস্কটপ ভিউতে ভ্যারিয়েন্ট-পিকার
+    // শীটের ভেতরে আটকে থেকে অদৃশ্য/অ্যাক্সেসযোগ্যহীন হয়ে যেতে পারতো
+    window.addEventListener('resize', () => {
+        const sheet = document.getElementById('variantSheet');
+        if (sheet && sheet.style.display && sheet.style.display !== 'none' && !shouldUseVariantSheet()) {
+            closeVariantSheet();
+        }
+    });
+
+    // আগের buyNow()-এর আসল কাজটুকু (কার্টে যোগ করে cart.html-এ পাঠানো) হুবহু এখানে অপরিবর্তিত —
+    // শুধু নাম বদলে executeBuyNow() করা হলো, যাতে buyNow() নিজে আগে মোবাইলে শীট খুলবে কিনা
+    // সেটা ঠিক করতে পারে
+    function executeBuyNow() {
+        if (isOutOfStock) { alert('❌ এই প্রোডাক্টটি বর্তমানে স্টকে নেই।'); return; }
+        addCurrentToCart();
+        window.location.href = 'cart.html';
+    }
+
+    function buyNow() {
+        if (isOutOfStock) { alert('❌ এই প্রোডাক্টটি বর্তমানে স্টকে নেই।'); return; }
+        if (shouldUseVariantSheet()) { openVariantSheet('buy'); return; }
+        executeBuyNow();
+    }
+
+    // Add to Cart বাটনের নতুন গেট — addCurrentToCart() নিজে অপরিবর্তিত রাখা হয়েছে (শীটের Confirm
+    // বাটনও সরাসরি সেটাই কল করে), শুধু মোবাইলে আগে শীট খুলবে কিনা এখানে ঠিক হয়
+    function addToCartClick() {
+        if (isOutOfStock) { alert('❌ এই প্রোডাক্টটি বর্তমানে স্টকে নেই।'); return; }
+        if (shouldUseVariantSheet()) { openVariantSheet('cart'); return; }
+        addCurrentToCart();
+    }
+
+
+    // ============ মোবাইল গ্যালারি/প্রোমো/রেটিং/Sold (Daraz অ্যাপ স্টাইল; ডেস্কটপে এগুলো লুকানো) ============
+    function mFormatSold(n) {
+        n = Number(n) || 0;
+        if (n >= 1000) return (Math.round(n / 100) / 10).toString().replace(/\.0$/, '') + 'K';
+        return String(n);
+    }
+
+    function buildMobileGallery(images, product) {
+        const track = document.getElementById('mGalleryTrack');
+        if (!track) return;
+        const slides = [];
+        const ytId = getYoutubeEmbedId(product.videoUrl);
+        if (ytId) {
+            slides.push(`<div class="m-slide m-video-slide" data-video="${ytId}">
+                <img src="https://img.youtube.com/vi/${ytId}/hqdefault.jpg" alt="${escapeAttr(product.name)} - video">
+                <button type="button" class="m-video-play" aria-label="ভিডিও চালান">&#9654;</button></div>`);
+        }
+        const list = images.length ? images : ['https://via.placeholder.com/400?text=No+Image'];
+        list.forEach((url, i) => {
+            slides.push(`<div class="m-slide" data-src="${escapeAttr(url)}"><img src="${escapeAttr(url)}" alt="${escapeAttr(product.name)} - ছবি ${i + 1}" ${i > 0 ? 'loading="lazy" decoding="async"' : ''} onerror="this.src='https://via.placeholder.com/400?text=No+Image'"></div>`);
+        });
+        track.innerHTML = slides.join('');
+        track.scrollLeft = 0;
+        updateMobileGalleryCount();
+
+        track.querySelectorAll('.m-video-play').forEach(btn => btn.addEventListener('click', () => {
+            const slide = btn.closest('.m-slide');
+            slide.innerHTML = `<iframe src="https://www.youtube.com/embed/${slide.dataset.video}?autoplay=1&playsinline=1" title="Product Video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+        }));
+        if (!track.dataset.bound) {
+            track.dataset.bound = '1';
+            let raf = null;
+            track.addEventListener('scroll', () => {
+                if (raf) return;
+                raf = requestAnimationFrame(() => { raf = null; updateMobileGalleryCount(); });
+            }, { passive: true });
+        }
+        // মূল #mainImage-এর src ভ্যারিয়েন্ট বদলালে JS পাল্টায় — গ্যালারিও সেই ছবিতে সরে যাবে
+        const mainImg = document.getElementById('mainImage');
+        if (mainImg && !mainImg.dataset.observed) {
+            mainImg.dataset.observed = '1';
+            new MutationObserver(() => syncMobileGalleryToSrc(mainImg.getAttribute('src'))).observe(mainImg, { attributes: true, attributeFilter: ['src'] });
+        }
+    }
+
+    function updateMobileGalleryCount() {
+        const track = document.getElementById('mGalleryTrack');
+        const el = document.getElementById('mGalleryCount');
+        if (!track || !el) return;
+        const total = track.children.length || 1;
+        const w = track.clientWidth || 1;
+        const idx = Math.min(total - 1, Math.max(0, Math.round(track.scrollLeft / w)));
+        el.textContent = `${idx + 1}/${total}`;
+        el.style.display = total > 1 ? '' : 'none';
+    }
+
+    function syncMobileGalleryToSrc(src) {
+        const track = document.getElementById('mGalleryTrack');
+        if (!track || !src) return;
+        const slides = [...track.querySelectorAll('.m-slide[data-src]')];
+        let target = slides.find(sl => sl.dataset.src === src);
+        if (!target && slides.length) {
+            // ভ্যারিয়েন্টের নিজস্ব ছবি গ্যালারির তালিকায় নেই — প্রথম স্লাইডের ছবি সেটা দিয়ে বদলানো হচ্ছে
+            target = slides[0];
+            target.dataset.src = src;
+            const im = target.querySelector('img');
+            if (im) im.src = src;
+        }
+        // পেজ লোডের সময় ডিফল্ট ভ্যারিয়েন্ট প্রথম ছবি সেট করে — ভিডিও স্লাইড প্রথমে থাকলে সেখান থেকে সরানো হবে না
+        if (target === slides[0] && track.scrollLeft < 5) return;
+        if (target) track.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+    }
+
+    function updateMobilePromo(price, originalPrice) {
+        const row = document.getElementById('mPromoRow');
+        const badges = document.getElementById('mBadges');
+        if (!row || !badges) return;
+        const hasDiscount = originalPrice && originalPrice > price;
+        if (hasDiscount) {
+            const pct = Math.round(((originalPrice - price) / originalPrice) * 100);
+            row.innerHTML = `<span class="m-tag m-tag-save">৳${formatPrice(originalPrice - price)} ছাড়</span><span class="m-tag m-tag-pct">-${pct}%</span>`;
+            row.classList.add('show');
+        } else {
+            row.innerHTML = '';
+            row.classList.remove('show');
+        }
+        badges.innerHTML = (hasDiscount ? `<span class="m-badge">-${Math.round(((originalPrice - price) / originalPrice) * 100)}% OFF</span>` : '')
+            + '<span class="m-badge m-badge-pack">ভিডিও রেকর্ড প্যাকিং</span>';
+    }
+
+    // রেটিং ও sold এক সারিতে — কোনোটারই ডেটা না থাকলে সারিটা পুরো লুকানো থাকে
+    let mRatingState = { avg: 0, total: 0, sold: 0 };
+    function renderMobileRatingRow() {
+        const row = document.getElementById('mRatingRow');
+        if (!row) return;
+        const parts = [];
+        if (mRatingState.total > 0) {
+            parts.push(`<span class="m-stars">${starsHtml(mRatingState.avg)}</span><span>${mRatingState.avg} (${mRatingState.total})</span>`);
+        }
+        if (mRatingState.sold > 0) {
+            parts.push(`<span>${mFormatSold(mRatingState.sold)} sold</span>`);
+        }
+        row.innerHTML = parts.join('<span class="m-sep"></span>');
+        row.classList.toggle('show', parts.length > 0);
+    }
+
+    function starsHtml(rating) {
+        const full = Math.round(rating);
+        let html = '';
+        for (let i = 1; i <= 5; i++) {
+            html += i <= full ? '&#9733;' : '&#9734;';
+        }
+        return html;
+    }
+
+    async function loadReviews() {
+        try {
+            const res = await fetch(`${API_BASE}/api/products/${productId}/reviews`);
+            const data = await res.json();
+            renderReviews(data);
+        } catch (err) {
+            console.error('Review load error:', err);
+        }
+    }
+
+    function renderReviews(data) {
+        document.getElementById('reviewAvg').textContent = data.average || 0;
+        document.getElementById('reviewAvgStars').innerHTML = starsHtml(data.average || 0);
+        document.getElementById('reviewCountText').textContent = `${data.total || 0} Ratings`;
+        mRatingState.avg = Number(data.average) || 0;
+        mRatingState.total = Number(data.total) || 0;
+        renderMobileRatingRow();
+
+        // SEO: রিভিউ ডেটা এখন হাতে এসেছে — JSON-LD-তে স্টার রেটিং যোগ করে দেওয়া হচ্ছে (থাকলে)
+        if (currentProduct) renderProductJsonLd(currentProduct, currentProductImages, data);
+
+        const breakdown = document.getElementById('reviewBreakdown');
+        breakdown.innerHTML = [5, 4, 3, 2, 1].map(star => {
+            const count = (data.breakdown && data.breakdown[star]) || 0;
+            const pct = data.total ? Math.round((count / data.total) * 100) : 0;
+            return `<div class="breakdown-row">
+                <span class="star-num">${star} ★</span>
+                <div class="breakdown-bar-bg"><div class="breakdown-bar-fill" style="width:${pct}%"></div></div>
+                <span class="count">${count}</span>
+            </div>`;
+        }).join('');
+
+        const list = document.getElementById('reviewList');
+        if (!data.reviews || !data.reviews.length) {
+            list.innerHTML = '<div class="no-reviews">এখনো কোনো রিভিউ নেই। প্রথম রিভিউ দিন!</div>';
+            return;
+        }
+        list.innerHTML = data.reviews.map(r => `
+            <div class="review-item">
+                <div class="review-item-header">
+                    <span>
+                        <span class="review-customer">${escapeHtml(r.customerName)}</span>
+                        ${r.verifiedPurchase ? '<span class="verified-badge">✔ Verified Purchase</span>' : ''}
+                    </span>
+                    <span class="review-date">${new Date(r.createdAt).toLocaleDateString('bn-BD')}</span>
+                </div>
+                <div class="review-stars">${starsHtml(r.rating)}</div>
+                ${r.comment ? `<div class="review-comment">${escapeHtml(r.comment)}</div>` : ''}
+            </div>
+        `).join('');
+    }
+
+    // এই ভিজিটর (লগইন করা কাস্টমার বা ফোন-ভেরিফাইড গেস্ট) এই প্রোডাক্টে রিভিউ দেওয়ার যোগ্য
+    // কিনা ব্যাকএন্ডে জিজ্ঞেস করে — যোগ্য না হলে ফর্মের বদলে কারণ দেখানো হয়
+    async function checkReviewEligibility(phone) {
+        const token = getCustomerToken();
+        const headers = {};
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+        const qs = phone ? ('?phone=' + encodeURIComponent(phone)) : '';
+        try {
+            const res = await fetch(`${API_BASE}/api/products/${productId}/review-eligibility${qs}`, { headers });
+            return await res.json();
+        } catch (err) {
+            return { eligible: false };
+        }
+    }
+
+    function showEligibilityState(result) {
+        const box = document.getElementById('writeReviewBox');
+        const notEligibleBox = document.getElementById('reviewNotEligibleBox');
+        if (result.eligible) {
+            box.style.display = '';
+            notEligibleBox.style.display = 'none';
+        } else {
+            box.style.display = 'none';
+            notEligibleBox.style.display = 'block';
+            notEligibleBox.textContent = result.reason === 'already-reviewed'
+                ? 'আপনি এই প্রোডাক্টের সব ডেলিভারড অর্ডারের জন্যই রিভিউ দিয়েছেন। ধন্যবাদ! নতুন করে কিনে ডেলিভারি পেলে আবার রিভিউ দিতে পারবেন, আর ডেলিভারির ১৪ দিনের মধ্যে My Account > My Reviews থেকে রিভিউ এডিটও করা যায়।'
+                : 'শুধুমাত্র যারা এই প্রোডাক্টটি অর্ডার করে ডেলিভারি পেয়েছেন, তারাই রিভিউ দিতে পারবেন — ফেক রিভিউ ঠেকাতে এই ব্যবস্থা নেওয়া হয়েছে। অর্ডার করে থাকলে এবং ডেলিভারি পাওয়ার পর আবার চেষ্টা করুন।';
+        }
+    }
+
+    // পেজ লোড হওয়ার সময় রিভিউ ফর্মটা ঠিক করে দেখানো হয়: লগইন করা থাকলে সাথে সাথে
+    // অ্যাকাউন্ট দিয়ে যাচাই করে ফেলা হয়; গেস্ট হলে আগে থেকে যাচাই করা সম্ভব না (ফোন নম্বর
+    // লাগবে), তাই ফোন-ইনপুটসহ ফর্মটা দেখানো হয় — আসল যাচাই সাবমিট করার সময় হবে।
+    async function initReviewForm() {
+        const phoneInput = document.getElementById('reviewerPhone');
+        const token = getCustomerToken();
+        if (token) {
+            phoneInput.style.display = 'none';
+            const result = await checkReviewEligibility();
+            showEligibilityState(result);
+        } else {
+            phoneInput.style.display = 'block';
+            document.getElementById('writeReviewBox').style.display = '';
+            document.getElementById('reviewNotEligibleBox').style.display = 'none';
+        }
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str || '';
+        return div.innerHTML;
+    }
+
+    document.getElementById('starInput').addEventListener('click', (e) => {
+        if (e.target.tagName !== 'SPAN') return;
+        selectedStars = Number(e.target.dataset.val);
+        document.querySelectorAll('#starInput span').forEach(s => {
+            s.classList.toggle('selected', Number(s.dataset.val) <= selectedStars);
+        });
+    });
+
+    // নাম এখন আর ইউজার টাইপ করে না — ফেক রিভিউ ঠেকাতে ব্যাকএন্ড আসল অর্ডারের নাম বসায়।
+    // লগইন করা কাস্টমার হলে অ্যাকাউন্ট টোকেন দিয়েই যাচাই হয়; গেস্ট হলে অর্ডারের ফোন নম্বর লাগবে।
+    async function submitReview() {
+        const comment = document.getElementById('reviewComment').value.trim();
+        const phoneInput = document.getElementById('reviewerPhone');
+        const phone = phoneInput.value.trim();
+        const statusMsg = document.getElementById('reviewStatusMsg');
+        const token = getCustomerToken();
+
+        if (!selectedStars) {
+            statusMsg.textContent = 'দয়া করে রেটিং (স্টার) দিন।';
+            statusMsg.style.color = '#e74c3c';
+            return;
+        }
+        if (!token && !phone) {
+            statusMsg.textContent = 'দয়া করে অর্ডারের সময় ব্যবহৃত ফোন নম্বরটি দিন।';
+            statusMsg.style.color = '#e74c3c';
+            return;
+        }
+
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+            const res = await fetch(`${API_BASE}/api/products/${productId}/reviews`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ rating: selectedStars, comment, phone })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to submit review');
+
+            statusMsg.textContent = '✅ ধন্যবাদ! আপনার রিভিউ যোগ হয়েছে।';
+            statusMsg.style.color = '#27ae60';
+            document.getElementById('reviewComment').value = '';
+            phoneInput.value = '';
+            selectedStars = 0;
+            document.querySelectorAll('#starInput span').forEach(s => s.classList.remove('selected'));
+            loadReviews();
+            initReviewForm();
+        } catch (err) {
+            statusMsg.textContent = '❌ ' + err.message;
+            statusMsg.style.color = '#e74c3c';
+        }
+    }
+
+    async function loadQuestions() {
+        try {
+            const res = await fetch(`${API_BASE}/api/products/${productId}/questions`);
+            const data = await res.json();
+            renderQuestions(data);
+        } catch (err) {
+            console.error('Question load error:', err);
+        }
+    }
+
+    function renderQuestions(questions) {
+        const list = document.getElementById('qaList');
+        if (!questions || !questions.length) {
+            list.innerHTML = '<div class="no-questions">এখনো কোনো প্রশ্ন নেই। প্রথম প্রশ্নটি জিজ্ঞাসা করুন!</div>';
+            return;
+        }
+        list.innerHTML = questions.map(q => `
+            <div class="qa-item">
+                <div class="qa-question">${escapeHtml(q.question)}</div>
+                <div class="qa-meta">${escapeHtml(q.askedBy)} • ${new Date(q.createdAt).toLocaleDateString('bn-BD')}</div>
+                ${q.answer
+                    ? `<div class="qa-answer">${escapeHtml(q.answer)}</div>`
+                    : `<div class="qa-no-answer">এখনো উত্তর দেওয়া হয়নি</div>`}
+            </div>
+        `).join('');
+    }
+
+    async function submitQuestion() {
+        const name = document.getElementById('askerName').value.trim();
+        const question = document.getElementById('questionText').value.trim();
+        const statusMsg = document.getElementById('questionStatusMsg');
+
+        if (!name || !question) {
+            statusMsg.textContent = 'দয়া করে নাম এবং প্রশ্ন দুটোই লিখুন।';
+            statusMsg.style.color = '#e74c3c';
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/api/products/${productId}/questions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ askedBy: name, question })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to submit question');
+
+            statusMsg.textContent = '✅ আপনার প্রশ্নটি জমা হয়েছে। বিক্রেতা শীঘ্রই উত্তর দেবেন।';
+            statusMsg.style.color = '#27ae60';
+            document.getElementById('askerName').value = '';
+            document.getElementById('questionText').value = '';
+            loadQuestions();
+        } catch (err) {
+            statusMsg.textContent = '❌ ' + err.message;
+            statusMsg.style.color = '#e74c3c';
+        }
+    }
+
+    function showError() {
+        document.getElementById('loadingMsg').style.display = 'none';
+        document.getElementById('errorMsg').style.display = 'block';
+    }
+
+    // দারাজের মতো হোভার-ম্যাগনিফায়ার: মাউস মূল ছবির উপর রাখলে পাশে বড় করে জুম করে দেখায়
+    function initImageZoom() {
+        const mainImg = document.getElementById('mainImage');
+        const section = document.querySelector('.image-section');
+        if (!mainImg || !section) return;
+        // টাচ ডিভাইসে hover থাকে না — সেখানে স্বাভাবিক পিঞ্চ-জুম আচরণই রাখা হলো, এখানে কিছু করা হয়নি
+        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+        const lens = document.createElement('div');
+        lens.className = 'zoom-lens';
+        const result = document.createElement('div');
+        result.className = 'zoom-result';
+        section.appendChild(lens);
+        section.appendChild(result);
+
+        function activate() {
+            if (window.innerWidth < 1000) return; // সরু স্ক্রিনে জুম প্যানেল রাখার জায়গা নেই
+            if (!mainImg.src || mainImg.style.display === 'none') return;
+            result.style.backgroundImage = `url('${mainImg.src}')`;
+            lens.style.display = 'block';
+            result.style.display = 'block';
+        }
+        function deactivate() {
+            lens.style.display = 'none';
+            result.style.display = 'none';
+        }
+        function move(e) {
+            if (lens.style.display === 'none') return;
+            const rect = mainImg.getBoundingClientRect();
+            const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
+            let x = e.clientX - rect.left - lensW / 2;
+            let y = e.clientY - rect.top - lensH / 2;
+            x = Math.max(0, Math.min(x, rect.width - lensW));
+            y = Math.max(0, Math.min(y, rect.height - lensH));
+            lens.style.left = x + 'px';
+            lens.style.top = y + 'px';
+            const resultW = result.offsetWidth, resultH = result.offsetHeight;
+            const ratioX = resultW / lensW;
+            const ratioY = resultH / lensH;
+            result.style.backgroundSize = `${rect.width * ratioX}px ${rect.height * ratioY}px`;
+            result.style.backgroundPosition = `-${x * ratioX}px -${y * ratioY}px`;
+        }
+        mainImg.addEventListener('mouseenter', activate);
+        mainImg.addEventListener('mousemove', move);
+        mainImg.addEventListener('mouseleave', deactivate);
+    }
+
+    loadProduct();
+    initImageZoom();
+</script>
+</main>
+
+<script>
+// ===== Share ও Wishlist আইকন (টাইটেলের পাশে) =====
+// Wishlist: বিদ্যমান wishlist.js (stzSetWishlisted / stzIsWishlisted) ও ব্যাকএন্ড /api/customer-auth/wishlist ব্যবহার করে,
+// তাই Account > My Wishlist-এ সাথে সাথে দেখা যায়। Share: নিজস্ব মডাল (Copy, Facebook, WhatsApp, Messenger, X) + সাপোর্ট থাকলে Native Share।
+(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var shareBtn = $('shareBtn'), wishBtn = $('pdWishBtn');
+    if (!shareBtn || !wishBtn) return;
+
+    function basePath() { return (typeof getAuthBasePath === 'function') ? getAuthBasePath() : ''; }
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+    // ---------- টোস্ট ----------
+    var toastTimer = null;
+    function toast(msg, action) {
+        var box = $('stzToastBox');
+        if (!box) {
+            box = document.createElement('div'); box.id = 'stzToastBox';
+            box.setAttribute('role', 'status'); box.setAttribute('aria-live', 'polite');
+            document.body.appendChild(box);
+        }
+        clearTimeout(toastTimer);
+        box.innerHTML = '';
+        var t = document.createElement('div'); t.className = 'stz-toast';
+        var sp = document.createElement('span'); sp.textContent = msg; t.appendChild(sp);
+        if (action && action.href) { var a = document.createElement('a'); a.href = action.href; a.textContent = action.label; t.appendChild(a); }
+        box.appendChild(t);
+        requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('show'); }); });
+        toastTimer = setTimeout(function () { t.classList.remove('show'); setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 250); }, 2800);
+    }
+
+    // ---------- Wishlist ----------
+    function loginHref() { return basePath() + 'login.html?redirect=' + encodeURIComponent(location.pathname + location.search); }
+    function setHeart(on, animate) {
+        wishBtn.classList.toggle('on', !!on);
+        wishBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        var label = on ? 'Remove from wishlist' : 'Add to wishlist';
+        wishBtn.setAttribute('aria-label', label); wishBtn.title = label;
+        if (animate && on) { wishBtn.classList.remove('pop'); void wishBtn.offsetWidth; wishBtn.classList.add('pop'); }
+    }
+    function syncHeart() {
+        if (typeof stzIsWishlisted !== 'function' || typeof productId === 'undefined' || !productId) return;
+        setHeart(stzIsWishlisted(productId));
+    }
+    var wishBusy = false;
+    wishBtn.addEventListener('click', async function () {
+        if (typeof productId === 'undefined' || !productId || typeof stzSetWishlisted !== 'function') return;
+        if (!getCustomerToken()) { toast('Please log in to save items to your wishlist', { label: 'Log in', href: loginHref() }); return; }
+        if (wishBusy) return; wishBusy = true;
+        var was = stzIsWishlisted(productId);
+        setHeart(!was, true);
+        var ok = await stzSetWishlisted(productId, !was);
+        wishBusy = false;
+        if (!ok) { setHeart(was); toast("Couldn't update your wishlist. Please try again."); return; }
+        stzRefreshWishlistButtons(); // নিচের বড় Wishlist বাটন (স্টক শেষ হলে দেখায়) ও অন্য হার্ট সিঙ্ক হবে
+        toast(!was ? 'Added to your wishlist' : 'Removed from your wishlist', !was ? { label: 'View', href: basePath() + 'account.html#wishlistSection' } : null);
+    });
+    document.addEventListener('stz:wishlist-sync', syncHeart);
+    syncHeart();
+
+    // ---------- Share (Daraz-স্টাইল শীট + ছোট লিংক) ----------
+    // ছোট লিংক: POST /api/short-links → https://smarttechzone.com.bd/s/<id> (প্রতিটা প্রোডাক্টের একটাই, ব্যাকএন্ড routes/shortLinks.js)।
+    // শীট খোলার সাথে সাথেই ব্যাকগ্রাউন্ডে বানানো/ক্যাশ থেকে নেওয়া হয়, তাই কপি/শেয়ারে অপেক্ষা লাগে না। ব্যাকএন্ড
+    // ঘুমিয়ে বা বন্ধ থাকলে (৯ সেকেন্ডে সাড়া না এলে) আসল লম্বা প্রোডাক্ট লিংকই শেয়ার হয় — শেয়ার কখনো আটকায় না।
+    var SHORT_KEY = 'stzShortLinks';
+    var apiRoot = (typeof API_BASE !== 'undefined' && API_BASE) ? API_BASE : (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : '');
+    var shortUrl = null, shortPromise = null;
+    function readShortCache() { try { return JSON.parse(localStorage.getItem(SHORT_KEY) || '{}') || {}; } catch (e) { return {}; } }
+    function writeShortCache(pid, url) { try { var c = readShortCache(); c[pid] = url; localStorage.setItem(SHORT_KEY, JSON.stringify(c)); } catch (e) { /* ক্যাশ ঐচ্ছিক */ } }
+    function longUrl() {
+        var c = $('canonicalTag'), h = c && c.getAttribute('href');
+        return (h && /\/product\//.test(h)) ? h : location.href;
+    }
+    function currentUrl() { return shortUrl || longUrl(); }
+    function getShortUrl() {
+        if (shortUrl) return Promise.resolve(shortUrl);
+        if (shortPromise) return shortPromise;
+        if (typeof productId === 'undefined' || !productId) return Promise.resolve(longUrl());
+        var cached = readShortCache()[productId];
+        if (cached && /^https:\/\/[^\/]+\/s\/[A-Za-z0-9]+$/.test(cached)) { shortUrl = cached; return Promise.resolve(cached); }
+        var ctrl = ('AbortController' in window) ? new AbortController() : null;
+        var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 9000) : null;
+        shortPromise = fetch(apiRoot + '/api/short-links', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ productId: productId }), signal: ctrl ? ctrl.signal : undefined
+        }).then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('http')); })
+          .then(function (d) {
+              if (!d || typeof d.shortUrl !== 'string' || !/^https:\/\/[^\/]+\/s\/[A-Za-z0-9]+$/.test(d.shortUrl)) throw new Error('bad');
+              shortUrl = d.shortUrl; writeShortCache(productId, shortUrl); return shortUrl;
+          })
+          .catch(function () { return longUrl(); })
+          .then(function (u) { if (timer) clearTimeout(timer); shortPromise = null; if (ov && ov.classList.contains('open')) updateTargets(); return u; });
+        return shortPromise;
+    }
+
+    function priceInfo() {
+        var p = $('productPrice'), o = $('originalPrice'), ow = $('originalPriceWrap'), d = $('discountBadge');
+        var price = p ? p.textContent.trim() : '';
+        var orig = (ow && ow.style.display !== 'none' && o) ? o.textContent.trim() : '';
+        var off = (orig && d) ? d.textContent.trim() : '';
+        return { price: price, orig: orig, off: off };
+    }
+    function shareData() {
+        var nameEl = $('productName'), og = $('ogImageTag');
+        var img = (typeof currentProductImages !== 'undefined' && currentProductImages && currentProductImages[0]) || (og && og.getAttribute('content')) || '';
+        return { url: currentUrl(), title: (nameEl && nameEl.textContent.trim()) || document.title, image: img, pi: priceInfo() };
+    }
+    function infoText(d) {
+        var line = d.pi.price ? '৳' + d.pi.price + (d.pi.orig ? ' (was ৳' + d.pi.orig + (d.pi.off ? ', ' + d.pi.off.replace(/^-/, '') + ' OFF' : '') + ')' : '') : '';
+        return [d.title, line, d.url].filter(Boolean).join('\n');
+    }
+
+    var ICON = {
+        fb: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.7h2.6l.4-3h-3V8.4c0-.9.3-1.5 1.5-1.5h1.6V4.2c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.8v3h2.6V21h3.1z"/></svg>',
+        ms: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5C6.7 2.5 2.5 6.5 2.5 11.5c0 2.8 1.4 5.3 3.5 6.9V22l3.3-1.8c.9.2 1.8.4 2.7.4 5.3 0 9.5-4 9.5-9s-4.2-9.1-9.5-9.1zm1 12.1l-2.5-2.7-4.9 2.7 5.4-5.7 2.6 2.7 4.8-2.7-5.4 5.7z"/></svg>',
+        wa: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8a9.1 9.1 0 0 0-7.8 13.8L3 21.2l4.7-1.2A9.1 9.1 0 1 0 12 2.8zm0 16.7c-1.4 0-2.8-.4-4-1.1l-.3-.2-2.8.7.8-2.7-.2-.3a7.5 7.5 0 1 1 6.5 3.6zm4.1-5.6c-.2-.1-1.3-.7-1.5-.7-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1-1.3-.6-2.1-1.1-2.9-2.5-.2-.4.2-.4.6-1.2.1-.1 0-.3 0-.4l-.7-1.6c-.2-.4-.3-.4-.5-.4h-.4c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.3c.1.2 1.6 2.5 4 3.5 1.5.6 2.1.7 2.8.6.4-.1 1.3-.5 1.5-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>',
+        ig: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>',
+        info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></svg>',
+        link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/></svg>',
+        sms: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7l-4.5 3.5V16.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><circle cx="8.5" cy="10.5" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="10.5" r=".9" fill="currentColor" stroke="none"/><circle cx="15.5" cy="10.5" r=".9" fill="currentColor" stroke="none"/></svg>',
+        more: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg>',
+        star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8l2.7 5.9 6.4.7-4.8 4.3 1.4 6.3L12 16.7 6.3 20l1.4-6.3L2.9 9.4l6.4-.7L12 2.8z"/></svg>'
+    };
+    var ov = null, lastFocus = null;
+    function build() {
+        if (ov) return;
+        ov = document.createElement('div'); ov.id = 'stzShareOv';
+        ov.innerHTML =
+            '<div class="sh-wrap" id="shWrap" role="dialog" aria-modal="true" aria-labelledby="stzShareTitle">' +
+              '<div class="sh-card">' +
+                '<div class="sh-card-img"><img id="shImg" alt=""></div>' +
+                '<div class="sh-card-body"><div class="sh-card-title" id="shName"></div><div class="sh-card-price" id="shPrice"></div></div>' +
+                '<div class="sh-ribbon">' + ICON.star + '<span>Share &amp; Recommend to Friends</span></div>' +
+              '</div>' +
+              '<div class="sh-sheet">' +
+                '<div class="sh-head"><h2 id="stzShareTitle">Share this product with friends!</h2><button type="button" class="sh-x" id="shX" aria-label="Close">&times;</button></div>' +
+                '<div class="sh-grid">' +
+                  '<a class="sh-item" id="shFb" target="_blank" rel="noopener noreferrer"><span class="sh-ic fb">' + ICON.fb + '</span>Facebook</a>' +
+                  '<button type="button" class="sh-item" id="shMs"><span class="sh-ic ms">' + ICON.ms + '</span>Messenger</button>' +
+                  '<a class="sh-item" id="shWa" target="_blank" rel="noopener noreferrer"><span class="sh-ic wa">' + ICON.wa + '</span>WhatsApp</a>' +
+                  '<button type="button" class="sh-item" id="shIg"><span class="sh-ic ig">' + ICON.ig + '</span>Instagram</button>' +
+                  '<button type="button" class="sh-item" id="shInfo"><span class="sh-ic plain">' + ICON.info + '</span>Copy Info</button>' +
+                  '<button type="button" class="sh-item" id="shLink"><span class="sh-ic plain">' + ICON.link + '</span>Copy Link</button>' +
+                  '<a class="sh-item" id="shSms"><span class="sh-ic plain">' + ICON.sms + '</span>Send SMS</a>' +
+                  '<button type="button" class="sh-item" id="shMore"><span class="sh-ic plain">' + ICON.more + '</span>More</button>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+        document.body.appendChild(ov);
+        ov.addEventListener('click', function (e) { if (e.target === ov || e.target === $('shWrap')) closeShare(); });
+        $('shX').addEventListener('click', closeShare);
+        $('shLink').addEventListener('click', copyLink);
+        $('shInfo').addEventListener('click', copyInfo);
+        $('shMs').addEventListener('click', openMessenger);
+        $('shIg').addEventListener('click', openInstagram);
+        $('shMore').addEventListener('click', nativeShare);
+        document.addEventListener('keydown', function (e) {
+            if (!ov.classList.contains('open')) return;
+            if (e.key === 'Escape') { closeShare(); return; }
+            if (e.key === 'Tab') { // ফোকাস শীটের ভেতরেই ঘুরবে
+                var f = ov.querySelectorAll('button, a[href]'); f = Array.prototype.filter.call(f, function (n) { return n.offsetParent !== null; });
+                if (!f.length) return; var first = f[0], last = f[f.length - 1];
+                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            }
+        });
+    }
+    // ছোট লিংক এলে Facebook/WhatsApp/SMS-এর লিংক নতুন করে বসানো (এগুলো সাধারণ <a>, তাই ক্লিকের আগেই ঠিক URL থাকতে হয়)
+    function updateTargets() {
+        var d = shareData(), u = encodeURIComponent(d.url);
+        $('shFb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + u;
+        $('shWa').href = 'https://wa.me/?text=' + encodeURIComponent(d.title + '\n' + d.url);
+        $('shSms').href = 'sms:?&body=' + encodeURIComponent(d.title + '\n' + d.url);
+    }
+    function openShare() {
+        build();
+        var d = shareData();
+        $('shName').textContent = d.title;
+        var img = $('shImg'); if (d.image) { img.src = d.image; img.style.visibility = ''; } else { img.removeAttribute('src'); img.style.visibility = 'hidden'; }
+        var pr = d.pi, html = '';
+        if (pr.price) {
+            html = '<b>৳' + esc(pr.price) + '</b>' + (pr.orig ? '<s>৳' + esc(pr.orig) + '</s>' : '') + (pr.off ? '<em>' + esc(pr.off) + '</em>' : '');
+        }
+        $('shPrice').innerHTML = html;
+        updateTargets();
+        lastFocus = document.activeElement;
+        ov.classList.add('open'); document.body.classList.add('stz-lock');
+        $('shX').focus();
+        getShortUrl().then(updateTargets); // ব্যাকগ্রাউন্ডে ছোট লিংক তৈরি/আনা
+    }
+    function closeShare() {
+        if (!ov) return;
+        ov.classList.remove('open'); document.body.classList.remove('stz-lock');
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+    function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+        return new Promise(function (res, rej) {
+            try {
+                var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+                document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+                var ok = document.execCommand('copy'); document.body.removeChild(ta); ok ? res() : rej();
+            } catch (e) { rej(e); }
+        });
+    }
+    function busy(btn, on) { if (btn) btn.classList.toggle('sh-busy', !!on); }
+    function copyLink() {
+        var btn = $('shLink'); busy(btn, true);
+        getShortUrl().then(function (u) {
+            return copyText(u).then(function () { toast('Link copied to clipboard'); }, function () { window.prompt('Copy this link:', u); });
+        }).then(function () { busy(btn, false); });
+    }
+    function copyInfo() {
+        var btn = $('shInfo'); busy(btn, true);
+        getShortUrl().then(function () {
+            var text = infoText(shareData());
+            return copyText(text).then(function () { toast('Product info copied to clipboard'); }, function () { window.prompt('Copy this info:', text); });
+        }).then(function () { busy(btn, false); });
+    }
+    // Messenger: ফোনে অ্যাপ সরাসরি খোলে। ডেস্কটপে Facebook-এর Send ডায়ালগ Facebook App ID ছাড়া চলে না, তাই লিংক কপি করে
+    // messenger.com খোলা হয়। (কপি আগে, ট্যাব খোলা পরে — নতুন ট্যাব ফোকাস নিয়ে নিলে ক্লিপবোর্ডে লেখা ব্যর্থ হয়)
+    function openMessenger() {
+        getShortUrl().then(function (u) {
+            if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { window.location.href = 'fb-messenger://share/?link=' + encodeURIComponent(u); return; }
+            copyText(u).then(function () { toast('Link copied. Paste it in Messenger to share.'); }, function () { toast('Open Messenger and paste the product link.'); })
+                .then(function () { window.open('https://www.messenger.com/', '_blank', 'noopener'); });
+        });
+    }
+    // Instagram-এ কোনো ওয়েব শেয়ার-লিংক নেই — তাই লিংক কপি করে Instagram (ডাইরেক্ট মেসেজ) খোলা হয়, সেখানে পেস্ট করতে হয়
+    function openInstagram() {
+        getShortUrl().then(function (u) {
+            copyText(u).then(function () { toast('Link copied. Paste it in Instagram to share.'); }, function () { toast('Open Instagram and paste the product link.'); })
+                .then(function () { window.open('https://www.instagram.com/direct/inbox/', '_blank', 'noopener'); });
+        });
+    }
+    function nativeShare() {
+        getShortUrl().then(function () {
+            var d = shareData();
+            if (navigator.share) {
+                navigator.share({ title: d.title, text: d.title, url: d.url }).then(closeShare, function () { /* ইউজার বাতিল করলে কিছু না */ });
+            } else { // ডেস্কটপ ব্রাউজার ইত্যাদিতে native share নেই — প্রোডাক্ট তথ্য কপি করে দেওয়া হয়
+                var text = infoText(d);
+                copyText(text).then(function () { toast('Sharing is not supported here. Product info copied instead.'); }, function () { window.prompt('Copy this info:', text); });
+            }
+        });
+    }
+    shareBtn.addEventListener('click', openShare);
+})();
+</script>
+    <div id="siteFooter"></div>
+<script src="footer.js"></script>
+<script src="search.js"></script>
+</body>
+</html>
