@@ -37,3 +37,21 @@
     "https://static-0[0-9]\\.daraz\\.com\\.bd/.*",
     "https://[a-z0-9-]+\\.slatic\\.net/.*"
   ]
+
+# ============================================================================
+# Private Wholesale Portal (/wholesale/*) — সার্চ ইঞ্জিন কখনো ইনডেক্স/ক্যাশ না করুক এবং ব্রাউজার/CDN পেজ জমিয়ে না রাখুক।
+# robots.txt বা sitemap-এ এই পাথ ইচ্ছা করেই লেখা নেই (লিখলে পাথটাই সবাইকে জানিয়ে দেওয়া হয়) — তাই noindex হেডারই প্রধান সুরক্ষা।
+# ============================================================================
+[[headers]]
+  for = "/wholesale"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    Cache-Control = "no-store"
+    Referrer-Policy = "no-referrer"
+
+[[headers]]
+  for = "/wholesale/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    Cache-Control = "no-store"
+    Referrer-Policy = "no-referrer"

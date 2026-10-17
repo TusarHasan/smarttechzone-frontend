@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="no-referrer">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <title>Business Registration - Smart Tech Zone</title>
+    <link rel="stylesheet" href="/wholesale/wholesale.css">
+    <script src="/config.js"></script>
+    <script src="/wholesale/wholesale.js"></script>
+</head>
+<body>
+    <div id="hdr"></div>
+    <main class="ws-wrap" id="app" aria-live="polite">
+        <div class="ws-skeleton" aria-label="লোড হচ্ছে"></div>
+    </main>
+
+    <script>
+    (function () {
+        var app = document.getElementById('app');
+        document.getElementById('hdr').innerHTML = WS.header();
+        var E = WS.esc;
+
+        if (!WS.token()) { location.replace(WS.loginUrl()); return; }
+
+        var BUSINESS_TYPES = [
+            ['Mobile Shop', 'মোবাইল শপ'], ['Repair Shop', 'রিপেয়ার শপ'], ['Accessories Shop', 'অ্যাক্সেসরিজ শপ'],
+            ['Parts Wholesaler', 'পার্টস হোলসেলার'], ['Online Seller', 'অনলাইন সেলার'], ['Other', 'অন্যান্য']
+        ];
+        var DISTRICTS = ['Bagerhat','Bandarban','Barguna','Barishal','Bhola','Bogura','Brahmanbaria','Chandpur','Chapainawabganj','Chattogram','Chuadanga','Cox\'s Bazar','Cumilla','Dhaka','Dinajpur','Faridpur','Feni','Gaibandha','Gazipur','Gopalganj','Habiganj','Jamalpur','Jashore','Jhalokathi','Jhenaidah','Joypurhat','Khagrachhari','Khulna','Kishoreganj','Kurigram','Kushtia','Lakshmipur','Lalmonirhat','Madaripur','Magura','Manikganj','Meherpur','Moulvibazar','Munshiganj','Mymensingh','Naogaon','Narail','Narayanganj','Narsingdi','Natore','Netrokona','Nilphamari','Noakhali','Pabna','Panchagarh','Patuakhali','Pirojpur','Rajbari','Rajshahi','Rangamati','Rangpur','Satkhira','Shariatpur','Sherpur','Sirajganj','Sunamganj','Sylhet','Tangail','Thakurgaon'];
+        var MAX_BYTES = 8 * 1024 * 1024;
+        var DOCS = [
+            { key: 'tradeLicense', title: 'ট্রেড লাইসেন্স', hint: 'ছবি অথবা PDF', pdf: true },
+            { key: 'nidFront', title: 'NID / স্মার্ট কার্ড (সামনের পাশ)', hint: 'লেখা পরিষ্কার পড়া যায় এমন ছবি' },
+            { key: 'nidBack', title: 'NID / স্মার্ট কার্ড (পেছনের পাশ)', hint: 'লেখা পরিষ্কার পড়া যায় এমন ছবি' },
+            { key: 'shopFront', title: 'দোকানের সামনের ছবি', hint: 'সাইনবোর্ডসহ' },
+            { key: 'shopInside', title: 'দোকানের ভেতরের ছবি', hint: 'সর্বোচ্চ ৩টা ছবি', multi: true }
+        ];
+        var files = { tradeLicense: [], nidFront: [], nidBack: [], shopFront: [], shopInside: [] };
+        var busy = false;
+
+        function opts(list, withEmpty) {
+            return (withEmpty ? '<option value="">বেছে নিন</option>' : '') + list.map(function (o) {
+                var v = Array.isArray(o) ? o[0] : o, l = Array.isArray(o) ? o[1] + ' (' + o[0] + ')' : o;
+                return '<option value="' + E(v) + '">' + E(l) + '</option>';
+            }).join('');
+        }
+        function field(id, label, html, o) {
+            o = o || {};
+            return '<div class="ws-field' + (o.full ? ' full' : '') + '" id="f_' + id + '"><label for="' + id + '">' + label +
+                (o.req ? ' <span class="req">*</span>' : ' <span class="opt">(ঐচ্ছিক)</span>') + '</label>' + html +
+                (o.hint ? '<div class="hint">' + o.hint + '</div>' : '') + '<div class="errmsg"></div></div>';
+        }
+        function input(id, type, ph, extra) {
+            return '<input id="' + id + '" name="' + id + '" type="' + type + '" placeholder="' + (ph || '') + '" ' + (extra || '') + '>';
+        }
+
+        function docBox(d) {
+            return '<div class="ws-doc" id="d_' + d.key + '">' +
+                '<div class="ws-doc-title">' + d.title + ' <span class="req">*</span></div>' +
+                '<div class="ws-doc-hint">' + d.hint + '</div>' +
+                '<label class="ws-pick" for="in_' + d.key + '">ফাইল বেছে নিন</label>' +
+                '<input type="file" id="in_' + d.key + '" accept="' + (d.pdf ? 'image/*,application/pdf' : 'image/*') + '"' + (d.multi ? ' multiple' : '') + '>' +
+                '<div class="ws-thumbs" id="th_' + d.key + '"></div>' +
+                '<div class="errmsg" style="display:none;color:var(--ws-bad);font-size:12.5px;margin-top:6px"></div></div>';
+        }
+
+        function renderForm(status) {
+            var c = WS.customer() || {};
+            var noteHtml = status && status.status === 'rejected'
+                ? '<div class="ws-note bad"><strong>আগের আবেদন গ্রহণ করা হয়নি।</strong>' + (status.reason ? ' কারণ: ' + E(status.reason) : '') + ' সংশোধন করে নতুন করে সব ডকুমেন্টসহ জমা দিন।</div>' : '';
+            app.innerHTML =
+                '<div class="ws-card">' +
+                '<h1>Business Registration</h1>' +
+                '<p class="ws-sub">দোকানদার ও বাল্ক ক্রেতা হিসেবে যাচাই হতে নিচের তথ্য ও ডকুমেন্ট দিন। অনুমোদনের পর আপনি পোর্টালে প্রবেশ করতে পারবেন।</p>' +
+                noteHtml +
+                '<div class="ws-note info ws-privacy">' + WS.icons.shield + '<div>আপনার NID ও ট্রেড লাইসেন্স একটা আলাদা সুরক্ষিত স্টোরেজে রাখা হয়। এগুলো শুধু আমাদের Owner যাচাইয়ের জন্য দেখতে পারেন, কোথাও পাবলিক বা অন্য কাউকে দেখানো হয় না।</div></div>' +
+                '</div>' +
+                '<form class="ws-card ws-form" id="form" novalidate autocomplete="on">' +
+                '<div class="ws-sec"><div class="ws-sec-head"><span class="ws-sec-no">1</span><h2>দোকানের তথ্য</h2></div><div class="ws-grid">' +
+                field('shopName', 'দোকানের নাম', input('shopName', 'text', '', 'maxlength="120" autocomplete="organization"'), { req: 1 }) +
+                field('businessType', 'ব্যবসার ধরন', '<select id="businessType" name="businessType">' + opts(BUSINESS_TYPES, true) + '</select>', { req: 1 }) +
+                field('tradeLicenseNo', 'ট্রেড লাইসেন্স নাম্বার', input('tradeLicenseNo', 'text', '', 'maxlength="60"'), {}) +
+                field('district', 'জেলা', input('district', 'text', 'যেমন Dhaka', 'maxlength="60" list="districts" autocomplete="off"') + '<datalist id="districts">' + DISTRICTS.map(function (d) { return '<option value="' + E(d) + '">'; }).join('') + '</datalist>', {}) +
+                field('shopAddress', 'দোকানের পূর্ণ ঠিকানা', '<textarea id="shopAddress" name="shopAddress" rows="2" maxlength="300" autocomplete="street-address"></textarea>', { req: 1, full: 1 }) +
+                '</div></div>' +
+
+                '<div class="ws-sec"><div class="ws-sec-head"><span class="ws-sec-no">2</span><h2>মালিকের তথ্য</h2></div><div class="ws-grid">' +
+                field('ownerName', 'মালিকের নাম (NID অনুযায়ী)', input('ownerName', 'text', '', 'maxlength="100" autocomplete="name" value="' + E(c.name || '') + '"'), { req: 1 }) +
+                field('ownerPhone', 'মালিকের মোবাইল', input('ownerPhone', 'tel', '01XXXXXXXXX', 'maxlength="20" inputmode="numeric" autocomplete="tel" value="' + E(c.phone || '') + '"'), { req: 1 }) +
+                field('ownerEmail', 'ইমেইল', input('ownerEmail', 'email', '', 'maxlength="120" autocomplete="email" value="' + E(c.email || '') + '"'), {}) +
+                '</div></div>' +
+
+                '<div class="ws-sec"><div class="ws-sec-head"><span class="ws-sec-no">3</span><h2>পেমেন্ট তথ্য</h2></div>' +
+                '<p class="ws-sub" style="margin-bottom:12px">bKash নাম্বার অথবা ব্যাংক অ্যাকাউন্ট, অন্তত একটা দিন।</p><div class="ws-grid">' +
+                field('bkashNumber', 'bKash নাম্বার', input('bkashNumber', 'tel', '01XXXXXXXXX', 'maxlength="20" inputmode="numeric"'), { full: 1 }) +
+                field('bankName', 'ব্যাংকের নাম', input('bankName', 'text', '', 'maxlength="80"'), {}) +
+                field('bankAccountName', 'অ্যাকাউন্ট হোল্ডারের নাম', input('bankAccountName', 'text', '', 'maxlength="100"'), {}) +
+                field('bankAccountNo', 'অ্যাকাউন্ট নাম্বার', input('bankAccountNo', 'text', '', 'maxlength="40" inputmode="numeric"'), { full: 1 }) +
+                '</div></div>' +
+
+                '<div class="ws-sec"><div class="ws-sec-head"><span class="ws-sec-no">4</span><h2>ডকুমেন্ট আপলোড</h2></div>' +
+                '<div class="ws-docs">' + DOCS.map(docBox).join('') + '</div></div>' +
+
+                '<label class="ws-consent"><input type="checkbox" id="consent"><span>আমি ঘোষণা করছি যে দেওয়া সব তথ্য ও ডকুমেন্ট সত্য ও আমার নিজের ব্যবসার, এবং এগুলো যাচাইয়ের কাজে ব্যবহারে সম্মতি দিচ্ছি।</span></label>' +
+                '<div class="ws-note bad" id="formErr" style="display:none"></div>' +
+                '<div class="ws-progress" id="prog"><div class="ws-progress-bar"><div class="ws-progress-fill" id="progFill"></div></div><div class="ws-progress-txt" id="progTxt">আপলোড হচ্ছে...</div></div>' +
+                '<button type="submit" class="ws-btn block" id="submitBtn">আবেদন জমা দিন</button>' +
+                '</form>';
+            bind();
+        }
+
+        // ---- ফাইল হ্যান্ডলিং ----
+        function isPdf(f) { return f.type === 'application/pdf' || /\.pdf$/i.test(f.name); }
+        function isImg(f) { return /^image\//.test(f.type) || /\.(jpe?g|png|webp)$/i.test(f.name); }
+
+        // ছবি আপলোডের আগে ছোট করা (লম্বা পাশ ২২০০px, JPEG ৮৫) — মোবাইল ক্যামেরার ১০-১৫MB ছবি দ্রুত যায়
+        function compress(file) {
+            return new Promise(function (resolve, reject) {
+                var url = URL.createObjectURL(file), img = new Image();
+                img.onload = function () {
+                    var w = img.naturalWidth, h = img.naturalHeight, sc = Math.min(1, 2200 / Math.max(w, h));
+                    var cv = document.createElement('canvas');
+                    cv.width = Math.max(1, Math.round(w * sc)); cv.height = Math.max(1, Math.round(h * sc));
+                    var ctx = cv.getContext('2d');
+                    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+                    ctx.drawImage(img, 0, 0, cv.width, cv.height);
+                    cv.toBlob(function (b) {
+                        URL.revokeObjectURL(url);
+                        if (!b) return reject(new Error('convert'));
+                        var base = (file.name || 'photo').replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '_').slice(0, 40) || 'photo';
+                        resolve(new File([b], base + '.jpg', { type: 'image/jpeg' }));
+                    }, 'image/jpeg', 0.85);
+                };
+                img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('decode')); };
+                img.src = url;
+            });
+        }
+
+        function setDocErr(key, msg) {
+            var box = document.getElementById('d_' + key);
+            var el = box.querySelector('.errmsg');
+            box.classList.toggle('err', !!msg);
+            el.style.display = msg ? 'block' : 'none';
+            el.textContent = msg || '';
+        }
+
+        function drawThumbs(key) {
+            var wrap = document.getElementById('th_' + key);
+            var box = document.getElementById('d_' + key);
+            box.classList.toggle('has', files[key].length > 0);
+            wrap.innerHTML = '';
+            files[key].forEach(function (f, i) {
+                var t = document.createElement('div');
+                t.className = 'ws-thumb' + (isPdf(f) ? ' pdf' : '');
+                if (isPdf(f)) t.innerHTML = '<span>PDF</span><span style="font-weight:400;font-size:10.5px;color:#6b7280">' + Math.max(1, Math.round(f.size / 1024)) + ' KB</span>';
+                else { var im = document.createElement('img'); im.alt = ''; im.src = f._url || (f._url = URL.createObjectURL(f)); t.appendChild(im); }
+                var x = document.createElement('button');
+                x.type = 'button'; x.setAttribute('aria-label', 'সরান'); x.textContent = '×';
+                x.onclick = function () { if (busy) return; if (f._url) URL.revokeObjectURL(f._url); files[key].splice(i, 1); drawThumbs(key); };
+                t.appendChild(x);
+                wrap.appendChild(t);
+            });
+        }
+
+        async function onPick(d, list) {
+            setDocErr(d.key, '');
+            var picked = Array.prototype.slice.call(list);
+            if (!picked.length) return;
+            var room = d.multi ? 3 - files[d.key].length : 1;
+            if (d.multi && room <= 0) { setDocErr(d.key, 'সর্বোচ্চ ৩টা ছবি দেওয়া যাবে।'); return; }
+            picked = picked.slice(0, d.multi ? room : 1);
+            for (var i = 0; i < picked.length; i++) {
+                var f = picked[i];
+                try {
+                    if (isPdf(f)) {
+                        if (!d.pdf) throw new Error('এখানে শুধু ছবি দিন (JPG/PNG)।');
+                        if (f.size > MAX_BYTES) throw new Error('ফাইল ৮MB-এর বেশি হতে পারবে না।');
+                        add(d, f);
+                    } else if (isImg(f)) {
+                        var out = await compress(f).catch(function () { throw new Error('এই ছবিটা পড়া যায়নি। JPG বা PNG ছবি দিন।'); });
+                        if (out.size > MAX_BYTES) throw new Error('ছবির সাইজ অনেক বড়, ছোট ছবি দিন।');
+                        add(d, out);
+                    } else {
+                        throw new Error(d.pdf ? 'শুধু ছবি (JPG/PNG) অথবা PDF দিন।' : 'শুধু ছবি (JPG/PNG) দিন।');
+                    }
+                } catch (e) { setDocErr(d.key, e.message); }
+            }
+            drawThumbs(d.key);
+        }
+        function add(d, f) {
+            if (d.multi) files[d.key].push(f);
+            else { files[d.key].forEach(function (o) { if (o._url) URL.revokeObjectURL(o._url); }); files[d.key] = [f]; }
+        }
+
+        // ---- ভ্যালিডেশন ----
+        function normPhone(v) {
+            var s = String(v || '').replace(/[^\d+]/g, '');
+            if (s.indexOf('+88') === 0) s = s.slice(3);
+            else if (s.indexOf('88') === 0 && s.length === 13) s = s.slice(2);
+            return s;
+        }
+        var PHONE = /^01[3-9]\d{8}$/, EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        function val(id) { return (document.getElementById(id).value || '').replace(/\s+/g, ' ').trim(); }
+        function setErr(id, msg) {
+            var f = document.getElementById('f_' + id);
+            if (!f) return;
+            f.classList.toggle('err', !!msg);
+            f.querySelector('.errmsg').textContent = msg || '';
+        }
+
+        function validate() {
+            var firstBad = null, ok = true;
+            function bad(id, msg) { setErr(id, msg); if (msg) { ok = false; if (!firstBad) firstBad = 'f_' + id; } }
+            ['shopName', 'businessType', 'shopAddress', 'ownerName', 'ownerPhone', 'ownerEmail', 'bkashNumber', 'bankName', 'bankAccountName', 'bankAccountNo'].forEach(function (i) { setErr(i, ''); });
+
+            bad('shopName', val('shopName').length < 2 ? 'দোকানের নাম দিন।' : '');
+            bad('businessType', !val('businessType') ? 'ব্যবসার ধরন বেছে নিন।' : '');
+            bad('shopAddress', val('shopAddress').length < 5 ? 'পূর্ণ ঠিকানা দিন।' : '');
+            bad('ownerName', val('ownerName').length < 2 ? 'মালিকের নাম দিন।' : '');
+            bad('ownerPhone', !PHONE.test(normPhone(val('ownerPhone'))) ? 'সঠিক মোবাইল নাম্বার দিন (01XXXXXXXXX)।' : '');
+            bad('ownerEmail', val('ownerEmail') && !EMAIL.test(val('ownerEmail')) ? 'ইমেইল ঠিকমতো দিন।' : '');
+            var bk = val('bkashNumber'), bn = val('bankName'), ba = val('bankAccountName'), bno = val('bankAccountNo');
+            bad('bkashNumber', bk && !PHONE.test(normPhone(bk)) ? 'bKash নাম্বার সঠিক নয়।' : '');
+            var bankAny = bn || ba || bno, bankAll = bn && ba && bno;
+            if (bankAny && !bankAll) {
+                bad('bankName', !bn ? 'ব্যাংকের নাম দিন।' : ''); bad('bankAccountName', !ba ? 'অ্যাকাউন্টের নাম দিন।' : ''); bad('bankAccountNo', !bno ? 'অ্যাকাউন্ট নাম্বার দিন।' : '');
+            } else if (!bk && !bankAll) {
+                bad('bkashNumber', 'bKash নাম্বার অথবা ব্যাংকের তথ্য, অন্তত একটা দিন।');
+            }
+            DOCS.forEach(function (d) {
+                var miss = !files[d.key].length;
+                setDocErr(d.key, miss ? 'এই ডকুমেন্ট আপলোড করুন।' : '');
+                if (miss) { ok = false; if (!firstBad) firstBad = 'd_' + d.key; }
+            });
+            if (!document.getElementById('consent').checked) {
+                ok = false; showFormErr('চালিয়ে যেতে ঘোষণায় টিক দিন।'); if (!firstBad) firstBad = 'consent';
+            } else showFormErr('');
+            if (firstBad) { var el = document.getElementById(firstBad); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            return ok;
+        }
+        function showFormErr(msg) {
+            var el = document.getElementById('formErr');
+            el.style.display = msg ? 'block' : 'none'; el.textContent = msg || '';
+        }
+
+        // ---- সাবমিট (XHR, আপলোড প্রগ্রেসসহ) ----
+        function submit() {
+            if (busy || !validate()) return;
+            var fd = new FormData();
+            ['shopName', 'businessType', 'tradeLicenseNo', 'district', 'shopAddress', 'ownerName', 'ownerPhone', 'ownerEmail', 'bkashNumber', 'bankName', 'bankAccountName', 'bankAccountNo'].forEach(function (k) {
+                var v = val(k);
+                if (k === 'ownerPhone' || k === 'bkashNumber') v = normPhone(v);
+                fd.append(k, v);
+            });
+            DOCS.forEach(function (d) { files[d.key].forEach(function (f) { fd.append(d.key, f, f.name); }); });
+
+            busy = true;
+            var btn = document.getElementById('submitBtn');
+            var prog = document.getElementById('prog'), fill = document.getElementById('progFill'), txt = document.getElementById('progTxt');
+            btn.disabled = true; btn.textContent = 'জমা হচ্ছে...';
+            prog.classList.add('on'); fill.style.width = '0'; showFormErr('');
+
+            function fail(msg) {
+                busy = false; btn.disabled = false; btn.textContent = 'আবেদন জমা দিন';
+                prog.classList.remove('on'); showFormErr(msg);
+                document.getElementById('formErr').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', WS.API + '/apply');
+            xhr.setRequestHeader('Authorization', 'Bearer ' + WS.token());
+            xhr.upload.onprogress = function (e) {
+                if (!e.lengthComputable) return;
+                var p = Math.round(e.loaded / e.total * 100);
+                fill.style.width = p + '%';
+                txt.textContent = p < 100 ? 'ডকুমেন্ট আপলোড হচ্ছে... ' + p + '%' : 'যাচাই ও সেভ হচ্ছে, একটু অপেক্ষা করুন...';
+            };
+            xhr.onerror = function () { fail('ইন্টারনেট সংযোগে সমস্যা। আবার চেষ্টা করুন।'); };
+            xhr.ontimeout = function () { fail('সময় শেষ হয়ে গেছে। নেটওয়ার্ক ভালো থাকলে আবার চেষ্টা করুন।'); };
+            xhr.timeout = 180000;
+            xhr.onload = function () {
+                var data = {};
+                try { data = JSON.parse(xhr.responseText); } catch (e) { /* ignore */ }
+                if (xhr.status === 201) { done(); return; }
+                if (xhr.status === 401) { location.href = WS.loginUrl(); return; }
+                if (xhr.status === 409) { fail((data.error || 'আবেদন আগেই জমা আছে।') + ' পোর্টাল পেজে স্ট্যাটাস দেখুন।'); return; }
+                fail(data.error || 'জমা দেওয়া যায়নি, আবার চেষ্টা করুন।');
+            };
+            xhr.send(fd);
+        }
+
+        function done() {
+            Object.keys(files).forEach(function (k) { files[k].forEach(function (f) { if (f._url) URL.revokeObjectURL(f._url); }); files[k] = []; });
+            busy = false;
+            app.className = 'ws-wrap ws-narrow';
+            app.innerHTML = '<div class="ws-card ws-center"><div class="ws-icon-circle ok">' + WS.icons.check + '</div>' +
+                '<h1>আবেদন জমা হয়েছে</h1>' +
+                '<p class="ws-sub">আমাদের টিম আপনার ডকুমেন্ট যাচাই করে জানাবে। অনুমোদন হলে পোর্টালে প্রবেশ করতে পারবেন।</p>' +
+                '<a class="ws-btn block" href="/wholesale/">পোর্টালে ফিরুন</a></div>';
+            window.scrollTo(0, 0);
+        }
+
+        function bind() {
+            DOCS.forEach(function (d) {
+                var inp = document.getElementById('in_' + d.key);
+                inp.addEventListener('change', function () {
+                    var list = inp.files; onPick(d, list).then(function () { inp.value = ''; });
+                });
+            });
+            // টাইপ করলেই ওই ঘরের এরর মুছে যায়
+            ['input', 'change'].forEach(function (ev) {
+                document.getElementById('form').addEventListener(ev, function (e) {
+                    var f = e.target.closest && e.target.closest('.ws-field');
+                    if (f && f.classList.contains('err')) { f.classList.remove('err'); }
+                    if (e.target.id === 'consent' && e.target.checked) showFormErr('');
+                });
+            });
+            document.getElementById('form').addEventListener('submit', function (e) { e.preventDefault(); submit(); });
+        }
+
+        // শুরুতে সার্ভার থেকে স্ট্যাটাস দেখে ঠিক হয়: ফর্ম দেখানো হবে শুধু none/rejected হলে
+        WS.api('/me').then(function (r) {
+            if (r.status === 401) { location.replace(WS.loginUrl()); return; }
+            if (!r.ok) {
+                app.innerHTML = '<div class="ws-card ws-center"><h1>সমস্যা হয়েছে</h1><p class="ws-sub">' + E((r.data && r.data.error) || 'সার্ভারে সমস্যা হয়েছে।') + '</p><button class="ws-btn" onclick="location.reload()">আবার চেষ্টা করুন</button></div>';
+                return;
+            }
+            var s = r.data || {};
+            if (s.status === 'none' || s.status === 'rejected') renderForm(s);
+            else location.replace('/wholesale/');
+        });
+    })();
+    </script>
+</body>
+</html>

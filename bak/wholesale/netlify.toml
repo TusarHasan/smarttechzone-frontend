@@ -1,0 +1,39 @@
+# Netlify Edge Function কনফিগারেশন — শুধু এইটুকুই নতুন যোগ হলো (বিল্ড কমান্ড/পাবলিশ ডিরেক্টরি
+# এখানে সেট করা হয়নি, তাই Netlify ড্যাশবোর্ডে আগে থেকে যা সেট করা আছে সেটাই বহাল থাকবে —
+# এই ফাইলগুলো শুধু নিচের edge function গুলো চালু করার জন্য। তিনটাই একই সমস্যার সমাধান করে:
+# শেয়ার্ড টেমপ্লেট পেজ (product.html / brands/brand.html / models/model.html) গুলোর
+# raw HTML-এ (JavaScript রান করার আগে) সঠিক title/description/canonical বসানো।
+[[edge_functions]]
+  path = "/product.html"
+  function = "product-seo"
+
+# নতুন কিওয়ার্ডসহ পরিষ্কার প্রোডাক্ট URL — /product/<slug>-i<id> — এর জন্য কোনো static ফাইল
+# নেই, তাই একই product-seo.js ফাংশনই এটাও হ্যান্ডেল করে (context.rewrite দিয়ে ভেতরে ভেতরে
+# product.html-এর কনটেন্ট সার্ভ করে, ব্রাউজারের ঠিকানা বার-এ সুন্দর URL-টাই দেখা যায়)
+[[edge_functions]]
+  path = "/product/*"
+  function = "product-seo"
+
+[[edge_functions]]
+  path = "/brands/brand.html"
+  function = "brand-seo"
+
+[[edge_functions]]
+  path = "/models/model.html"
+  function = "model-seo"
+
+# ============================================================================
+# Netlify Image CDN — প্রোডাক্ট/ব্র্যান্ড ইমেজ রিসাইজ করার জন্য। সমস্যা ছিলো: R2-তে
+# আপলোড হওয়া ইমেজ (migrated-....jpg) আসল সাইজেই থাকে (যেমন 992x1000px), কিন্তু
+# হোমপেজে ব্র্যান্ড আইকন/প্রোডাক্ট কার্ডে দেখানো হয় মাত্র ৬৪-১০০px জায়গায় — ফলে
+# PageSpeed-এ হোমপেজেই ~2.6MB অপচয় ধরা পড়েছিলো, যেটা LCP অনেক বাড়িয়ে দিচ্ছিলো।
+# এখন resolveImg(url, w, h) কল করলে /.netlify/images?url=...&w=...&h=... দিয়ে
+# পাস হয়ে Netlify নিজেই এজ-এ ছবি রিসাইজ করে ক্যাশ করে দেয় — মূল ফাইল R2-তে অপরিবর্তিত
+# থাকে, কোনো রি-আপলোড লাগে না।
+[images]
+  remote_images = [
+    "https://pub-[a-z0-9]+\\.r2\\.dev/.*",
+    "https://smarttechzone-backend\\.onrender\\.com/.*",
+    "https://static-0[0-9]\\.daraz\\.com\\.bd/.*",
+    "https://[a-z0-9-]+\\.slatic\\.net/.*"
+  ]

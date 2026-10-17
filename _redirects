@@ -8,3 +8,6 @@
 
 # প্রোডাক্ট শেয়ারের ছোট লিংক (smarttechzone.com.bd/s/<id>) — ব্যাকএন্ড থেকে OG প্রিভিউ পেজ প্রক্সি করে আনা হয় (routes/shortLinks.js দেখুন)
 /s/*  https://smarttechzone-backend.onrender.com/s/:splat  200
+
+# Private Wholesale Portal — রেজিস্ট্রেশন পেজের ক্লিন URL (ফাইলটা /wholesale/register.html; netlify.toml-এ noindex হেডার আছে)
+/wholesale/register  /wholesale/register.html  200
