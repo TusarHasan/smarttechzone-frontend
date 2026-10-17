@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="analytics.js" defer></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Tech Zone | ভিডিও প্রুফ ডেলিভারি — মোবাইল পার্টস</title>
+    <meta name="description" content="বাংলাদেশের মোবাইল রিপ্লেসমেন্ট পার্টস স্টোর — ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট সহ অরিজিনাল পার্টস। ভিডিও প্রুফ প্যাকেজিং, সারা বাংলাদেশে হোম ডেলিভারি।">
+    <link rel="canonical" href="https://smarttechzone.com.bd/index.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Smart Tech Zone">
+    <meta property="og:title" content="Smart Tech Zone | ভিডিও প্রুফ ডেলিভারি — মোবাইল পার্টস">
+    <meta property="og:description" content="বাংলাদেশের মোবাইল রিপ্লেসমেন্ট পার্টস স্টোর — ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট সহ অরিজিনাল পার্টস। ভিডিও প্রুফ প্যাকেজিং, সারা বাংলাদেশে হোম ডেলিভারি।">
+    <meta property="og:url" content="https://smarttechzone.com.bd/index.html">
+    <meta property="og:image" content="https://smarttechzone.com.bd/images/logo.png">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Smart Tech Zone",
+        "image": "https://smarttechzone.com.bd/images/logo.png",
+        "url": "https://smarttechzone.com.bd",
+        "telephone": "+8801718381066",
+        "email": "mahmud88789@gmail.com",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Ataur Rahman Villa, House 49, Road 13",
+            "addressLocality": "Mohammadpur, Dhaka",
+            "postalCode": "1207",
+            "addressCountry": "BD"
+        },
+        "sameAs": [
+            "https://www.facebook.com/smarttechzonedhaka",
+            "https://www.youtube.com/@SmartTechZoneDhaka"
+        ],
+        "priceRange": "৳৳",
+        "description": "বাংলাদেশের অনলাইন মোবাইল রিপ্লেসমেন্ট পার্টস স্টোর — ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট, বডি হাউজিং সহ সব ব্র্যান্ডের পার্টস, সারা বাংলাদেশে হোম ডেলিভারি।"
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .part-categories-section { padding: 30px 30px; background: #fff; }
+        .part-cat-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 16px; margin-top: 16px;
+        }
+        .part-cat-card {
+            text-align: center; cursor: pointer; padding: 10px 6px; border-radius: 8px;
+            transition: background 0.15s;
+        }
+        .part-cat-card:hover { background: #f7f7f7; }
+        .part-cat-icon {
+            width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 8px;
+            overflow: hidden; border: 1px solid #eee; background: #fafafa;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .part-cat-icon img { width: 100%; height: 100%; object-fit: cover; }
+        .part-cat-name { font-size: 12px; color: #333; line-height: 1.3; }
+        .part-cat-count { font-size: 11px; color: #999; }
+        .active-category-banner {
+            display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+            background: #fdf1f0; border: 1px solid #f5c6c0; border-radius: 6px; margin-bottom: 16px;
+            font-size: 14px; color: #333;
+        }
+        .active-category-banner a { color: #e74c3c; font-weight: bold; text-decoration: none; }
+        .load-more-wrapper { text-align: center; margin: 30px 0; }
+        .load-more-btn {
+            background: #fff; border: 1px solid #e74c3c; color: #e74c3c; padding: 10px 32px;
+            border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;
+        }
+        .load-more-btn:hover { background: #fdf1f0; }
+        .load-more-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #product-list { transition: opacity 0.2s ease; }
+        #product-list.fading { opacity: 0.3; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .product-card { animation: fadeInUp 0.35s ease both; }
+
+        /* ===== Hero Carousel =====
+           দারাজের হোমপেজের মতো একটা অটো-রোটেটিং ব্যানার ক্যারোসেল — কিন্তু কোনো ছবি ছাড়াই,
+           শুধু CSS গ্রেডিয়েন্ট + টেক্সট দিয়ে বানানো (ব্যবহারকারীর অনুরোধ অনুযায়ী, এখনো প্রোডাক্ট
+           ফটোগ্রাফি রেডি হয়নি)। ডেস্কটপে টেক্সট বাম পাশে + ডান পাশে একটা ডেকোরেটিভ visual,
+           মোবাইলে Headline → Subtext → Button → visual — এই অর্ডারে স্ট্যাকড।
+           .hero-carousel-এ আগে শুধু min-height ছিল, ফলে প্রতিটা স্লাইডের কনটেন্ট-উচ্চতা আলাদা হওয়ায়
+           (কোনোটায় ২ লাইন সাবটেক্সট, কোনোটায় ১ লাইন) স্লাইড বদলানোর সময় পুরো বক্সটাই উচ্চতায় হঠাৎ
+           ছোট-বড় হয়ে যাচ্ছিল, আর তার ফলে নিচের ডট বাটনগুলোও (যেগুলো bottom:18px পজিশনে বসানো) সাথে
+           সাথে জায়গা বদলে যাচ্ছিল — অনেকটা "বাটন সরে/হারিয়ে যাওয়ার" মতো দেখাতে পারত। এখন ডেস্কটপে
+           height ফিক্সড করে দেওয়া হয়েছে (সব স্লাইড একই উচ্চতায়) যাতে এই জাম্প আর না হয়। */
+        .hero-carousel {
+            position: relative; overflow: hidden; height: 440px;
+        }
+        .hero-slide {
+            position: absolute; inset: 0; display: flex; align-items: center;
+            opacity: 0; transform: translateX(24px); transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+        }
+        .hero-slide.active { opacity: 1; transform: translateX(0); pointer-events: auto; z-index: 1; }
+        .hero-slide-inner {
+            max-width: 1200px; margin: 0 auto; width: 100%; padding: 40px 30px;
+            display: flex; align-items: center; justify-content: space-between; gap: 30px;
+        }
+        .hero-slide-text { color: #fff; max-width: 560px; position: relative; z-index: 1; }
+        .hero-slide-text h1, .hero-slide-text h2 { font-size: 36px; font-weight: 800; margin-bottom: 14px; line-height: 1.28; }
+        .hero-slide-text p { font-size: 16px; font-weight: 400; margin-bottom: 26px; opacity: 0.9; line-height: 1.6; }
+        .hero-slide-visual {
+            width: 180px; height: 180px; border-radius: 50%; flex-shrink: 0;
+            background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center;
+            font-size: 74px; color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+        }
+        /* CTA বাটন — ডিজাইন নোট অনুযায়ী সাদা/হালকা background, rounded, হালকা shadow —
+           বাকি সাইটের লাল .hero-btn থেকে আলাদা রাখতে নতুন ক্লাস .hero-slide-btn ব্যবহার করা হলো */
+        .hero-slide-btn {
+            display: inline-block; background: #fff; padding: 13px 32px; border-radius: 50px;
+            text-decoration: none; font-size: 15px; font-weight: 600; position: relative; z-index: 1;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.22); transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .hero-slide-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,0.28); }
+        .hero-dots {
+            position: absolute; bottom: 16px; left: 0; right: 0; display: flex;
+            justify-content: center; gap: 6px; z-index: 2;
+        }
+        /* .hero-dot বাটনগুলো আগে ব্রাউজারের ডিফল্ট <button> appearance/outline এর উপর পুরোপুরি নির্ভর
+           করছিল না (appearance:none সেট করা ছিল না) — কিছু ব্রাউজার/ওয়েবভিউতে ক্লিক করার সময় নেটিভ
+           button স্টাইল সংক্ষিপ্তভাবে দেখা দিতে পারত, যা দেখতে "বাটন হারিয়ে যাওয়া/সরে যাওয়া" মনে হতে
+           পারে। এখন appearance:none + outline:none সরাসরি সেট করে দেওয়া হলো, সাথে টাচে সহজে চাপার
+           জন্য আসল ক্লিকযোগ্য এলাকা (30x30) দৃশ্যমান ডটের (9px) চেয়ে বড় রাখা হলো transparent padding দিয়ে। */
+        .hero-dot {
+            -webkit-appearance: none; appearance: none; outline: none;
+            width: 30px; height: 30px; padding: 0; margin: 0; border: none; background: transparent;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            -webkit-tap-highlight-color: transparent; user-select: none;
+        }
+        .hero-dot::before {
+            content: ''; width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.45);
+            transition: background 0.2s ease, width 0.2s ease, border-radius 0.2s ease;
+        }
+        .hero-dot.active::before { background: #fff; width: 22px; border-radius: 5px; }
+        @media (max-width: 760px) {
+            .hero-carousel { height: auto; }
+            .hero-slide { position: relative; display: none; opacity: 1; transform: none; }
+            .hero-slide.active { display: flex; }
+            .hero-slide-inner {
+                padding: 40px 20px 52px; flex-direction: column; text-align: center;
+            }
+            /* মোবাইলে অর্ডার: Headline → Subtext → Button → visual। DOM-এ .hero-slide-text
+               (headline+subtext+button) আগে লেখা, তারপর .hero-slide-visual — flex-direction:
+               column (ডিফল্ট row-এর বদলে) দিলে এই DOM অর্ডার অনুযায়ীই উপর-নিচ সাজবে, তাই
+               এখানে column-reverse না বরং প্লেইন column ব্যবহার করা ঠিক (আগে ভুলে column-reverse
+               দেওয়া ছিল, যেটা উল্টো visual-কে উপরে নিয়ে আসছিল)। */
+            .hero-slide-visual { width: 110px; height: 110px; font-size: 44px; margin-top: 8px; }
+            .hero-slide-text h1, .hero-slide-text h2 { font-size: 24px; }
+            .hero-slide-text p { font-size: 14px; margin-bottom: 20px; }
+        }
+
+        /* ===== প্রোমো স্ট্রিপ: Follow Us বক্স + Flash Sale প্রোমো ব্যানার ===== */
+        .promo-strip { padding: 24px 30px 0; background: #f5f5f5; }
+        .promo-strip .container { display: flex; gap: 16px; flex-wrap: wrap; }
+        .promo-card {
+            flex: 1; min-width: 260px; border-radius: 10px; padding: 22px 24px;
+            display: flex; align-items: center; gap: 16px; color: #fff;
+        }
+        .promo-banner { background: linear-gradient(120deg, #f85606 0%, #e74c3c 100%); flex: 2; }
+        .promo-banner h3 { font-size: 19px; margin-bottom: 4px; }
+        .promo-banner p { font-size: 13px; opacity: 0.92; }
+        .follow-us-card { background: #1a2634; }
+        .follow-us-card h4 { font-size: 15px; margin-bottom: 10px; }
+        .follow-us-icons { display: flex; gap: 10px; }
+        .follow-us-icons a {
+            width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none;
+            font-size: 15px; transition: background 0.15s;
+        }
+        .follow-us-icons a:hover { background: rgba(255,255,255,0.28); }
+
+        /* ===== Flash Sale সেকশন ===== */
+        .flash-sale-section { padding: 30px 30px 10px; background: #f5f5f5; }
+        .flash-sale-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .flash-sale-title-row i { color: #f85606; font-size: 22px; }
+        .flash-sale-note { font-size: 13px; color: #888; margin-bottom: 16px; }
+        .flash-sale-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px;
+        }
+        .flash-card {
+            background: #fff; border-radius: 8px; padding: 10px; cursor: pointer; position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.2s ease;
+        }
+        .flash-card:hover { transform: translateY(-4px); }
+        .flash-badge {
+            position: absolute; top: 8px; left: 8px; background: #f85606; color: #fff;
+            font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; z-index: 1;
+        }
+        .flash-card img { width: 100%; height: 130px; object-fit: contain; }
+        .flash-card h4 { font-size: 13px; margin: 8px 0 4px; color: #333; line-height: 1.3; }
+        .flash-price-row { display: flex; align-items: baseline; gap: 8px; }
+        .flash-price-now { color: #f85606; font-weight: 700; font-size: 15px; }
+        .flash-price-old { color: #999; font-size: 12px; text-decoration: line-through; }
+        .flash-sale-empty { color: #999; font-size: 13px; padding: 10px 0; }
+
+        /* =====================================================================
+           Marketplace (AliExpress-স্টাইল) হোমপেজ লে-আউট — সব রুল .mp-* বা body.mp-home এর ভেতরে,
+           যাতে search/brand/model পেজের শেয়ার্ড .product-card স্টাইল একদম অপরিবর্তিত থাকে।
+           ব্র্যান্ড রং এক জায়গায় (--mp-accent) — সাইটের বর্তমান লাল (#e74c3c) অনুযায়ী। ===================== */
+        :root { --mp-accent:#e74c3c; --mp-accent-soft:#fdf1f0; --mp-bg:#f5f5f5; --mp-line:#eee; --mp-muted:#777; }
+        .mp-home .container { max-width:1280px; padding:0 20px; }
+        .mp-home .promo-strip, .mp-home .flash-sale-section, .mp-home .part-categories-section, .mp-home .category-section { padding-left:0; padding-right:0; }
+        .mp-home .category-section { padding-top:20px; padding-bottom:30px; }
+        .mp-home .products-section { background:transparent; padding:0; margin-bottom:34px; }
+        .mp-home .section-title { text-align:left; font-size:20px; margin-bottom:6px; }
+        .mp-home .section-subtitle { text-align:left; margin-bottom:16px; font-size:13px; }
+        .mp-home .flash-sale-section { padding-top:22px; }
+
+        .mp-top { background:var(--mp-bg); padding:16px 0 0; }
+        .mp-wrap { max-width:1280px; margin:0 auto; padding:0 20px; }
+        .mp-top-inner { --mp-side-w:232px; position:relative; display:grid; grid-template-columns:var(--mp-side-w) minmax(0,1fr) 232px; gap:14px; height:430px; align-items:stretch; }
+        .mp-menu { min-height:0; display:flex; }
+        .mp-sidebar { background:#fff; border:1px solid #e9e9e9; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.05); display:flex; flex-direction:column; overflow:hidden; width:100%; min-height:0; }
+        .mp-side-title { display:flex; align-items:center; gap:10px; padding:0 16px; height:46px; font-weight:700; font-size:14px; color:#222; border-bottom:1px solid #eee; flex:none; }
+        .mp-side-title svg { width:18px; height:18px; color:var(--mp-accent); flex:none; }
+        .mp-cat-list { list-style:none; margin:0; padding:6px 0; overflow-y:auto; flex:1; min-height:0; scrollbar-width:thin; scrollbar-color:#d6d6d6 transparent; }
+        .mp-cat-item > a { display:flex; align-items:center; gap:11px; height:38px; padding:0 12px 0 16px; font-size:13.5px; line-height:1.2; color:#333; text-decoration:none; }
+        .mp-cat-item > a:focus-visible { outline:2px solid var(--mp-accent); outline-offset:-2px; }
+        .mp-cat-item.active > a, .mp-cat-item > a:hover { background:#fff4f2; color:var(--mp-accent); }
+        .mp-cat-ico { width:18px; height:18px; flex:none; color:#8c8c8c; }
+        .mp-cat-item.active .mp-cat-ico, .mp-cat-item > a:hover .mp-cat-ico { color:var(--mp-accent); }
+        .mp-cat-name { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .mp-cat-chev { width:12px; height:12px; flex:none; color:#c2c2c2; }
+        .mp-cat-item.active .mp-cat-chev { color:var(--mp-accent); }
+        .mp-side-empty { padding:14px 16px; font-size:12.5px; color:#999; }
+
+        .mp-flyout { position:absolute; top:0; bottom:0; left:calc(var(--mp-side-w) - 1px); right:0; z-index:80; background:#fff; border:1px solid #e9e9e9; border-left:0; border-radius:0 8px 8px 0; box-shadow:0 14px 34px rgba(0,0,0,.16); padding:20px 28px 18px; overflow-y:auto; opacity:0; visibility:hidden; pointer-events:none; transform:translateX(-6px); transition:opacity .14s ease, transform .14s ease, visibility 0s linear .14s; }
+        .mp-flyout.open { opacity:1; visibility:visible; pointer-events:auto; transform:none; transition-delay:0s; }
+        .mp-fly-head { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-bottom:12px; margin-bottom:16px; border-bottom:1px solid #eee; }
+        .mp-fly-title { font-size:17px; font-weight:700; color:#222; line-height:1.3; }
+        .mp-fly-count { font-size:12px; font-weight:400; color:#999; margin-left:8px; }
+        .mp-fly-all { font-size:13px; font-weight:600; color:var(--mp-accent); text-decoration:none; white-space:nowrap; }
+        .mp-fly-all:hover { text-decoration:underline; }
+        .mp-fly-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(172px,1fr)); gap:18px 30px; }
+        .mp-fg { min-width:0; }
+        .mp-fg-h { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:13.5px; font-weight:700; color:#222; text-decoration:none; padding-bottom:6px; margin-bottom:6px; border-bottom:1px solid #f0f0f0; }
+        .mp-fg-h span { font-size:11.5px; font-weight:400; color:#aaa; }
+        .mp-fg-h:hover { color:var(--mp-accent); }
+        .mp-fg ul { list-style:none; margin:0; padding:0; }
+        .mp-fg li a { display:block; padding:3px 0; font-size:13px; line-height:1.4; color:#555; text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .mp-fg li a:hover, .mp-fg li a:focus-visible { color:var(--mp-accent); }
+        .mp-fg-all { display:block; padding:3px 0; font-size:12.5px; color:#777; text-decoration:none; }
+        .mp-fg-all:hover { color:var(--mp-accent); }
+        .mp-fly-others { margin-top:18px; padding-top:12px; border-top:1px dashed #e6e6e6; font-size:12.5px; color:#999; line-height:1.9; }
+        .mp-fly-others a { color:#555; text-decoration:none; margin-left:12px; white-space:nowrap; }
+        .mp-fly-others a:hover { color:var(--mp-accent); }
+        .mp-fly-empty { font-size:13px; color:#888; }
+
+        .mp-hero-col { min-width:0; border-radius:8px; overflow:hidden; }
+        .mp-hero-col .hero-carousel { height:100%; }
+        .mp-hero-col .hero-slide-inner { padding:24px 44px; gap:24px; }
+        .mp-hero-col .hero-slide-text { max-width:480px; }
+        .mp-hero-col .hero-slide-text h1, .mp-hero-col .hero-slide-text h2 { font-size:28px; line-height:1.25; margin-bottom:12px; text-wrap:balance; }
+        .mp-hero-col .hero-slide-text p { font-size:14.5px; line-height:1.6; margin-bottom:22px; max-width:420px; }
+        .mp-hero-col .hero-slide-btn { padding:11px 26px; font-size:14px; }
+        .mp-hero-col .hero-slide-visual { width:132px; height:132px; font-size:52px; }
+
+        .mp-side-right { display:flex; flex-direction:column; gap:14px; min-height:0; }
+        .mp-user, .mp-tiles { background:#fff; border:1px solid #e9e9e9; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+        .mp-user { padding:16px; flex:none; }
+        .mp-user-top { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+        .mp-avatar { width:40px; height:40px; border-radius:50%; background:#f2f2f2; color:#9a9a9a; display:flex; align-items:center; justify-content:center; flex:none; font-size:16px; font-weight:700; }
+        .mp-avatar svg { width:22px; height:22px; }
+        .mp-user-t { font-size:13.5px; font-weight:700; color:#222; line-height:1.3; }
+        .mp-user-s { font-size:11.5px; color:#888; line-height:1.4; margin-top:2px; }
+        .mp-user-btns { display:flex; gap:8px; }
+        .mp-btn { flex:1; text-align:center; padding:10px 4px; border-radius:999px; font-size:13px; font-weight:600; line-height:1; text-decoration:none; border:1.5px solid var(--mp-accent); }
+        .mp-btn-fill { background:var(--mp-accent); color:#fff; }
+        .mp-btn-line { background:#fff; color:var(--mp-accent); }
+        .mp-tiles { flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; overflow:hidden; }
+        .mp-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:10px 6px; font-size:12.5px; font-weight:500; color:#333; text-decoration:none; text-align:center; line-height:1.25; }
+        .mp-tile:nth-child(odd) { border-right:1px solid #f0f0f0; }
+        .mp-tile:nth-child(-n+2) { border-bottom:1px solid #f0f0f0; }
+        .mp-tile:hover, .mp-tile:focus-visible { background:#fafafa; color:var(--mp-accent); outline:none; }
+        .mp-tile-ico { width:42px; height:42px; border-radius:50%; background:#fff1ef; color:var(--mp-accent); display:flex; align-items:center; justify-content:center; }
+        .mp-tile-ico svg { width:22px; height:22px; }
+
+        .mp-card { background:#fff; border-radius:10px; overflow:hidden; cursor:pointer; display:flex; flex-direction:column; min-width:0; position:relative; box-shadow:0 1px 4px rgba(0,0,0,.06); transition:transform .2s ease, box-shadow .2s ease; animation:fadeInUp .35s ease both; }
+        .mp-card:hover { transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,.12); }
+        .mp-card:focus-visible { outline:2px solid var(--mp-accent); outline-offset:2px; }
+        .mp-card-img { position:relative; aspect-ratio:1/1; background:#fafafa; }
+        .mp-card-img img { width:100%; height:100%; object-fit:contain; display:block; }
+        .mp-badge { position:absolute; top:8px; left:8px; background:var(--mp-accent); color:#fff; font-size:11px; font-weight:700; padding:2px 7px; border-radius:4px; z-index:1; }
+        .mp-card .wishlist-heart-btn { top:8px; right:8px; }
+        .mp-card-body { padding:10px 12px 12px; display:flex; flex-direction:column; gap:5px; flex:1; }
+        .mp-card-name { font-size:13px; font-weight:500; color:#222; line-height:1.35; height:2.7em; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow-wrap:anywhere; margin:0; }
+        .mp-price-row { display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+        .mp-price { color:var(--mp-accent); font-weight:700; font-size:17px; }
+        .mp-old { color:#999; font-size:12px; text-decoration:line-through; }
+        .mp-meta { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--mp-muted); flex-wrap:wrap; min-height:16px; }
+        .mp-rate { display:inline-flex; align-items:center; gap:4px; }
+        .mp-dot { width:3px; height:3px; border-radius:50%; background:#ccc; }
+        .mp-seller { display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--mp-muted); min-width:0; margin-top:auto; padding-top:2px; }
+        .mp-seller span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .mp-seller b { font-weight:600; color:#444; }
+        .mp-seller i { color:#aaa; font-size:11px; flex:none; }
+        .mp-card .stz-stars { position:relative; display:inline-block; color:#ddd; letter-spacing:1px; line-height:1; font-size:12px; }
+        .mp-card .stz-stars-fill { position:absolute; left:0; top:0; overflow:hidden; white-space:nowrap; color:#f5a623; }
+        #product-list.mp-grid { grid-template-columns:repeat(5,minmax(0,1fr)); gap:14px; }
+        .mp-flash-row { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(168px,188px); gap:12px; overflow-x:auto; padding-bottom:8px; scroll-snap-type:x proximity; }
+        .mp-flash-row .mp-card { scroll-snap-align:start; }
+        .mp-flash-row .flash-sale-empty { grid-column:1/-1; }
+
+        /* মোবাইল ক্যাটাগরি ড্রয়ার + নিচের নেভ */
+        .mp-bnav { display:none; }
+        .mp-drawer-ov { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9992; display:none; }
+        .mp-drawer-ov.open { display:block; }
+        .mp-drawer { position:fixed; top:0; bottom:0; left:0; width:min(86vw,340px); background:#fff; z-index:9993; transform:translateX(-102%); transition:transform .25s ease; display:flex; flex-direction:column; visibility:hidden; }
+        .mp-drawer.open { transform:none; visibility:visible; }
+        .mp-drawer-head { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid var(--mp-line); font-size:15px; }
+        .mp-drawer-head button { background:none; border:0; font-size:26px; line-height:1; color:#555; cursor:pointer; padding:0 6px; }
+        .mp-drawer-body { overflow-y:auto; flex:1; padding-bottom:20px; }
+        .mp-acc-btn { width:100%; display:flex; align-items:center; gap:10px; padding:12px 16px; background:none; border:0; border-bottom:1px solid #f3f3f3; font:500 14px 'Poppins',Arial,sans-serif; color:#222; text-align:left; cursor:pointer; text-decoration:none; }
+        .mp-acc-btn .mp-cat-name { flex:1; }
+        .mp-acc-btn .mp-cat-chev { transition:transform .2s; }
+        .mp-acc-btn[aria-expanded="true"] .mp-cat-chev { transform:rotate(90deg); }
+        .mp-acc-panel { background:#fafafa; padding:6px 0 8px; }
+        .mp-acc-panel a { display:flex; justify-content:space-between; padding:9px 16px 9px 50px; font-size:13.5px; color:#444; text-decoration:none; }
+        .mp-acc-panel a.all { color:var(--mp-accent); font-weight:600; }
+        .mp-acc-panel a span { color:#aaa; font-size:12px; }
+        body.mp-lock { overflow:hidden; }
+        body.mp-lock #stzChatFab { display:none !important; }
+
+        @media (max-width:1199px) {
+            .mp-top-inner { --mp-side-w:216px; grid-template-columns:var(--mp-side-w) minmax(0,1fr); }
+            .mp-side-right { display:none; }
+            #product-list.mp-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+        }
+        @media (min-width:992px) { .mp-home .part-categories-section { display:none; } }
+        @media (max-width:991px) {
+            .mp-top { padding-top:0; }
+            .mp-wrap { padding:0; }
+            .mp-top-inner { display:block; height:auto; }
+            .mp-menu { display:none; }
+            .mp-hero-col { border-radius:0; }
+            .mp-hero-col .hero-carousel { height:340px; }
+            #product-list.mp-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+            .mp-home .container { padding:0 14px; }
+            .mp-home .part-categories-section { padding:14px 0 6px; background:#fff; margin-top:8px; }
+            .mp-home .part-cat-grid { grid-template-columns:none; grid-template-rows:repeat(2,auto); grid-auto-flow:column; grid-auto-columns:78px; gap:4px 6px; margin-top:10px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none; }
+            .mp-home .part-cat-grid::-webkit-scrollbar { display:none; }
+            .mp-home .part-cat-card { min-width:0; padding:6px 2px; }
+            .mp-home .part-cat-name { font-size:11.5px; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+            .mp-home .part-cat-count { display:none; }
+            .mp-home .part-cat-icon { width:54px; height:54px; }
+            .mp-home .promo-strip { padding-top:14px; }
+        }
+        @media (max-width:760px) {
+            .mp-hero-col .hero-carousel { height:auto; }
+            .mp-hero-col .hero-slide-inner { padding:32px 20px 48px; }
+            .mp-hero-col .hero-slide-text h1, .mp-hero-col .hero-slide-text h2 { font-size:22px; }
+            .mp-hero-col .hero-slide-visual { width:96px; height:96px; font-size:38px; }
+        }
+        @media (max-width:768px) {
+            body.mp-home { padding-bottom:calc(60px + env(safe-area-inset-bottom)); }
+            .mp-bnav { display:flex; position:fixed; left:0; right:0; bottom:0; z-index:9990; background:#fff; border-top:1px solid #e5e5e5; box-shadow:0 -2px 10px rgba(0,0,0,.06); padding-bottom:env(safe-area-inset-bottom); }
+            .mp-bnav a, .mp-bnav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 2px 7px; font:500 11px 'Poppins',Arial,sans-serif; color:#666; background:none; border:0; text-decoration:none; cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent; }
+            .mp-bnav i { font-size:18px; }
+            .mp-bnav .active { color:var(--mp-accent); }
+            .mp-bnav-badge { position:absolute; top:3px; left:calc(50% + 6px); background:var(--mp-accent); color:#fff; border-radius:9px; min-width:16px; height:16px; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; padding:0 4px; }
+            body.mp-home #stzTwFab, body.mp-home #stzTwPanel { display:none !important; }
+            body.mp-home #stzChatFab { bottom:76px !important; }
+            .mp-card-body { padding:8px 9px 10px; }
+            .mp-card-name { font-size:12.5px; }
+            .mp-price { font-size:15px; }
+            .mp-flash-row { grid-auto-columns:150px; }
+        }
+        @media (max-width:576px) {
+            #product-list.mp-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+        }
+        /* টাইপোগ্রাফি: Poppins-এ বাংলা গ্লিফ নেই, তাই বাংলা লেখা সিস্টেমের ছোট/পাতলা ফন্টে পড়ত — Hind Siliguri যোগ */
+        body.mp-home { font-family:'Poppins','Hind Siliguri','Noto Sans Bengali',Arial,sans-serif; }
+        .mp-home button, .mp-home input { font-family:inherit; }
+        /* বড় স্ক্রিনে নেভবারের লোগো/লগইন কিনারায় ছড়িয়ে না গিয়ে কনটেন্টের (১২৮০px) সাথে এক লাইনে থাকে */
+        @media (min-width:1000px) {
+            .mp-home .navbar { padding-left:max(30px, calc((100% - 1280px) / 2 + 20px)); padding-right:max(30px, calc((100% - 1280px) / 2 + 20px)); }
+        }
+        .mp-home .promo-strip { padding-top:16px; }
+        .mp-home .promo-strip .container { gap:14px; align-items:stretch; }
+        .mp-home .promo-card { padding:18px 22px; min-width:220px; }
+        .mp-home .promo-banner { flex:3; }
+        .mp-home .promo-banner h3 { font-size:17px; line-height:1.35; margin-bottom:5px; }
+        .mp-home .promo-banner p { font-size:12.5px; line-height:1.55; }
+        .mp-home .flash-sale-note, .mp-home .section-subtitle { line-height:1.6; }
+        @media (prefers-reduced-motion: reduce) {
+            .mp-flyout { transition:none; }
+            .mp-card, .mp-drawer, .mp-acc-btn .mp-cat-chev { transition:none; animation:none; }
+        }
+    </style>
+    <script src="config.js"></script>
+    <script src="visitor-track.js" defer></script>
+    <script src="customer-auth.js"></script>
+    <script src="wishlist.js"></script>
+    <script src="discount-rules.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" defer></script>
+    <script src="chat-widget.js" defer></script>
+</head>
+<body class="mp-home">
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
+            <a href="cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
+        </div>
+    </nav>
+    <main>
+<!-- ================================================================================
+         Hero Carousel — ব্যবহারকারীর দেওয়া ৫টা স্লাইডের কনটেন্ট (headline/subtext বাংলায় লিখে
+         পাঠিয়েছিলেন, কিন্তু শেষে বলেছেন "স্লাইড ৫ টার সবগুলো লিখাই ইংরেজিতে হবে" — তাই অর্থ ঠিক
+         রেখে ইংরেজিতে অনুবাদ করা হয়েছে, বাটন টেক্সট যেভাবে দিয়েছিলেন হুবহু সেভাবেই)।
+
+         Slide 1-এর সাবটেক্সটে ব্যবহারকারী নিজে "Original" শব্দটা লিখেছিলেন, কিন্তু তার নিজেরই আগে
+         সেভ করা নিয়ম আছে যে প্রোডাক্ট বিবরণে "Original" শব্দ ব্যবহার না করতে (Daraz-এ unauthorized
+         seller-দের জন্য এটা নিষিদ্ধ) — তাই এখানে "Original" বাদ দিয়ে শুধু "Quality-Checked" রাখা
+         হয়েছে। ব্যবহারকারী চাইলে ফিরিয়ে আনতে বলতে পারেন। ================================== -->
+    <div class="mp-top">
+      <div class="mp-wrap">
+        <div class="mp-top-inner">
+            <div class="mp-menu" id="mpMenu">
+                <nav class="mp-sidebar" aria-label="Product categories">
+                    <div class="mp-side-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg> All Categories</div>
+                    <ul class="mp-cat-list" id="mpCatList"><li class="mp-side-empty">লোড হচ্ছে...</li></ul>
+                </nav>
+                <div class="mp-flyout" id="mpFlyout" aria-label="Category menu"></div>
+            </div>
+            <div class="mp-hero-col">
+    <section class="hero-carousel" id="heroCarousel">
+        <div class="hero-slides" id="heroSlides">
+            <div class="hero-slide active" style="background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #38bdf8 100%);">
+                <div class="hero-slide-inner">
+                    <div class="hero-slide-text">
+                        <h1>Trusted Parts &amp; Accessories for Your Smartphone</h1>
+                        <p>Quality-checked mobile replacement parts and essential accessories, now at Smart Tech Zone.</p>
+                        <a href="#product-list" class="hero-slide-btn" style="color:#1d4ed8;">Shop Now →</a>
+                    </div>
+                    <div class="hero-slide-visual"><i class="fa-solid fa-shield-halved"></i></div>
+                </div>
+            </div>
+            <div class="hero-slide" style="background: linear-gradient(135deg, #111827 0%, #4338ca 50%, #7c3aed 100%);">
+                <div class="hero-slide-inner">
+                    <div class="hero-slide-text">
+                        <h2>All the Phone Parts You Need, in One Place</h2>
+                        <p>Find Display, Battery, Charging Port and other mobile replacement parts for your exact model.</p>
+                        <a href="#product-list" class="hero-slide-btn" style="color:#4338ca;">Explore Parts →</a>
+                    </div>
+                    <div class="hero-slide-visual"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                </div>
+            </div>
+            <div class="hero-slide" style="background: linear-gradient(135deg, #064e3b 0%, #059669 50%, #34d399 100%);">
+                <div class="hero-slide-inner">
+                    <div class="hero-slide-text">
+                        <h2>Delivery from Dhaka to All of Bangladesh</h2>
+                        <p>Wherever you are, your mobile parts and accessories will reach your doorstep.</p>
+                        <a href="#product-list" class="hero-slide-btn" style="color:#059669;">View Products →</a>
+                    </div>
+                    <div class="hero-slide-visual"><i class="fa-solid fa-truck-fast"></i></div>
+                </div>
+            </div>
+            <!-- ব্যবহারকারীর নোট: "আপনার ব্যবসার জন্য এটি বিশেষভাবে গুরুত্বপূর্ণ, কারণ আপনি সারা
+                 বাংলাদেশে পাইকারি মূল্যে পার্টস দেওয়ার পরিকল্পনা করছেন" — এটা স্লাইডের ডিসপ্লে টেক্সট
+                 না, তাই এখানে দেখানো হয়নি, শুধু প্রেক্ষাপট হিসেবে রাখা হলো। Wholesale Inquiry বাটন
+                 আগের মতোই সরাসরি WhatsApp-এ পূর্ব-লেখা মেসেজসহ নিয়ে যায়। -->
+            <div class="hero-slide" style="background: linear-gradient(135deg, #451a03 0%, #c2410c 55%, #f97316 100%);">
+                <div class="hero-slide-inner">
+                    <div class="hero-slide-text">
+                        <h2>Need Parts for Your Business? Get Wholesale Pricing</h2>
+                        <p>Replacement parts and accessories for mobile repair shops and businesses.</p>
+                        <a href="https://wa.me/8801718381066?text=%E0%A6%86%E0%A6%AE%E0%A6%BF%20%E0%A6%B9%E0%A7%8B%E0%A6%B2%E0%A6%B8%E0%A7%87%E0%A6%B2%20%E0%A6%AA%E0%A7%8D%E0%A6%B0%E0%A6%BE%E0%A6%87%E0%A6%B8%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A6%A4%E0%A7%87%20%E0%A6%9A%E0%A6%BE%E0%A6%87%E0%A5%A4" target="_blank" class="hero-slide-btn" style="color:#c2410c;">Wholesale Inquiry →</a>
+                    </div>
+                    <div class="hero-slide-visual"><i class="fa-solid fa-boxes-stacked"></i></div>
+                </div>
+            </div>
+            <div class="hero-slide" style="background: linear-gradient(135deg, #172554 0%, #2563eb 50%, #60a5fa 100%);">
+                <div class="hero-slide-inner">
+                    <div class="hero-slide-text">
+                        <h2>Why Smart Tech Zone?</h2>
+                        <p>We focus on the right products, reliable service, and customer satisfaction — building long-term relationships.</p>
+                        <a href="why-choose-us.html" class="hero-slide-btn" style="color:#2563eb;">Why Choose Us →</a>
+                    </div>
+                    <div class="hero-slide-visual"><i class="fa-solid fa-star"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-dots" id="heroDots"></div>
+    </section>
+            </div>
+            <aside class="mp-side-right" aria-label="Account and help">
+                <div class="mp-user" id="mpUser">
+                    <div class="mp-user-top">
+                        <span class="mp-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                        <div><div class="mp-user-t">Welcome to Smart Tech Zone</div><div class="mp-user-s">Mobile parts with video-proof delivery</div></div>
+                    </div>
+                    <div class="mp-user-btns">
+                        <a href="register.html" class="mp-btn mp-btn-fill">Register</a>
+                        <a href="login.html" class="mp-btn mp-btn-line">Sign in</a>
+                    </div>
+                </div>
+                <div class="mp-tiles">
+                    <a href="track.html" class="mp-tile"><span class="mp-tile-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6h11v10H2zM13 9h4l4 4v3h-8z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>Track Order</a>
+                    <a href="help-center.html" class="mp-tile"><span class="mp-tile-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></svg></span>Help Center</a>
+                    <a href="returns-refunds.html" class="mp-tile"><span class="mp-tile-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></span>Returns</a>
+                    <a href="https://wa.me/8801718381066" target="_blank" rel="noopener" class="mp-tile"><span class="mp-tile-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8.5 8.5 0 0 1-12.4 7.5L3 21l1.6-5.3A8.5 8.5 0 1 1 21 12z"/><path d="M9 9.5c.5 2.5 2.5 4.5 5 5l1.2-1.2-1.8-1-.8.7a4 4 0 0 1-2-2l.7-.8-1-1.8z"/></svg></span>WhatsApp</a>
+                </div>
+            </aside>
+        </div>
+      </div>
+    </div>
+
+    <section class="part-categories-section">
+        <div class="container">
+            <h2 class="section-title">Categories</h2>
+            <p class="section-subtitle">যেই পার্টস দরকার সেটা বেছে নিন</p>
+            <div class="part-cat-grid" id="partCategoryGrid"></div>
+        </div>
+    </section>
+
+    <section class="promo-strip">
+        <div class="container">
+            <!-- দ্বিতীয় প্রোমো ব্যানার — আগের ড্রাফটে লেখা ছিল "সকল প্রোডাক্টে ৪০% ছাড়", কিন্তু
+                 ব্যবহারকারী পরে স্পষ্ট করেছেন এই ছাড় শুধু নির্দিষ্ট কিছু ক্যাটাগরিতে (Outside Key
+                 বাদে Pixel, Sim Tray, Power Volume Flex-এ ৪০%; Body Housing Backshell/Back Panel-এ
+                 ২০%) — তাই এখানে টেক্সট আপডেট করে ঠিক এই স্কোপ অনুযায়ী লেখা হয়েছে, যাতে ভুল দাবি
+                 না হয়ে যায়। -->
+            <div class="promo-card promo-banner">
+                <div>
+                    <h3>লঞ্চ অফার — নির্বাচিত ক্যাটাগরিতে ২০-৪০% ছাড়</h3>
+                    <p>Outside Key (Pixel বাদে), Sim Tray ও Power Volume Flex-এ ৪০% ছাড় • সকল Body Housing Backshell-এ ২০% ছাড়</p>
+                </div>
+            </div>
+            <div class="promo-card follow-us-card">
+                <div>
+                    <h4>Follow Us</h4>
+                    <div class="follow-us-icons">
+                        <a href="https://www.facebook.com/smarttechzonedhaka" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="https://wa.me/8801718381066" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="https://www.youtube.com/@SmartTechZoneDhaka" target="_blank" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                        <!-- Instagram/TikTok লিংক যোগ করা হয়নি — এখনো সেই প্রোফাইলগুলোর URL পাওয়া যায়নি -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="flash-sale-section" id="flashSale">
+        <div class="container">
+            <div class="flash-sale-title-row">
+                <i class="fa-solid fa-bolt"></i>
+                <h2 class="section-title" style="margin:0;">Flash Sale</h2>
+            </div>
+            <p class="flash-sale-note">নির্বাচিত ক্যাটাগরিতে বিশেষ ছাড়ে — Outside Key, Sim Tray, Power Volume Flex (৪০%) ও Body Housing Backshell (২০%)</p>
+            <div class="mp-flash-row" id="flashSaleGrid">
+                <p class="flash-sale-empty">লোড হচ্ছে...</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="category-section">
+        <section class="products-section">
+    <div class="container">
+        <h2 class="section-title" id="productsSectionTitle">Latest Products</h2>
+        <div id="categoryBanner"></div>
+        <div id="product-list" class="product-grid mp-grid"></div>
+        <div class="load-more-wrapper" id="loadMoreWrapper" style="display:none;">
+            <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreProducts()">Load More</button>
+        </div>
+    </div>
+</section>
+        <div class="container">
+            <h2 class="section-title">Shop by Brand</h2>
+            <p class="section-subtitle">আপনার ফোনের Brand বেছে নিন</p>
+
+            <!-- এই গ্রিডটা এখন ডাইনামিক — /api/products/brand-counts থেকে যেসব ব্র্যান্ডে অন্তত ১টা published
+                 প্রোডাক্ট আছে সেগুলোই এখানে দেখাবে। নতুন কোনো ব্র্যান্ড (itel, Nothing ইত্যাদি) ডিটেক্ট হয়ে
+                 প্রোডাক্ট পাবলিশ হলে এখানে আপনাআপনি যোগ হয়ে যাবে, কোনো ফাইল বদলাতে হবে না। -->
+            <div class="category-grid" id="brandGrid">
+                <p style="grid-column: 1/-1; text-align:center; color:#999;">লোড হচ্ছে...</p>
+            </div>
+        </div>
+    </section>
+
+    </main>
+    <nav class="mp-bnav" aria-label="Quick navigation">
+        <a href="index.html" class="active" aria-current="page"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <button type="button" id="mpNavCats" aria-haspopup="dialog"><i class="fa-solid fa-table-cells-large"></i><span>Categories</span></button>
+        <a href="track.html"><i class="fa-solid fa-truck-fast"></i><span>Track</span></a>
+        <a href="cart.html"><i class="fa-solid fa-bag-shopping"></i><span>Cart</span><b class="mp-bnav-badge" id="mpNavCartCount" style="display:none">0</b></a>
+        <a href="login.html" id="mpNavAccount"><i class="fa-regular fa-user"></i><span>Account</span></a>
+    </nav>
+    <div class="mp-drawer-ov" id="mpDrawerOv"></div>
+    <aside class="mp-drawer" id="mpDrawer" role="dialog" aria-modal="true" aria-label="All Categories" aria-hidden="true">
+        <div class="mp-drawer-head"><b>All Categories</b><button type="button" id="mpDrawerClose" aria-label="Close">&times;</button></div>
+        <div class="mp-drawer-body" id="mpDrawerBody"></div>
+    </aside>
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+
+
+    <script>
+        const API_BASE = BACKEND_URL;
+
+        // ============ SEO: কিওয়ার্ডসহ পরিষ্কার URL — /product/<slug>-i<id> ============
+        // *** এই ফাংশনটা হুবহু (byte-for-byte) কপি আছে: product.html, search.html,
+        // brands/brand.html, models/model.html, netlify/edge-functions/product-seo.js ও
+        // model-seo.js, backend/routes/sitemap.js — এখানে বদলালে ওই সব জায়গাতেও বদলাতে হবে ***
+        function slugifyProductName(name) {
+            let s = String(name || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            if (s.length > 70) {
+                const cut = s.slice(0, 70);
+                const lastDash = cut.lastIndexOf('-');
+                s = lastDash > 20 ? cut.slice(0, lastDash) : cut;
+            }
+            return s || 'product';
+        }
+        function buildProductPath(name, id) {
+            return `/product/${slugifyProductName(name)}-i${id}`;
+        }
+
+        // ============ Category ও Brand গ্রিড — এখন backend aggregation endpoint থেকে সরাসরি কাউন্ট/ছবি
+        // আসে (হাজার হাজার প্রোডাক্ট ব্রাউজারে ডাউনলোড করে হিসেব করতে হয় না, তাই অনেক দ্রুত) ============
+        function resolveImg(url, w, h) {
+            if (!url) return 'https://via.placeholder.com/200';
+            const abs = url.startsWith('http') ? url : `${API_BASE}${url}`;
+            if (!w) return abs;
+            const qs = new URLSearchParams({ url: abs, w: String(w), fit: 'cover', q: '75' });
+            if (h) qs.set('h', String(h));
+            return `/.netlify/images?${qs.toString()}`;
+        }
+
+        async function renderCategoryGrid() {
+            const grid = document.getElementById('partCategoryGrid');
+            try {
+                const res = await fetch(`${API_BASE}/api/products/category-counts`);
+                const rows = await res.json();
+                grid.innerHTML = rows.map(r => {
+                    const img = r.image ? resolveImg(r.image, 128, 128) : 'https://via.placeholder.com/64?text=%20';
+                    return `
+                        <div class="part-cat-card" onclick="goToCategory('${r.name.replace(/'/g, "\\'")}')">
+                            <div class="part-cat-icon"><img src="${img}" alt="${(r.name || '').replace(/"/g, '&quot;')}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/64?text=%20'"></div>
+                            <div class="part-cat-name">${r.name}</div>
+                            <div class="part-cat-count">${r.count} items</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                grid.innerHTML = '';
+            }
+        }
+
+        async function renderBrandGrid() {
+            const grid = document.getElementById('brandGrid');
+            try {
+                const res = await fetch(`${API_BASE}/api/products/brand-counts`);
+                const rows = await res.json();
+                grid.innerHTML = rows.map(r => {
+                    const img = r.image ? resolveImg(r.image, 80, 80) : 'https://via.placeholder.com/80?text=%20';
+                    return `
+                        <a href="brands/brand.html?name=${encodeURIComponent(r.name)}" class="category-card">
+                            <div class="category-icon"><img src="${img}" alt="${r.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/80?text=%20'"></div>
+                            <h3>${r.name}</h3>
+                        </a>
+                    `;
+                }).join('');
+            } catch (err) {
+                grid.innerHTML = '';
+            }
+        }
+
+        // ============ প্রোডাক্ট লিস্ট — সার্ভার-সাইড pagination; URL ফরম্যাট আগের মতোই (?category=X), এখন ঐচ্ছিক
+        // &phoneBrand=Y-ও চলে (মেগা-মেনুর ব্র্যান্ড লিংক)। ============
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentCategory = null;
+        let currentBrand = null;
+        let currentModel = null;
+        const PAGE_SIZE = 20;
+
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        async function loadHomeProducts() {
+            renderCategoryGrid();
+            renderBrandGrid();
+            loadCategoryTree();
+            applyCategoryFilterFromUrl();
+        }
+
+        function goToFilter(catName, brandName, modelName) {
+            const qs = new URLSearchParams();
+            if (catName) qs.set('category', catName);
+            if (catName && brandName) qs.set('phoneBrand', brandName);
+            if (catName && brandName && modelName) qs.set('model', modelName);
+            const q = qs.toString();
+            history.pushState({ category: catName || null, phoneBrand: brandName || null, model: modelName || null }, '', 'index.html' + (q ? '?' + q : ''));
+            applyCategoryFilterFromUrl();
+        }
+
+        // নিচের গ্রিড (মোবাইলের আইকন গ্রিড) এই নামেই কল করে
+        function goToCategory(catName) { goToFilter(catName, null); }
+
+        function clearCategory(e) {
+            e.preventDefault();
+            goToFilter(null, null);
+        }
+
+        // ব্রাউজারের Back/Forward বাটনেও ঠিকভাবে কাজ করার জন্য
+        window.addEventListener('popstate', () => applyCategoryFilterFromUrl());
+
+        async function applyCategoryFilterFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            currentCategory = params.get('category');
+            currentBrand = currentCategory ? params.get('phoneBrand') : null;
+            currentModel = (currentCategory && currentBrand) ? params.get('model') : null;
+            const titleEl = document.getElementById('productsSectionTitle');
+            const banner = document.getElementById('categoryBanner');
+
+            titleEl.textContent = currentCategory ? [currentCategory, currentBrand, currentModel].filter(Boolean).join(' · ') : 'Latest Products';
+            if (!currentCategory) banner.innerHTML = '';
+
+            const listEl = document.getElementById('product-list');
+            listEl.classList.add('fading');
+            currentPage = 1;
+            await loadProductsPage();
+            listEl.classList.remove('fading');
+
+            // ফিল্টার সিলেক্ট থাকলে প্রোডাক্ট লিস্টের কাছে স্ক্রল (মেনু/ড্রয়ার বন্ধ করে)
+            closeFlyout();
+            closeDrawer();
+            if (currentCategory) {
+                setTimeout(() => titleEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+            }
+        }
+
+        async function loadProductsPage() {
+            const container = document.getElementById('product-list');
+            const banner = document.getElementById('categoryBanner');
+            try {
+                // sort=reviews: রিভিউ আছে এমন প্রোডাক্ট সবার আগে, তারপর বাকিগুলো নতুন-থেকে-পুরনো
+                const qs = new URLSearchParams({ status: 'published', fields: 'summary', sort: 'reviews', page: currentPage, limit: PAGE_SIZE });
+                if (currentCategory) qs.set('category', currentCategory);
+                if (currentBrand) qs.set('phoneBrand', currentBrand);
+                if (currentModel) qs.set('model', currentModel);
+
+                const res = await fetch(`${API_BASE}/api/products?${qs.toString()}`);
+                const data = await res.json();
+                totalPages = data.totalPages || 1;
+
+                if (currentCategory) {
+                    const label = [currentCategory, currentBrand, currentModel].filter(Boolean).map(esc).join(' · ');
+                    banner.innerHTML = `<div class="active-category-banner">
+                        দেখাচ্ছে: <b>${label}</b> (${data.total}টি) — <a href="index.html" onclick="clearCategory(event)">সব প্রোডাক্ট দেখুন</a>
+                    </div>`;
+                }
+
+                if (currentPage === 1) container.innerHTML = '';
+
+                const items = data.products || [];
+                if (currentPage === 1 && items.length === 0) {
+                    container.innerHTML = '<p style="grid-column:1/-1;">এই ক্যাটাগরিতে কোনো প্রোডাক্ট পাওয়া যায়নি।</p>';
+                } else {
+                    renderProductCards(items);
+                }
+
+                const loadMoreWrapper = document.getElementById('loadMoreWrapper');
+                loadMoreWrapper.style.display = currentPage < totalPages ? 'block' : 'none';
+            } catch (err) {
+                console.error('Error loading products:', err);
+                container.innerHTML = '<p style="grid-column:1/-1;">প্রোডাক্ট লোড করা সম্ভব হয়নি।</p>';
+            }
+        }
+
+        // তারা: নিচে ফ্যাকাশে ধূসর ৫টা, উপরে রঙিন ৫টা — গড় রেটিং অনুযায়ী width কেটে আংশিক ভরাট
+        function starsHtml(avg) {
+            const pct = Math.max(0, Math.min(100, (Number(avg) || 0) / 5 * 100));
+            return `<span class="stz-stars" aria-label="${Number(avg || 0).toFixed(1)} out of 5"><span class="stz-stars-fill" style="width:${pct}%">★★★★★</span>★★★★★</span>`;
+        }
+
+        function fmtSold(n) {
+            n = Number(n) || 0;
+            if (n <= 0) return '';
+            if (n >= 1000) return (Math.floor(n / 100) / 10) + 'K+ sold';
+            return n + ' sold';
+        }
+
+        // মাল্টি-ভেন্ডর কার্ড: ছবি + ছাড় ব্যাজ + নাম + দাম + রেটিং/বিক্রি + "Sold by"।
+        // p.price = কাস্টমার যা পে করে, p.originalPrice = কাটা দাম; flash দিলে ফ্ল্যাশ দাম + আসল দাম কাটা।
+        // vendorName/soldCount ব্যাকএন্ড থেকে আসে; না এলে (পুরনো ব্যাকএন্ড) এখনকার একমাত্র দোকান "Smart Tech Zone" ধরা হয়,
+        // আর বিক্রির সংখ্যা না থাকলে কিছুই দেখানো হয় না (বানানো সংখ্যা নয়)।
+        function mpCardInner(p, flash) {
+            const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0], 360, 360) : 'https://via.placeholder.com/200';
+            const price = flash ? flash.price : p.price;
+            const old = flash ? p.price : ((p.originalPrice && p.originalPrice > p.price) ? p.originalPrice : 0);
+            const pct = old ? Math.round((old - price) / old * 100) : 0;
+            const badge = pct > 0 ? `<span class="mp-badge">-${pct}%</span>` : '';
+            const heart = typeof stzWishlistHeartHtml === 'function' ? stzWishlistHeartHtml(p._id) : '';
+            const rating = p.reviewCount > 0
+                ? `<span class="mp-rate">${starsHtml(p.ratingAvg)}<span>${Number(p.ratingAvg).toFixed(1)} (${p.reviewCount})</span></span>` : '';
+            const sold = fmtSold(p.soldCount);
+            const meta = `<div class="mp-meta">${rating}${(rating && sold) ? '<span class="mp-dot"></span>' : ''}${sold ? `<span>${sold}</span>` : ''}</div>`;
+            const vendor = esc(p.vendorName || 'Smart Tech Zone');
+            return `
+                <div class="mp-card-img">${badge}${heart}<img src="${imgUrl}" alt="${esc(p.name)}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'"></div>
+                <div class="mp-card-body">
+                    <h3 class="mp-card-name">${esc(p.name)}</h3>
+                    <div class="mp-price-row"><span class="mp-price">৳${price}</span>${old ? `<span class="mp-old">৳${old}</span>` : ''}</div>
+                    ${meta}
+                    <div class="mp-seller"><i class="fa-solid fa-store" aria-hidden="true"></i><span>Sold by <b>${vendor}</b></span></div>
+                </div>`;
+        }
+
+        function mpCardEl(p, flash) {
+            const card = document.createElement('div');
+            card.className = 'mp-card';
+            card.tabIndex = 0;
+            card.setAttribute('role', 'link');
+            const go = () => { window.location.href = buildProductPath(p.name, p._id); };
+            card.onclick = go;
+            card.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target === card) go(); });
+            card.innerHTML = mpCardInner(p, flash);
+            return card;
+        }
+
+        function renderProductCards(items) {
+            const container = document.getElementById('product-list');
+            items.forEach(p => container.appendChild(mpCardEl(p, null)));
+        }
+
+        function loadMoreProducts() {
+            currentPage++;
+            loadProductsPage();
+        }
+
+        // ============ বাম মেগা-মেনু (ডেস্কটপ) + ক্যাটাগরি ড্রয়ার (মোবাইল) ============
+        // ডেটা: /api/products/category-tree (ক্যাটাগরি -> ফোন-ব্র্যান্ড কাউন্ট)। এন্ডপয়েন্ট না থাকলে (ব্যাকএন্ড এখনো
+        // আপডেট না হলে) /category-counts দিয়ে শুধু ক্যাটাগরি তালিকা দেখায় — মেনু ভাঙে না।
+        let mpTree = [];
+        let flyTimer = null;
+
+        async function loadCategoryTree() {
+            let data = null;
+            try {
+                const r = await fetch(`${API_BASE}/api/products/category-tree`);
+                if (r.ok) { const j = await r.json(); if (Array.isArray(j)) data = j; }
+            } catch (e) { /* ফলব্যাক */ }
+            if (!data) {
+                try {
+                    const r = await fetch(`${API_BASE}/api/products/category-counts`);
+                    const j = await r.json();
+                    data = Array.isArray(j) ? j.map(c => ({ name: c.name, count: c.count, image: c.image, brands: [] })) : [];
+                } catch (e) { data = []; }
+            }
+            mpTree = data;
+            renderSidebar();
+            renderDrawer();
+        }
+
+        // লাইন-আইকন (ক্যাটাগরির নাম মিলিয়ে) — প্রোডাক্টের ছোট ছবির বদলে, যাতে সাইডবার পরিষ্কার ও দ্রুত লোড হয়
+        const MP_ICONS = {
+            camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+            shield: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>',
+            battery: '<rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 11v2M6 12h6"/>',
+            frame: '<rect x="3" y="3" width="18" height="18" rx="3"/><rect x="8" y="8" width="8" height="8" rx="1"/>',
+            display: '<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/>',
+            speaker: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11"/>',
+            mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+            key: '<rect x="2" y="8" width="20" height="8" rx="4"/><circle cx="8" cy="12" r="2"/>',
+            sim: '<path d="M6 2h8l4 4v16H6z"/><rect x="9" y="12" width="6" height="6" rx="1"/>',
+            wave: '<path d="M3 12c3-6 6 6 9 0s6 6 9 0"/>',
+            bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+            chip: '<rect x="6" y="6" width="12" height="12" rx="1.5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+            glass: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 16 16 8M12 17l5-5"/>',
+            vibrator: '<path d="M8 4v16M16 4v16M4 8v8M20 8v8"/>',
+            tools: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>',
+            pen: '<path d="M4 20l1-4L16 5l3 3L8 19z"/>',
+            box: '<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>'
+        };
+        const MP_ICON_RULES = [
+            [/camera/, 'camera'], [/protector/, 'shield'], [/battery/, 'battery'], [/frame|housing|back panel/, 'frame'],
+            [/lcd|display/, 'display'], [/speaker|earpiece|buzzer/, 'speaker'], [/microphone|\bmic\b/, 'mic'],
+            [/power volume|outside key|fingerprint|button/, 'key'], [/\bsim\b/, 'sim'], [/antenna|flex cable/, 'wave'],
+            [/charging/, 'bolt'], [/motherboard|integrated|\bic\b|logic/, 'chip'], [/glass|oca/, 'glass'],
+            [/vibrator/, 'vibrator'], [/tool/, 'tools'], [/stylus|\bpen\b/, 'pen']
+        ];
+        function catIcon(c) {
+            const n = String((c && c.name) || '').toLowerCase();
+            const hit = MP_ICON_RULES.find(r => r[0].test(n));
+            return `<svg class="mp-cat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MP_ICONS[hit ? hit[1] : 'box']}</svg>`;
+        }
+        const MP_CHEV = '<svg class="mp-cat-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+
+        function catHref(cat, brand, model) {
+            return 'index.html?category=' + encodeURIComponent(cat) + (brand ? '&phoneBrand=' + encodeURIComponent(brand) : '') + (brand && model ? '&model=' + encodeURIComponent(model) : '');
+        }
+        // মেনু/ড্রয়ারের লিংকের data-* অ্যাট্রিবিউট (ক্লিকে goToFilter-এ যায়)
+        function catAttrs(cat, brand, model) {
+            return `data-cat="${esc(cat)}"${brand ? ` data-brand="${esc(brand)}"` : ''}${model ? ` data-model="${esc(model)}"` : ''}`;
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('mpCatList');
+            if (!list) return;
+            if (!mpTree.length) { list.innerHTML = '<li class="mp-side-empty">ক্যাটাগরি লোড করা যায়নি</li>'; return; }
+            list.innerHTML = mpTree.map((c, i) => `
+                <li class="mp-cat-item" data-i="${i}"><a href="${esc(catHref(c.name))}" ${catAttrs(c.name)} aria-haspopup="true" aria-expanded="false">${catIcon(c)}<span class="mp-cat-name">${esc(c.name)}</span>${MP_CHEV}</a></li>`).join('');
+        }
+
+        // মেগা-মেনু প্যানেল: ব্র্যান্ড = কলাম-শিরোনাম, তার নিচে ওই ব্র্যান্ডের সবচেয়ে বেশি প্রোডাক্টের মডেল।
+        // সর্বোচ্চ ১০টা ব্র্যান্ড কলাম, বাকিগুলো নিচে এক লাইনে "Other brands"।
+        const MP_MAX_BRANDS = 10, MP_MAX_MODELS = 5;
+        function showFlyout(i) {
+            const c = mpTree[i];
+            const fly = document.getElementById('mpFlyout');
+            if (!c || !fly) return;
+            const brands = c.brands || [];
+            const main = brands.slice(0, MP_MAX_BRANDS), rest = brands.slice(MP_MAX_BRANDS);
+            const group = b => {
+                const models = (b.models || []).slice(0, MP_MAX_MODELS);
+                const body = models.length
+                    ? `<ul>${models.map(m => `<li><a href="${esc(catHref(c.name, b.name, m.name))}" ${catAttrs(c.name, b.name, m.name)} title="${esc(m.name)}">${esc(m.name)}</a></li>`).join('')}</ul>`
+                    : `<a class="mp-fg-all" href="${esc(catHref(c.name, b.name))}" ${catAttrs(c.name, b.name)}>All ${esc(b.name)} parts</a>`;
+                return `<div class="mp-fg"><a class="mp-fg-h" href="${esc(catHref(c.name, b.name))}" ${catAttrs(c.name, b.name)}>${esc(b.name)}<span>${b.count}</span></a>${body}</div>`;
+            };
+            fly.innerHTML = `
+                <div class="mp-fly-head">
+                    <div class="mp-fly-title">${esc(c.name)}<span class="mp-fly-count">${c.count} items</span></div>
+                    <a class="mp-fly-all" href="${esc(catHref(c.name))}" ${catAttrs(c.name)}>View all →</a>
+                </div>
+                ${main.length
+                    ? `<div class="mp-fly-grid">${main.map(group).join('')}</div>
+                       ${rest.length ? `<div class="mp-fly-others">Other brands:${rest.map(b => `<a href="${esc(catHref(c.name, b.name))}" ${catAttrs(c.name, b.name)}>${esc(b.name)} (${b.count})</a>`).join('')}</div>` : ''}`
+                    : '<p class="mp-fly-empty">এই ক্যাটাগরির সব প্রোডাক্ট দেখতে উপরের "View all" লিংকে ক্লিক করুন।</p>'}`;
+            fly.scrollTop = 0;
+            fly.classList.add('open');
+            fly.dataset.i = String(i);
+            document.querySelectorAll('#mpCatList .mp-cat-item').forEach(li => {
+                const on = li.dataset.i === String(i);
+                li.classList.toggle('active', on);
+                const a = li.firstElementChild; if (a) a.setAttribute('aria-expanded', on ? 'true' : 'false');
+            });
+        }
+
+        function closeFlyout() {
+            clearTimeout(flyTimer);
+            clearTimeout(flyOpenTimer);
+            const fly = document.getElementById('mpFlyout');
+            if (fly) { fly.classList.remove('open'); delete fly.dataset.i; }
+            document.querySelectorAll('#mpCatList .mp-cat-item.active').forEach(li => {
+                li.classList.remove('active');
+                const a = li.firstElementChild; if (a) a.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        let flyOpenTimer = null;
+        (function initMegaMenu() {
+            const menu = document.getElementById('mpMenu');
+            if (!menu) return;
+            const fly = document.getElementById('mpFlyout');
+            const isOpen = () => fly.classList.contains('open');
+            const canHover = () => window.matchMedia('(hover: hover)').matches;
+
+            // হোভার: প্রথমবার সাথে সাথে খোলে; এক ক্যাটাগরি থেকে আরেকটায় সরলে ৭০ms অপেক্ষা (তির্যকভাবে মাউস নিলে ঝিকমিক না করতে)
+            menu.addEventListener('mouseover', e => {
+                if (!canHover()) return;
+                clearTimeout(flyTimer);
+                const li = e.target.closest('.mp-cat-item');
+                if (!li) return;
+                const i = Number(li.dataset.i);
+                clearTimeout(flyOpenTimer);
+                if (fly.dataset.i === String(i)) return;
+                if (!isOpen()) showFlyout(i);
+                else flyOpenTimer = setTimeout(() => showFlyout(i), 70);
+            });
+            menu.addEventListener('mouseleave', () => { clearTimeout(flyOpenTimer); flyTimer = setTimeout(closeFlyout, 160); });
+            menu.addEventListener('mouseenter', () => clearTimeout(flyTimer));
+
+            menu.addEventListener('focusin', e => {
+                if (!canHover()) return; // টাচে ট্যাপের ফোকাসই মেনু খুলে ফেললে দ্বিতীয় ট্যাপের লজিক ভেঙে যায়
+                const li = e.target.closest('.mp-cat-item');
+                if (li) showFlyout(Number(li.dataset.i));
+            });
+
+            // ক্লিক: টাচ ডিভাইসে (hover নেই) ক্যাটাগরিতে প্রথম ট্যাপে মেনু খোলে, দ্বিতীয় ট্যাপে পেজ ফিল্টার হয়
+            menu.addEventListener('click', e => {
+                const a = e.target.closest('a[data-cat]');
+                if (!a) return;
+                const li = a.closest('.mp-cat-item');
+                if (li && !canHover() && fly.dataset.i !== li.dataset.i) {
+                    e.preventDefault();
+                    showFlyout(Number(li.dataset.i));
+                    return;
+                }
+                e.preventDefault();
+                goToFilter(a.getAttribute('data-cat'), a.getAttribute('data-brand'), a.getAttribute('data-model'));
+            });
+
+            // কীবোর্ড: ↑/↓ ক্যাটাগরি বদল, → প্যানেলে ঢোকা, ←/Esc বন্ধ করে ক্যাটাগরিতে ফেরা
+            menu.addEventListener('keydown', e => {
+                const a = e.target.closest('a');
+                if (!a) return;
+                const li = a.closest('.mp-cat-item');
+                if (li) {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const sib = e.key === 'ArrowDown' ? li.nextElementSibling : li.previousElementSibling;
+                        if (sib) sib.firstElementChild.focus();
+                    } else if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        showFlyout(Number(li.dataset.i));
+                        const first = fly.querySelector('a');
+                        if (first) first.focus();
+                    }
+                } else if (fly.contains(a) && (e.key === 'ArrowLeft')) {
+                    const act = document.querySelector('#mpCatList .mp-cat-item.active > a');
+                    if (act) { e.preventDefault(); act.focus(); }
+                }
+            });
+            document.addEventListener('keydown', e => {
+                if (e.key !== 'Escape' || !isOpen()) return;
+                const act = document.querySelector('#mpCatList .mp-cat-item.active > a');
+                closeFlyout();
+                if (act && menu.contains(document.activeElement)) act.focus();
+            });
+            // মেনুর বাইরে (যেমন টাচে) ট্যাপ করলে বন্ধ
+            document.addEventListener('click', e => { if (isOpen() && !menu.contains(e.target)) closeFlyout(); });
+        })();
+
+        // মোবাইল ড্রয়ার (accordion): ক্যাটাগরি চাপলে ব্র্যান্ড-লিংক খোলে
+        function renderDrawer() {
+            const body = document.getElementById('mpDrawerBody');
+            if (!body) return;
+            if (!mpTree.length) { body.innerHTML = '<p style="padding:16px;color:#999;font-size:13px;">ক্যাটাগরি লোড করা যায়নি</p>'; return; }
+            body.innerHTML = mpTree.map((c, i) => {
+                const brands = c.brands || [];
+                if (!brands.length) {
+                    return `<a class="mp-acc-btn" href="${esc(catHref(c.name))}" ${catAttrs(c.name)}>${catIcon(c)}<span class="mp-cat-name">${esc(c.name)}</span></a>`;
+                }
+                return `<div class="mp-acc">
+                    <button type="button" class="mp-acc-btn" aria-expanded="false" aria-controls="mpAcc${i}">${catIcon(c)}<span class="mp-cat-name">${esc(c.name)}</span>${MP_CHEV}</button>
+                    <div class="mp-acc-panel" id="mpAcc${i}" hidden>
+                        <a class="all" href="${esc(catHref(c.name))}" ${catAttrs(c.name)}>সব দেখুন</a>
+                        ${brands.map(b => `<a href="${esc(catHref(c.name, b.name))}" ${catAttrs(c.name, b.name)}>${esc(b.name)}<span>${b.count}</span></a>`).join('')}
+                    </div></div>`;
+            }).join('');
+        }
+
+        let drawerOpener = null;
+        function openDrawer() {
+            const dr = document.getElementById('mpDrawer');
+            if (!dr) return;
+            drawerOpener = document.activeElement;
+            dr.classList.add('open'); dr.setAttribute('aria-hidden', 'false');
+            document.getElementById('mpDrawerOv').classList.add('open');
+            document.body.classList.add('mp-lock');
+            const closeBtn = document.getElementById('mpDrawerClose');
+            if (closeBtn) closeBtn.focus();
+        }
+        function closeDrawer() {
+            const dr = document.getElementById('mpDrawer');
+            if (!dr || !dr.classList.contains('open')) return;
+            dr.classList.remove('open'); dr.setAttribute('aria-hidden', 'true');
+            document.getElementById('mpDrawerOv').classList.remove('open');
+            document.body.classList.remove('mp-lock');
+            if (drawerOpener && drawerOpener.focus) drawerOpener.focus();
+        }
+
+        (function initDrawerAndNav() {
+            const body = document.getElementById('mpDrawerBody');
+            if (body) {
+                body.addEventListener('click', e => {
+                    const btn = e.target.closest('button.mp-acc-btn');
+                    if (btn) {
+                        const panel = document.getElementById(btn.getAttribute('aria-controls'));
+                        const open = btn.getAttribute('aria-expanded') === 'true';
+                        btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+                        if (panel) panel.hidden = open;
+                        return;
+                    }
+                    const a = e.target.closest('a[data-cat]');
+                    if (a) { e.preventDefault(); goToFilter(a.getAttribute('data-cat'), a.getAttribute('data-brand'), a.getAttribute('data-model')); }
+                });
+            }
+            const catsBtn = document.getElementById('mpNavCats');
+            if (catsBtn) catsBtn.addEventListener('click', openDrawer);
+            const closeBtn = document.getElementById('mpDrawerClose');
+            if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+            const ov = document.getElementById('mpDrawerOv');
+            if (ov) ov.addEventListener('click', closeDrawer);
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') closeDrawer();
+                // ড্রয়ার খোলা অবস্থায় Tab ড্রয়ারের ভেতরেই ঘোরে
+                if (e.key === 'Tab') {
+                    const dr = document.getElementById('mpDrawer');
+                    if (!dr || !dr.classList.contains('open')) return;
+                    const f = Array.from(dr.querySelectorAll('button, a[href]')).filter(el => el.offsetParent !== null);
+                    if (!f.length) return;
+                    const first = f[0], last = f[f.length - 1];
+                    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
+            });
+        })();
+
+        // ============ কার্ট সংখ্যা (নেভবার + নিচের নেভ) ও লগইন-অনুযায়ী ডান কলাম/অ্যাকাউন্ট লিংক ============
+        // index.html-এ cart.js লোড হয় না, তাই নেভবারের ব্যাজ আগে এখানে সবসময় ০ থাকত — এখন localStorage থেকে পড়া হয়।
+        function mpUpdateCartBadges() {
+            let n = 0;
+            try { n = (JSON.parse(localStorage.getItem('stz_cart') || '[]') || []).reduce((s, i) => s + (Number(i.quantity) || 0), 0); } catch (e) { n = 0; }
+            const nav = document.getElementById('cartCount');
+            if (nav) nav.textContent = n;
+            const b = document.getElementById('mpNavCartCount');
+            if (b) { b.textContent = n > 99 ? '99+' : n; b.style.display = n > 0 ? 'flex' : 'none'; }
+        }
+        function mpApplyAuthState() {
+            let token = null, customer = null;
+            try { token = typeof getCustomerToken === 'function' ? getCustomerToken() : null; customer = typeof getCustomerData === 'function' ? getCustomerData() : null; } catch (e) { /* গেস্ট */ }
+            if (!(token && customer)) return;
+            const acc = document.getElementById('mpNavAccount');
+            if (acc) acc.setAttribute('href', 'account.html#profileSection');
+            const w = document.getElementById('mpUser');
+            if (w) {
+                const nm = ((customer.name || '').trim().split(' ')[0]) || 'Account';
+                w.innerHTML = `<div class="mp-user-top"><span class="mp-avatar">${esc(nm.charAt(0).toUpperCase())}</span>
+                        <div><div class="mp-user-t">Hi, ${esc(nm)}</div><div class="mp-user-s">Manage your orders and wishlist</div></div></div>
+                    <div class="mp-user-btns"><a href="account.html#ordersSection" class="mp-btn mp-btn-fill">My Orders</a><a href="account.html#wishlistSection" class="mp-btn mp-btn-line">Wishlist</a></div>`;
+            }
+        }
+        window.addEventListener('storage', mpUpdateCartBadges);
+        window.addEventListener('pageshow', mpUpdateCartBadges);
+        mpUpdateCartBadges();
+        mpApplyAuthState();
+
+        // ============ Hero Carousel — প্রতি ৪.৫ সেকেন্ডে অটো-রোটেট, ডট ক্লিকেও যাওয়া যায়,
+        // হোভার করলে থেমে যায় (যাতে পড়ার সময় হুট করে পরের স্লাইডে চলে না যায়) ============
+        (function initHeroCarousel() {
+            const slidesWrap = document.getElementById('heroSlides');
+            const dotsWrap = document.getElementById('heroDots');
+            if (!slidesWrap || !dotsWrap) return;
+            const slides = Array.from(slidesWrap.querySelectorAll('.hero-slide'));
+            if (slides.length === 0) return;
+
+            // type="button" স্পষ্টভাবে সেট করা হলো — কোনো <button> এর type না দিলে ব্রাউজার
+            // ডিফল্টভাবে "submit" ধরে নেয়, আর সেটা কোনো <form>-এর ভেতরে পড়ে গেলে ক্লিকে পেজ
+            // reload/submit হয়ে যেতে পারে (সব স্টেট রিসেট, ডট "হারিয়ে যাওয়ার" মতো দেখাতে পারে)।
+            slides.forEach((_, i) => {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
+                dot.setAttribute('aria-label', `Slide ${i + 1}`);
+                dot.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    goToSlide(i);
+                });
+                dotsWrap.appendChild(dot);
+            });
+            const dots = Array.from(dotsWrap.querySelectorAll('.hero-dot'));
+
+            let current = 0;
+            let timer = null;
+
+            function goToSlide(i) {
+                if (i === current) return;
+                slides[current].classList.remove('active');
+                dots[current].classList.remove('active');
+                current = i;
+                slides[current].classList.add('active');
+                dots[current].classList.add('active');
+            }
+
+            function next() { goToSlide((current + 1) % slides.length); }
+
+            function startAuto() {
+                stopAuto();
+                timer = setInterval(next, 4500);
+            }
+            function stopAuto() { if (timer) clearInterval(timer); }
+
+            const carousel = document.getElementById('heroCarousel');
+            carousel.addEventListener('mouseenter', stopAuto);
+            carousel.addEventListener('mouseleave', startAuto);
+            startAuto();
+        })();
+
+        // ============ Flash Sale — নির্দিষ্ট ক্যাটাগরির প্রোডাক্ট এনে discount-rules.js এর
+        // নিয়ম দিয়ে ছাড়ের দাম হিসেব করে দেখায়। কোনো প্রোডাক্টের price/originalPrice ফিল্ড
+        // ডাটাবেজে বদলায় না, শুধু দেখানোর সময় হিসেব হয়। ============
+        async function loadFlashSale() {
+            const grid = document.getElementById('flashSaleGrid');
+            if (typeof FLASH_SALE_RULES === 'undefined') { grid.innerHTML = ''; return; }
+            try {
+                const categories = [...new Set(FLASH_SALE_RULES.map(r => r.category))];
+                const results = await Promise.all(categories.map(cat =>
+                    fetch(`${API_BASE}/api/products?status=published&fields=summary&category=${encodeURIComponent(cat)}&limit=8`)
+                        .then(r => r.json()).catch(() => ({ products: [] }))
+                ));
+                let items = [];
+                results.forEach(r => { if (r && r.products) items = items.concat(r.products); });
+
+                // যেসব প্রোডাক্টে rule সত্যিই প্রযোজ্য (যেমন Outside Key হলেও Pixel বাদ) শুধু সেগুলোই রাখা
+                const withDiscount = items
+                    .map(p => ({ product: p, rule: getFlashSaleRule(p) }))
+                    .filter(x => x.rule);
+
+                if (withDiscount.length === 0) {
+                    grid.innerHTML = '<p class="flash-sale-empty">এই মুহূর্তে ফ্ল্যাশ সেলে কোনো প্রোডাক্ট নেই।</p>';
+                    return;
+                }
+
+                grid.innerHTML = '';
+                withDiscount.slice(0, 12).forEach(({ product: p, rule }) => {
+                    grid.appendChild(mpCardEl(p, { price: computeFlashPrice(p.price, rule.discountPct), pct: rule.discountPct }));
+                });
+            } catch (err) {
+                console.error('Flash sale load error:', err);
+                grid.innerHTML = '';
+            }
+        }
+
+        loadHomeProducts();
+        loadFlashSale();
+    </script>
+</body>
+</html>

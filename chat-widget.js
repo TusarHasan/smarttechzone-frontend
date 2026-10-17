@@ -118,6 +118,11 @@
             /* অ্যাডমিন Message Buyer থেকে দারাজ-স্টাইল অর্ডার-কার্ড পাঠালে — সাধারণ টেক্সটের বদলে
                ছবি/নাম/দাম সহ একটা মিনি প্রোডাক্ট কার্ড, এই ফ্লোটিং উইজেটেই সবচেয়ে বেশি দেখা হয় */
             .stz-msg.order-card-bubble { padding: 0; overflow: hidden; max-width: 88%; }
+            .stz-ai-tag { display: inline-block; font-size: 10.5px; font-weight: 700; color: #4338ca; background: #eef2ff; border-radius: 8px; padding: 1px 8px; margin-bottom: 4px; }
+            .stz-msg.order-card-bubble .stz-ai-tag { margin: 8px 0 0 11px; }
+            .stz-ai-dots i { display: inline-block; width: 6px; height: 6px; margin: 0 2px; border-radius: 50%; background: #9ca3af; animation: stzAiDot 1s infinite ease-in-out; }
+            .stz-ai-dots i:nth-child(2) { animation-delay: .15s; } .stz-ai-dots i:nth-child(3) { animation-delay: .3s; }
+            @keyframes stzAiDot { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
             .stz-oc-body { display: flex; gap: 9px; padding: 10px 11px 7px; }
             .stz-oc-body img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; flex-shrink: 0; background: #fafafa; }
             .stz-oc-info { min-width: 0; flex: 1; }
@@ -287,7 +292,7 @@
         }
         wrap.innerHTML = messages.map((m) => `
             <div class="${messageBubbleClass(m)}">
-                ${messageBubbleHtml(m)}
+                ${m.isAi ? '<div class="stz-ai-tag">🤖 AI সহকারী</div>' : ''}${messageBubbleHtml(m)}
             </div>
         `).join('');
         wrap.scrollTop = wrap.scrollHeight;
@@ -299,9 +304,30 @@
         if (empty) empty.remove();
         const div = document.createElement('div');
         div.className = messageBubbleClass(m);
-        div.innerHTML = messageBubbleHtml(m);
+        div.innerHTML = (m.isAi ? '<div class="stz-ai-tag">🤖 AI সহকারী</div>' : '') + messageBubbleHtml(m);
+        const tp = document.getElementById('stzAiTyping');
+        if (tp) tp.remove();
         wrap.appendChild(div);
         wrap.scrollTop = wrap.scrollHeight;
+    }
+
+
+    // AI সহকারী "লিখছে..." — সার্ভার chat:typing পাঠায়; ভুলবশত অন থেকে গেলে ৪৫ সেকেন্ডে নিজে মুছে যায়
+    let aiTypingTimer = null;
+    function setAiTyping(on) {
+        const wrap = document.getElementById('stzChatMessages');
+        if (!wrap) return;
+        const old = document.getElementById('stzAiTyping');
+        if (old) old.remove();
+        clearTimeout(aiTypingTimer);
+        if (!on) return;
+        const el = document.createElement('div');
+        el.id = 'stzAiTyping';
+        el.className = 'stz-msg admin stz-ai-typing';
+        el.innerHTML = '<div class="stz-ai-tag">🤖 AI সহকারী</div><span class="stz-ai-dots"><i></i><i></i><i></i></span>';
+        wrap.appendChild(el);
+        wrap.scrollTop = wrap.scrollHeight;
+        aiTypingTimer = setTimeout(function () { setAiTyping(false); }, 45000);
     }
 
     // ===================== API কল =====================
@@ -486,12 +512,16 @@
             const msg = payload && payload.message;
             const thread = payload && payload.thread;
             if (!msg || !thread) return;
+            if (msg.isAi) setAiTyping(false);
             if (panelOpen && currentThread && String(currentThread._id) === String(thread._id)) {
                 appendMessage(msg);
                 markRead(thread._id);
             } else {
                 document.getElementById('stzChatDot').style.display = 'block';
             }
+        });
+        socket.on('chat:typing', function (p) {
+            if (p && panelOpen && currentThread && String(currentThread._id) === String(p.threadId)) setAiTyping(!!p.on);
         });
     }
 
