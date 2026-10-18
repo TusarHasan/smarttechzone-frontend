@@ -13,10 +13,10 @@
 .signup-shell a { color: var(--signup-link); text-decoration: none; }
 .signup-shell a:hover { text-decoration: underline; }
 .signup-card { padding: 32px; background: #fff; border: 1px solid #ececef; border-radius: 8px; box-shadow: 0 2px 12px #0000000d; }
-.signup-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 48px; }
+.signup-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; }
 .signup-column { min-width: 0; }
 .signup-field { margin-bottom: 24px; }
-.signup-shell label, .signup-shell legend { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 400; }
+.signup-shell label, .signup-shell legend { display: block; margin-bottom: 8px; font-size: 13px; line-height: 20px; font-weight: 400; }
 .signup-shell label > span[aria-hidden] { margin-left: 2px; }
 .signup-shell input:not([type="checkbox"]), .signup-shell select {
     width: 100%; height: 44px; padding: 10px 12px; border: 1px solid #d5d7db;
@@ -30,6 +30,7 @@
 .field-hint { margin-top: 6px; font-size: 12px; line-height: 1.5; color: #707070; }
 .input-action { position: relative; }
 .input-action input { padding-right: 78px !important; }
+.input-action input[type="password"], .input-action input#regPassword { padding-right: 48px !important; }
 .send-otp, .password-toggle { position: absolute; top: 0; right: 1px; height: 44px; padding: 0 12px; background: transparent; border: 0; cursor: pointer; }
 .send-otp { min-width: 64px; color: var(--signup-link); font: 600 12px Arial, sans-serif; }
 .send-otp:hover:not(:disabled) { color: var(--signup-accent-hover); background: #fff4f2; }
@@ -53,12 +54,14 @@
 .signup-message:not(:empty) { margin-top: 12px; }
 .signup-message[data-error="true"] { color: #b83225; }
 .social-caption { margin: 22px 0 12px; font-size: 13px; color: #707070; }
-.signup-social-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: center; }
-.google-signup { height: 40px; min-width: 0; display: flex; justify-content: center; overflow: hidden; }
+.signup-social-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
+/* The SDK iframe includes transparent side gutters. The host owns the visible
+   outline so those gutters cannot crop the left/right border of the button. */
+.google-signup { width: 100%; height: 40px; min-width: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #dadce0; border-radius: 4px; background: #fff; }
 .google-signup > div { flex-shrink: 0; }
 .google-signup.google-has-frame > div > div { display: none; }
 .google-signup > div > iframe { position: relative !important; top: 0 !important; }
-.social-loading { display: flex; align-items: center; justify-content: center; border: 1px solid #dadce0; border-radius: 4px; width: 100%; font-size: 12px; color: #707070; }
+.social-loading { display: flex; align-items: center; justify-content: center; width: 100%; font-size: 12px; color: #707070; }
 .facebook-signup { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 40px; border: 1px solid #dadce0; border-radius: 4px; background: #fff; color: #333; font: 500 14px Arial, sans-serif; cursor: pointer; transition: background .2s, border-color .2s; }
 .facebook-signup:hover { background: #f3f7ff; border-color: #1877f2; }
 .facebook-signup:disabled { opacity: .6; cursor: wait; }
