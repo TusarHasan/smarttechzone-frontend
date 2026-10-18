@@ -35,7 +35,8 @@
             method: body === undefined ? 'GET' : 'POST',
             headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
             body: body === undefined ? undefined : JSON.stringify(body),
-            signal: AbortSignal.timeout(30000), cache: 'no-store'
+            // Render Free can take over 50 seconds to wake from inactivity.
+            signal: AbortSignal.timeout(body === undefined ? 90000 : 30000), cache: 'no-store'
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
