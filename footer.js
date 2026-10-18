@@ -19,7 +19,7 @@
 
         var css = document.createElement('style');
         css.textContent =
-            '.stz-ws-ticker{display:flex;align-items:center;background:#1f2937;color:#fff;text-decoration:none;font-family:"Segoe UI","Noto Sans Bengali","Hind Siliguri",Arial,sans-serif;font-size:13.5px;line-height:1;height:36px;overflow:hidden;position:relative;z-index:101}' +
+            '.stz-ws-ticker{display:flex;align-items:center;background:#1f2937;color:#fff;text-decoration:none;font-family:"Segoe UI","Noto Sans Bengali","Hind Siliguri",Arial,sans-serif;font-size:13.5px;line-height:1;height:36px;overflow:hidden;position:sticky;top:0;z-index:101}' +
             '.stz-ws-ticker:hover,.stz-ws-ticker:focus-visible{background:#111827}' +
             '.stz-ws-badge{flex:none;background:#e74c3c;color:#fff;font-weight:700;letter-spacing:.3px;padding:0 14px;height:100%;display:flex;align-items:center;position:relative;z-index:2;box-shadow:6px 0 8px -4px rgba(0,0,0,.35)}' +
             '.stz-ws-view{flex:1;overflow:hidden;height:100%;display:flex;align-items:center;min-width:0}' +
@@ -30,7 +30,8 @@
             '.stz-ws-cta{flex:none;margin:0 12px 0 8px;padding:5px 12px;border:1px solid #6b7280;border-radius:999px;font-size:12px;font-weight:700;position:relative;z-index:2;background:#1f2937}' +
             '.stz-ws-ticker:hover .stz-ws-cta{border-color:#e74c3c;color:#fff}' +
             '@keyframes stzWsScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}' +
-            '@media (max-width:640px){.stz-ws-ticker{font-size:12.5px;height:34px}.stz-ws-badge{padding:0 10px}.stz-ws-cta{display:none}}' +
+            '.navbar{top:36px!important}' +
+            '@media (max-width:640px){.navbar{top:34px!important}.stz-ws-ticker{font-size:12.5px;height:34px}.stz-ws-badge{padding:0 10px}.stz-ws-cta{display:none}}' +
             '@media (prefers-reduced-motion:reduce){.stz-ws-track{animation:none}.stz-ws-view{overflow:hidden}.stz-ws-item+.stz-ws-item,.stz-ws-track .stz-ws-dup{display:none}.stz-ws-item::after{display:none}}';
         document.head.appendChild(css);
 
@@ -64,7 +65,7 @@
         cta.textContent = 'বিস্তারিত দেখুন';
         a.appendChild(badge); a.appendChild(view); a.appendChild(cta);
 
-        // সবার আগে, নেভবারের উপরে। স্ক্রল করলে এটা উপরে থেকে যায়, স্টিকি নেভবার আগের মতোই কাজ করে
+        // সবার আগে, নেভবারের উপরে। বারটা sticky, তাই স্ক্রল করলেও সবার উপরে থেকে যায়, আর নেভবার (top: বারের উচ্চতা) ঠিক এর নিচে আটকে থাকে
         document.body.insertBefore(a, document.body.firstChild);
 
         // গতি স্থির রাখা: লেখা যত লম্বা, সময় তত বেশি (প্রায় ৫০ পিক্সেল/সেকেন্ড)
