@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <script src="analytics.js" defer></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO: এটা প্রাইভেট/ইউটিলিটি পেজ (প্রতিটা ইউজারের জন্য আলাদা ডেটা বা কোনো নির্দিষ্ট
+         কনটেন্ট নেই) — তাই Google এটা ইনডেক্স না করুক, কিন্তু ভেতরের লিংকগুলো (যেমন প্রোডাক্ট
+         লিংক) অনুসরণ করুক, এই জন্য noindex, follow ব্যবহার করা হলো -->
+    <meta name="robots" content="noindex, follow">
+    <title>চেকআউট - Smart Tech Zone</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .checkout-container { max-width: 700px; margin: 30px auto; padding: 0 20px; }
+        .checkout-card { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .checkout-card h3 { margin-top: 0; font-size: 16px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .checkout-card label { display: block; margin-top: 14px; font-size: 13px; font-weight: bold; color: #333; }
+        .checkout-card input, .checkout-card textarea, .checkout-card select {
+            width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ccc; border-radius: 4px;
+            box-sizing: border-box; font-family: Arial, sans-serif; font-size: 14px;
+        }
+        .checkout-card textarea { min-height: 70px; resize: vertical; }
+        .required::after { content: " *"; color: #e74c3c; }
+        .order-item-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f5f5f5; }
+        .order-item-name { color: #333; }
+        .order-item-name small { display: block; color: #999; font-size: 12px; }
+        .order-summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; color: #555; }
+        .order-summary-row.total { font-size: 18px; font-weight: bold; color: #333; border-top: 1px solid #eee; margin-top: 8px; padding-top: 12px; }
+        .place-order-btn {
+            width: 100%; margin-top: 10px; background: #e74c3c; color: #fff; border: none; padding: 14px;
+            font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer;
+        }
+        .place-order-btn:hover { background: #c0392b; }
+        .place-order-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .payment-option {
+            display: flex; align-items: flex-start; gap: 10px; border: 1.5px solid #e2e2e2; border-radius: 6px;
+            padding: 12px 14px; margin-top: 10px; cursor: pointer; transition: border-color .15s, background .15s;
+        }
+        .payment-option:hover { border-color: #f0a8a0; }
+        .payment-option.selected { border-color: #e74c3c; background: #fdf6f5; }
+        .payment-option input { width: auto; margin: 3px 0 0; padding: 0; }
+        .payment-option .po-text strong { display: block; font-size: 14px; color: #333; }
+        /* STZ Wallet ব্যালেন্স ব্যবহার (লগইন + ব্যালেন্স থাকলে দেখায়) */
+        .wallet-box { display: none; margin-top: 12px; border: 1.5px dashed #e74c3c; border-radius: 6px; padding: 12px 14px; background: #fff8f7; }
+        .wallet-box.show { display: block; }
+        .wallet-box label { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; margin: 0; }
+        .wallet-box input { width: auto; margin: 3px 0 0; }
+        .wallet-box strong { display: block; font-size: 14px; color: #333; }
+        .wallet-box span.wb-sub { display: block; font-size: 12.5px; color: #888; margin-top: 2px; }
+        .wallet-box.disabled { opacity: .55; }
+        .wallet-box.disabled label { cursor: not-allowed; }
+        .order-summary-row.wallet-line span:last-child { color: #16a34a; font-weight: bold; }
+        .coupon-box { margin: 4px 0 14px; padding: 12px 14px; border: 1.5px dashed #cbd5e1; border-radius: 6px; background: #fafafa; }
+        .coupon-box .cp-row { display: flex; gap: 8px; }
+        .coupon-box input { flex: 1; min-width: 0; margin: 0; text-transform: uppercase; letter-spacing: .5px; }
+        .coupon-box button { flex: none; padding: 0 16px; border: none; border-radius: 6px; background: #333; color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; }
+        .coupon-box button:disabled { opacity: .55; cursor: not-allowed; }
+        .coupon-box .cp-msg { font-size: 12.5px; margin-top: 6px; }
+        .coupon-box .cp-msg.err { color: #e74c3c; }
+        .coupon-box .cp-applied { display: none; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; color: #166534; font-weight: 700; }
+        .coupon-box .cp-applied button { background: none; color: #e74c3c; padding: 4px 6px; font-size: 13px; font-weight: 600; text-decoration: underline; }
+        .coupon-box.applied { border-style: solid; border-color: #86efac; background: #f0fdf4; }
+        .coupon-box.applied .cp-row, .coupon-box.applied .cp-msg { display: none; }
+        .coupon-box.applied .cp-applied { display: flex; }
+        .order-summary-row.coupon-line span:last-child { color: #16a34a; font-weight: bold; }
+        .payment-option .po-text span { font-size: 12.5px; color: #888; }
+        #statusMsg { margin-top: 12px; font-size: 14px; text-align: center; }
+        .empty-cart { text-align: center; padding: 60px 20px; color: #888; }
+        .empty-cart a { color: #e74c3c; font-weight: bold; text-decoration: none; }
+        /* ===== ডেলিভারি এলাকা (ঢাকার ভেতরে/বাইরে) — আগে এখানে পূর্ণ জেলা/উপজেলা ড্রপডাউন ছিল,
+           কিন্তু Pathao ও Steadfast এখন বুকিংয়ের সময় ঠিকানা থেকে নিজেরাই এলাকা অটো-ডিটেক্ট করে
+           নেয়, তাই বিস্তারিত জেলা/উপজেলা নেওয়ার দরকার নেই — শুধু ডেলিভারি চার্জ হিসাবের জন্য এই
+           ছোট্ট ঢাকার ভেতরে/বাইরে বাছাইটুকু রাখা হয়েছে (cart.html-এও একই রকম ৭০/বাইরে রেট বলা আছে) */
+        .delivery-area-options { display: flex; gap: 10px; margin-top: 6px; }
+        .area-option {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            border: 1.5px solid #e2e2e2; border-radius: 4px; padding: 10px; margin-top: 0;
+            font-weight: normal; font-size: 14px; color: #333; cursor: pointer;
+            transition: border-color .15s, background .15s;
+        }
+        .area-option:hover { border-color: #f0a8a0; }
+        .area-option input { width: auto; margin: 0; padding: 0; }
+        .area-option.selected { border-color: #e74c3c; background: #fdf6f5; }
+        /* ===== কুরিয়ার স্কোর গেটের পপআপ (সার্ভার 403 + code COURIER_SCORE_LOW দিলে) ===== */
+        .cb-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 10000; }
+        .cb-bg.open { display: flex; }
+        .cb-box { background: #fff; border-radius: 12px; max-width: 480px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 22px 20px 18px; box-shadow: 0 10px 40px rgba(0,0,0,.3); font-family: Arial, sans-serif; }
+        .cb-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .cb-icon { width: 36px; height: 36px; border-radius: 50%; background: #fdecea; color: #e74c3c; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; flex: none; }
+        .cb-head h3 { margin: 0; font-size: 16px; color: #222; }
+        .cb-box p { margin: 0 0 10px; font-size: 14px; line-height: 1.55; color: #444; }
+        .cb-box p.en { font-size: 13px; color: #666; padding-top: 10px; border-top: 1px dashed #e5e5e5; }
+        .cb-contact { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 4px; }
+        .cb-btn { flex: 1 1 120px; text-align: center; text-decoration: none; padding: 10px 12px; border-radius: 6px; font-size: 14px; font-weight: bold; border: 1.5px solid transparent; cursor: pointer; font-family: inherit; }
+        .cb-btn.call { background: #e74c3c; color: #fff; }
+        .cb-btn.wa { background: #25D366; color: #fff; }
+        .cb-btn.fb { background: #1877f2; color: #fff; }
+        .cb-btn.pay { flex-basis: 100%; background: #fff; color: #e74c3c; border-color: #e74c3c; }
+        .cb-btn.pay:hover { background: #fdf6f5; }
+        .cb-adv { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 10px 12px; margin: 10px 0 12px; font-size: 13.5px; color: #7c2d12; }
+        .cb-adv .row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; }
+        .cb-adv .row.mine { font-weight: bold; color: #c2410c; }
+        .cb-adv .num { margin-top: 6px; padding-top: 6px; border-top: 1px dashed #fdba74; }
+        .cb-box p.terms { font-size: 12.5px; color: #666; }
+        .cb-close { display: block; width: 100%; margin-top: 8px; background: none; border: none; color: #888; font-size: 13px; padding: 8px; cursor: pointer; }
+
+        /* ===== ২-কলাম চেকআউট (Daraz স্টাইল): বামে ২/৩ (ঠিকানা, প্যাকেজ, পেমেন্ট), ডানে ১/৩ স্টিকি সামারি; মোবাইলে এক কলাম ===== */
+        body { background: #f5f5f5; }
+        .checkout-container { max-width: 1120px; margin: 22px auto 40px; padding: 0 16px; }
+        .ck-title { color: #333; font-size: 20px; margin: 0 0 14px; }
+        .ck-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+        .ck-main, .ck-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+        .ck-side { position: sticky; top: 84px; }
+        .checkout-card { padding: 18px 20px; margin-bottom: 0; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+        .checkout-card h3 { border-bottom: none; padding-bottom: 0; margin: 0; font-size: 16px; }
+        .ck-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px solid #eee; }
+        .ck-link { background: none; border: none; color: #1a9cb7; font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; text-transform: uppercase; padding: 2px 4px; }
+        .ck-link:hover { text-decoration: underline; }
+        .ck-shipby { font-size: 12.5px; color: #777; }
+        .ck-shipby strong { color: #333; }
+        .ck-sublabel { font-size: 13px; color: #555; margin-bottom: 8px; }
+        .checkout-card label { margin-top: 10px; }
+        .checkout-card input, .checkout-card textarea { padding: 9px 10px; }
+        .ck-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+        .ck-field { min-width: 0; }
+        .ck-field.ck-full { grid-column: 1 / -1; }
+        .ck-form textarea { min-height: 60px; }
+        .ck-phone { display: flex; align-items: stretch; border: 1px solid #ccc; border-radius: 6px; background: #fff; overflow: hidden; }
+        .ck-phone:focus-within { border-color: #1a9cb7; box-shadow: 0 0 0 2px rgba(26,156,183,0.15); }
+        .ck-phone .ck-cc { flex: none; display: flex; align-items: center; padding: 0 10px; background: #f3f5f6; color: #444; font-weight: 700; font-size: 14px; border-right: 1px solid #ddd; user-select: none; }
+        .checkout-card .ck-phone input { flex: 1; min-width: 0; width: auto; border: none; border-radius: 0; box-shadow: none; outline: none; margin: 0; letter-spacing: 0.3px; }
+        .ck-field.has-error .ck-phone { border-color: #e74c3c; box-shadow: 0 0 0 2px rgba(231,76,60,0.15); }
+        .ck-err { color: #e74c3c; font-size: 12.5px; margin: 5px 0 0; min-height: 0; }
+        .ck-err:empty { display: none; }
+        #guestOtpBox { margin-top: 8px; }
+        #guestOtpBox .ck-otp-btn { width: 100%; padding: 9px 12px; border: 1px solid #1a9cb7; background: #fff; color: #1a9cb7; border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; }
+        #guestOtpBox .ck-otp-btn:hover:not(:disabled) { background: #1a9cb7; color: #fff; }
+        #guestOtpBox .ck-otp-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        #guestOtpBox input { margin-top: 8px; width: 100%; box-sizing: border-box; }
+        #guestOtpBox p { margin: 6px 0 0; font-size: 12.5px; color: #555; }
+        #guestOtpBox p:empty { display: none; }
+        .checkout-card label.area-option { display: flex; margin-top: 0; font-weight: normal; }
+        .checkout-card label.payment-option { display: flex; margin-top: 10px; font-weight: normal; }
+        .ck-addr { padding: 2px 0 4px; }
+        .ck-addr-who { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14.5px; color: #333; margin-bottom: 8px; }
+        .ck-addr-who span { color: #555; }
+        .ck-addr-line { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; color: #444; line-height: 1.55; }
+        .ck-tag { flex: none; background: #e74c3c; color: #fff; font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 12px; line-height: 1.6; }
+        .ck-ship-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .checkout-card label.ck-ship-opt { margin-top: 0; }
+        .ck-ship-opt .po-text span { display: block; }
+        .ck-ship-opt .po-text .ck-fee { font-size: 14px; font-weight: 700; color: #e74c3c; margin: 2px 0; }
+        .ck-item { display: flex; gap: 12px; align-items: flex-start; padding-top: 14px; margin-top: 14px; border-top: 1px solid #f0f0f0; }
+        .ck-item-img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; background: #fafafa; flex: none; }
+        .ck-item-info { flex: 1; min-width: 0; }
+        .ck-item-name { font-size: 14px; color: #333; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .ck-item-var { font-size: 12.5px; color: #888; margin-top: 3px; }
+        .ck-item-price { flex: none; text-align: right; }
+        .ck-item-price strong { display: block; font-size: 16px; color: #e74c3c; }
+        .ck-item-price span { display: block; font-size: 12.5px; color: #777; margin-top: 4px; }
+        .coupon-box { margin: 0; padding: 0; border: none; background: none; }
+        .coupon-box input { text-transform: uppercase; }
+        .coupon-box button { padding: 0 20px; background: #2bbef9; }
+        .coupon-box.applied { padding: 10px 12px; border: 1px solid #86efac; background: #f0fdf4; border-radius: 6px; }
+        .order-summary-row.zero span:last-child { color: #aaa; }
+        .order-summary-row.total span:last-child { color: #e74c3c; }
+        .place-order-btn { margin-top: 14px; padding: 13px; }
+        @media (max-width: 900px) {
+            .ck-grid { grid-template-columns: 1fr; }
+            .ck-side { position: static; }
+        }
+        @media (max-width: 560px) {
+            .checkout-container { margin-top: 14px; padding: 0 10px; }
+            .ck-form { grid-template-columns: 1fr; }
+            .ck-ship-options { grid-template-columns: 1fr; }
+            .checkout-card { padding: 16px 14px; }
+        }
+    </style>
+    <script src="config.js"></script>
+    <script src="visitor-track.js" defer></script>
+    <script src="cart.js"></script>
+    <script src="customer-auth.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" defer></script>
+    <script src="chat-widget.js" defer></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
+            <a href="cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
+        </div>
+    </nav>
+    <main>
+
+    <div class="checkout-container" id="checkoutContainer">
+        <h2 class="ck-title">চেকআউট</h2>
+
+        <div class="ck-grid">
+        <div class="ck-main">
+
+            <!-- বাম কলাম ১: Shipping & Billing — লগইন করা কাস্টমারের সেভড ঠিকানা সারাংশ আকারে দেখায় (এডিট বাটনে ফর্ম খোলে) -->
+            <div class="checkout-card" id="shipCard">
+                <div class="ck-head">
+                    <h3>ডেলিভারি ও বিলিং তথ্য</h3>
+                    <button type="button" class="ck-link" id="addrEditBtn" style="display:none;">এডিট</button>
+                </div>
+                <div class="ck-addr" id="addrSummary" style="display:none;">
+                    <div class="ck-addr-who"><strong id="asName"></strong><span id="asPhone"></span></div>
+                    <div class="ck-addr-line"><span class="ck-tag" id="asArea"></span><span id="asAddr"></span></div>
+                </div>
+                <form id="deliveryForm" class="ck-form" autocomplete="on" onsubmit="return false;">
+                    <div class="ck-field">
+                        <label class="required">নাম</label>
+                        <input type="text" id="custName" name="name" autocomplete="name" placeholder="আপনার পুরো নাম">
+                    </div>
+                    <div class="ck-field" id="phoneField">
+                        <label class="required" for="custPhone">ফোন নাম্বার</label>
+                        <div class="ck-phone">
+                            <span class="ck-cc" aria-hidden="true">+88</span>
+                            <input type="tel" id="custPhone" name="tel" autocomplete="tel-national" inputmode="numeric" maxlength="14" placeholder="01XXXXXXXXX" aria-describedby="custPhoneErr">
+                        </div>
+                        <p class="ck-err" id="custPhoneErr" role="alert" aria-live="polite"></p>
+                        <div id="guestOtpBox" hidden>
+                            <button type="button" id="sendGuestOtp" class="ck-otp-btn">OTP পাঠান</button>
+                            <input id="guestOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="SMS-এ পাওয়া ৬ সংখ্যার OTP" aria-label="SMS-এ পাওয়া ৬ সংখ্যার OTP">
+                            <p id="guestOtpMsg" role="status" aria-live="polite"></p>
+                        </div>
+                    </div>
+                    <div class="ck-field ck-full">
+                        <label>ইমেইল (ঐচ্ছিক)</label>
+                        <input type="email" id="custEmail" name="email" autocomplete="email" placeholder="you@example.com">
+                    </div>
+                    <div class="ck-field ck-full">
+                        <label class="required">সম্পূর্ণ ঠিকানা</label>
+                        <textarea id="custAddress" name="street-address" autocomplete="street-address" placeholder="বাসা/হোল্ডিং নাম্বার, রোড, এলাকা"></textarea>
+                    </div>
+                    <div class="ck-field ck-full">
+                        <label class="required">ডেলিভারি এলাকা</label>
+                        <div class="delivery-area-options">
+                            <label class="area-option" for="areaInside">
+                                <input type="radio" name="deliveryArea" id="areaInside" value="inside">
+                                <span>ঢাকার ভেতরে</span>
+                            </label>
+                            <label class="area-option" for="areaOutside">
+                                <input type="radio" name="deliveryArea" id="areaOutside" value="outside">
+                                <span>ঢাকার বাইরে</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="ck-field ck-full">
+                        <label>অর্ডার নোট (ঐচ্ছিক)</label>
+                        <textarea id="custNotes" placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন"></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <!-- বাম কলাম ২: প্যাকেজ — ডেলিভারি অপশন + অর্ডার করা আইটেম (ছবি, নাম, ভ্যারিয়েন্ট, দাম, পরিমাণ) -->
+            <div class="checkout-card">
+                <div class="ck-head">
+                    <h3>প্যাকেজ ১ / ১</h3>
+                    <span class="ck-shipby">বিক্রেতা: <strong>Smart Tech Zone</strong></span>
+                </div>
+                <div class="ck-sublabel">ডেলিভারি অপশন</div>
+                <div class="ck-ship-options">
+                    <label class="payment-option ck-ship-opt selected" for="deliveryStandard">
+                        <input type="radio" name="deliveryType" id="deliveryStandard" value="standard" checked>
+                        <div class="po-text">
+                            <strong>স্ট্যান্ডার্ড ডেলিভারি</strong>
+                            <span class="ck-fee" id="feeStandard"></span>
+                            <span>সাধারণ ডেলিভারি চার্জ প্রযোজ্য</span>
+                        </div>
+                    </label>
+                    <label class="payment-option ck-ship-opt" for="deliverySameDay">
+                        <input type="radio" name="deliveryType" id="deliverySameDay" value="sameday">
+                        <div class="po-text">
+                            <strong>সেইম ডে ডেলিভারি</strong>
+                            <span class="ck-fee" id="feeSameDay">চার্জ কনফার্মের পর জানানো হবে</span>
+                            <span>একই দিনে ডেলিভারি (শুধুমাত্র ক্যাশ অন ডেলিভারি) — ডেলিভারি চার্জ অর্ডার কনফার্ম হওয়ার পর জানানো হবে</span>
+                        </div>
+                    </label>
+                </div>
+                <div id="orderItemsList"></div>
+            </div>
+
+            <!-- বাম কলাম ৩: পেমেন্ট পদ্ধতি (আগের মতোই, আইডি/লজিক অপরিবর্তিত) -->
+            <div class="checkout-card">
+            <h3>পেমেন্ট পদ্ধতি</h3>
+            <label class="payment-option selected" for="payCod">
+                <input type="radio" name="paymentMethod" id="payCod" value="cod" checked>
+                <div class="po-text">
+                    <strong>ক্যাশ অন ডেলিভারি</strong>
+                    <span>প্রোডাক্ট হাতে পেয়ে টাকা পরিশোধ করুন</span>
+                </div>
+            </label>
+            <label class="payment-option" for="payOnline" id="payOnlineOption">
+                <input type="radio" name="paymentMethod" id="payOnline" value="online">
+                <div class="po-text">
+                    <strong>অনলাইন পেমেন্ট</strong>
+                    <span>bKash, Nagad, Rocket অথবা কার্ড দিয়ে এখনই পরিশোধ করুন</span>
+                </div>
+            </label>
+            <div id="sameDayPaymentNote" style="display:none; font-size:12.5px; color:#888; margin-top:8px;">সেইম ডে ডেলিভারিতে শুধুমাত্র ক্যাশ অন ডেলিভারি সুবিধা রয়েছে।</div>
+            <div class="wallet-box" id="walletBox">
+                <label for="useWallet">
+                    <input type="checkbox" id="useWallet">
+                    <div>
+                        <strong>STZ Wallet ব্যালেন্স ব্যবহার করুন (৳ <span id="walletBalText">0</span>)</strong>
+                        <span class="wb-sub" id="walletHint">ব্যালেন্স থেকে বিল কাটা হবে, বাকিটা ডেলিভারির সময় দিতে হবে।</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        </div>
+
+        <!-- ডান কলাম (স্টিকি): প্রমোশন + অর্ডার সামারি + কনফার্ম বাটন -->
+        <aside class="ck-side">
+            <div class="checkout-card">
+                <div class="ck-head"><h3>প্রমোশন</h3></div>
+                <div class="coupon-box" id="couponBox">
+                <div class="cp-row">
+                    <input type="text" id="couponInput" placeholder="কুপন কোড (থাকলে)" autocomplete="off" maxlength="30" aria-label="কুপন কোড">
+                    <button type="button" id="couponApplyBtn">প্রয়োগ করুন</button>
+                </div>
+                <div class="cp-msg" id="couponMsg"></div>
+                <div class="cp-applied"><span id="couponAppliedText"></span><button type="button" id="couponRemoveBtn">সরান</button></div>
+            </div>
+            </div>
+            <div class="checkout-card">
+                <div class="ck-head"><h3>অর্ডার সামারি</h3></div>
+                <div id="orderSummary"></div>
+                <button class="place-order-btn" id="placeOrderBtn" onclick="placeOrder()">অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)</button>
+                <div id="statusMsg"></div>
+            </div>
+        </aside>
+        </div>
+    </div>
+
+    </main>
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+
+    <script>
+        const API_BASE = BACKEND_URL;
+
+        // ===== Buy Now: কার্ট পেজ এড়িয়ে সরাসরি চেকআউট (Daraz-এর মতো)। product.html শুধু এই একটা আইটেম
+        // sessionStorage-এ রেখে ?buynow=1 দিয়ে আসে — কার্টের আগের আইটেমগুলো ছোঁয়া হয় না, আর অর্ডারের পর
+        // কার্টও খালি করা হয় না। ?buynow=1 ছাড়া (কার্ট পেজের "চেকআউট করুন") আগের মতোই পুরো কার্ট। =====
+        const BUY_NOW_KEY = 'stz_buynow';
+        function readBuyNowItem() {
+            if (new URLSearchParams(location.search).get('buynow') !== '1') return null;
+            try {
+                const it = JSON.parse(sessionStorage.getItem(BUY_NOW_KEY) || 'null');
+                return (it && it.productId && it.quantity > 0) ? it : null;
+            } catch (e) { return null; }
+        }
+        const BUY_NOW_ITEM = readBuyNowItem();
+        function getCheckoutItems() { return BUY_NOW_ITEM ? [BUY_NOW_ITEM] : getCart(); }
+        function getCheckoutTotal() { return getCheckoutItems().reduce((sum, item) => sum + item.price * item.quantity, 0); }
+        function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+        function resolveImg(url) {
+            if (!url) return 'https://via.placeholder.com/100';
+            return url.startsWith('http') ? url : `${API_BASE}${url}`;
+        }
+
+        function formatPrice(n) {
+            return Number(n).toLocaleString('en-IN');
+        }
+
+        // ===== ডেলিভারি এলাকা (ঢাকার ভেতরে/বাইরে) — cart.html তে আগে থেকেই বলা "ঢাকার ভেতরে ৳৭০"
+        // রেটের সাথে মিলিয়ে "ভেতরে" মানে ৳৭০, নাহলে (অথবা এখনো বাছাই না করা থাকলে) ডিফল্ট ৳১১৫ =====
+        const AREA_LABEL = { inside: 'ঢাকার ভেতরে', outside: 'ঢাকার বাইরে' };
+
+        function getSelectedArea() {
+            const checked = document.querySelector('input[name="deliveryArea"]:checked');
+            return checked ? checked.value : '';
+        }
+
+        function setSelectedArea(area) {
+            const input = document.getElementById(area === 'inside' ? 'areaInside' : 'areaOutside');
+            if (!input) return;
+            input.checked = true;
+            document.querySelectorAll('.area-option').forEach(el => el.classList.remove('selected'));
+            input.closest('.area-option').classList.add('selected');
+        }
+
+        // পুরনো (আগের জেলা/উপজেলা সিস্টেমের) সেভড ঠিকানার city ভ্যালু ('dhaka city'/'dhaka' ইত্যাদি)
+        // থাকলেও প্রোফাইল অটো-ফিলে যেন ভেঙে না পড়ে, সেজন্য legacy ভ্যালুগুলোকেও ম্যাপ করা হচ্ছে
+        function areaFromCityValue(city) {
+            if (!city) return '';
+            const c = city.trim().toLowerCase();
+            if (c === AREA_LABEL.inside || c === 'dhaka city' || c === 'dhaka') return 'inside';
+            if (c === AREA_LABEL.outside) return 'outside';
+            return '';
+        }
+
+        function estimateDelivery(area) {
+            return area === 'inside' ? 70 : 115; // 'outside' বা এখনো বাছাই না করা — দুটোতেই ১১৫ (আগেও district খালি থাকলে এটাই ডিফল্ট ছিল)
+        }
+
+        document.querySelectorAll('input[name="deliveryArea"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                setSelectedArea(this.value);
+                updateSameDayAvailability();
+                updateSummaryTotals();
+                updatePlaceOrderBtnText();
+                scheduleIncompleteDraftSave();
+            });
+        });
+
+        // ===== Incomplete Order (Abandoned Checkout) অটো-সেভ =====
+        // কাস্টমার ফোন নাম্বার (অন্তত ১০ ডিজিট) লেখার পর ফর্মের যেকোনো প্রাসঙ্গিক তথ্য বদলালে
+        // ডিবাউন্স করে ব্যাকগ্রাউন্ডে ড্রাফট সেভ হয় (backend/routes/orders.js এর
+        // PUT /orders/incomplete/:phone) — "Place Order" না চেপে সাইট ছেড়ে গেলেও অ্যাডমিন
+        // প্যানেলের Orders > Incomplete ট্যাবে দেখা যাবে, যাতে চাইলে ফলো-আপ করা যায়। অর্ডার সত্যিই
+        // প্লেস হয়ে গেলে ব্যাকএন্ড নিজে থেকেই এই ড্রাফট মুছে ফেলে (routes/orders.js এর /checkout রুট)।
+        let incompleteDraftTimer = null;
+        function scheduleIncompleteDraftSave() {
+            clearTimeout(incompleteDraftTimer);
+            incompleteDraftTimer = setTimeout(saveIncompleteDraft, 900);
+        }
+
+        async function saveIncompleteDraft() {
+            const phone = (document.getElementById('custPhone').value || '').trim();
+            const digits = phone.replace(/\D/g, '');
+            if (digits.length < 10) return; // ফোন নাম্বার ছাড়া ড্রাফট সেভ করার মানে নেই — ফলো-আপ করা যাবে না
+
+            const cart = getCheckoutItems();
+            try {
+                await fetch(`${API_BASE}/api/orders/incomplete/${encodeURIComponent(phone)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: (document.getElementById('custName').value || '').trim(),
+                        address: (document.getElementById('custAddress').value || '').trim(),
+                        city: AREA_LABEL[getSelectedArea()] || '',
+                        items: cart.map(item => ({
+                            productId: item.productId,
+                            name: item.name,
+                            variantLabel: item.variantLabel || '',
+                            price: item.price,
+                            quantity: item.quantity,
+                            image: item.image || ''
+                        })),
+                        estimatedTotal: getCheckoutTotal(),
+                        deliveryType: isSameDaySelected() ? 'sameday' : 'standard',
+                        paymentMethod: (document.getElementById('payCod') && document.getElementById('payCod').checked) ? 'cod' : 'online'
+                    })
+                });
+            } catch (err) {
+                // ব্যাকগ্রাউন্ড অটো-সেভ — নেটওয়ার্ক এরর হলেও কাস্টমারের চেকআউট ফ্লো এতে আটকাবে না
+            }
+        }
+
+        ['custName', 'custPhone', 'custAddress'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', scheduleIncompleteDraftSave);
+        });
+
+        // ===== STZ Wallet =====
+        // Wallet শুধু লগইন করা কাস্টমারের, শুধু COD + স্ট্যান্ডার্ড ডেলিভারির সাথে (সার্ভারও এটাই চেক করে)।
+        // ব্যালেন্স এখানে শুধু দেখানো/হিসাবের জন্য — আসল কাটা সার্ভারে অ্যাটমিকভাবে হয়।
+        let walletBalance = 0;
+
+        function walletAllowedNow() {
+            return walletBalance > 0 && document.getElementById('payCod').checked && !isSameDaySelected();
+        }
+
+        function walletUseAmount() {
+            const cb = document.getElementById('useWallet');
+            if (!cb || !cb.checked || !walletAllowedNow()) return 0;
+            const total = getCheckoutTotal() - currentDiscount() + estimateDelivery(getSelectedArea());
+            return Math.min(walletBalance, total);
+        }
+
+        function walletCoversAll() {
+            const use = walletUseAmount();
+            return use > 0 && use >= getCheckoutTotal() - currentDiscount() + estimateDelivery(getSelectedArea());
+        }
+
+        function syncWalletBox() {
+            const box = document.getElementById('walletBox');
+            const cb = document.getElementById('useWallet');
+            if (!box || !cb) return;
+            if (!(walletBalance > 0)) { box.classList.remove('show'); cb.checked = false; return; }
+            box.classList.add('show');
+            document.getElementById('walletBalText').textContent = formatPrice(walletBalance);
+            const allowed = document.getElementById('payCod').checked && !isSameDaySelected();
+            cb.disabled = !allowed;
+            box.classList.toggle('disabled', !allowed);
+            if (!allowed) cb.checked = false;
+            document.getElementById('walletHint').textContent = allowed
+                ? 'ব্যালেন্স থেকে বিল কাটা হবে, বাকিটা ডেলিভারির সময় দিতে হবে।'
+                : 'Wallet শুধু ক্যাশ অন ডেলিভারি (স্ট্যান্ডার্ড ডেলিভারি) অর্ডারের সাথে ব্যবহার করা যায়।';
+        }
+
+        document.getElementById('useWallet').addEventListener('change', function () {
+            updatePlaceOrderBtnText();
+            updateSummaryTotals();
+        });
+
+        // ===== পেমেন্ট পদ্ধতি বাছাই =====
+        function updatePlaceOrderBtnText() {
+            const isCod = document.getElementById('payCod').checked;
+            const btn = document.getElementById('placeOrderBtn');
+            if (walletCoversAll()) { btn.textContent = 'অর্ডার কনফার্ম করুন (Wallet দিয়ে পরিশোধ)'; return; }
+            btn.textContent = isCod ? 'অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)' : 'অর্ডার করুন — পেমেন্টে যান';
+        }
+
+        document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                document.querySelectorAll('.payment-option').forEach(el => {
+                    if (el.querySelector('input[name="paymentMethod"]')) el.classList.remove('selected');
+                });
+                this.closest('.payment-option').classList.add('selected');
+                syncWalletBox();
+                updatePlaceOrderBtnText();
+                updateSummaryTotals();
+                scheduleIncompleteDraftSave();
+            });
+        });
+
+        // ===== ডেলিভারি ধরণ বাছাই (Same Day হলে শুধু COD, চার্জ পরে অ্যাডমিন বসাবে) =====
+        function isSameDaySelected() {
+            return document.getElementById('deliverySameDay').checked;
+        }
+
+        // ঢাকার বাইরে সেইম ডে ডেলিভারি দেওয়া সম্ভব না — "ঢাকার বাইরে" বাছাই করলে এই অপশনটা
+        // ডিজেবল/গ্রে-আউট হয়ে যাবে (অনলাইন পেমেন্ট অপশন Same Day তে যেভাবে ডিজেবল হয়, সেভাবেই)।
+        // আগে থেকে সেইম ডে সিলেক্ট করা থাকলে, "ঢাকার বাইরে" বাছাই করার সাথে সাথে অটোমেটিক
+        // স্ট্যান্ডার্ড ডেলিভারিতে ফিরিয়ে দেওয়া হয় (deliveryType-এর change ইভেন্ট dispatch করে
+        // দেওয়া হচ্ছে, যাতে পেমেন্ট মেথড আনলক ইত্যাদি নিচের পুরোনো লজিকই সামলায়, ডুপ্লিকেট কোড না লাগে)
+        function updateSameDayAvailability() {
+            const isOutside = getSelectedArea() === 'outside';
+            const sameDayInput = document.getElementById('deliverySameDay');
+            const sameDayOption = sameDayInput.closest('.payment-option');
+
+            if (isOutside && sameDayInput.checked) {
+                const standardInput = document.getElementById('deliveryStandard');
+                standardInput.checked = true;
+                standardInput.dispatchEvent(new Event('change'));
+            }
+
+            sameDayInput.disabled = isOutside;
+            sameDayOption.style.opacity = isOutside ? '0.5' : '1';
+            sameDayOption.style.pointerEvents = isOutside ? 'none' : 'auto';
+        }
+
+        document.querySelectorAll('input[name="deliveryType"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                document.querySelectorAll('input[name="deliveryType"]').forEach(r => r.closest('.payment-option').classList.remove('selected'));
+                this.closest('.payment-option').classList.add('selected');
+
+                const sameDay = isSameDaySelected();
+                const payOnlineInput = document.getElementById('payOnline');
+                const payOnlineOption = document.getElementById('payOnlineOption');
+                const sameDayNote = document.getElementById('sameDayPaymentNote');
+
+                if (sameDay) {
+                    document.getElementById('payCod').checked = true;
+                    document.querySelectorAll('.payment-option').forEach(el => {
+                        if (el.querySelector('input[name="paymentMethod"]')) el.classList.remove('selected');
+                    });
+                    document.getElementById('payCod').closest('.payment-option').classList.add('selected');
+                    payOnlineInput.disabled = true;
+                    payOnlineOption.style.opacity = '0.5';
+                    payOnlineOption.style.pointerEvents = 'none';
+                    sameDayNote.style.display = 'block';
+                } else {
+                    payOnlineInput.disabled = false;
+                    payOnlineOption.style.opacity = '1';
+                    payOnlineOption.style.pointerEvents = 'auto';
+                    sameDayNote.style.display = 'none';
+                }
+
+                syncWalletBox();
+                updatePlaceOrderBtnText();
+                updateSummaryTotals();
+                scheduleIncompleteDraftSave();
+            });
+        });
+
+        function renderSummary() {
+            const cart = getCheckoutItems();
+            const container = document.getElementById('checkoutContainer');
+
+            if (!cart.length) {
+                container.innerHTML = `
+                    <div class="empty-cart">
+                        আপনার কার্ট খালি — অর্ডার করার আগে কিছু প্রোডাক্ট কার্টে যোগ করুন।<br><br>
+                        <a href="index.html">কেনাকাটা শুরু করুন →</a>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('orderItemsList').innerHTML = cart.map(item => `
+                <div class="ck-item">
+                    <img class="ck-item-img" src="${escHtml(resolveImg(item.image))}" alt="" onerror="this.style.visibility='hidden'">
+                    <div class="ck-item-info">
+                        <div class="ck-item-name">${escHtml(item.name)}</div>
+                        ${item.variantLabel ? `<div class="ck-item-var">${escHtml(item.variantLabel)}</div>` : ''}
+                    </div>
+                    <div class="ck-item-price">
+                        <strong>৳ ${formatPrice(item.price)}</strong>
+                        <span>Qty: ${item.quantity}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            updateSummaryTotals();
+            trackMetaInitiateCheckout(cart);
+        }
+
+        // Meta Pixel — InitiateCheckout ইভেন্ট (কেউ কার্ট থেকে চেকআউট পেজে পৌঁছালো, অর্ডার এখনো
+        // কনফার্ম হয়নি)। analytics.js-এ বেস পিক্সেল কোড আগেই লোড হয়ে গেছে।
+        // analytics.js 'defer' দিয়ে লোড হয়, কিন্তু renderSummary() পেজ পার্স হওয়ার সময়ই চলে — তখন window.fbq
+        // এখনো নেই (আগে তাই InitiateCheckout কখনোই যেত না)। তাই fbq না থাকলে DOMContentLoaded-এ পাঠানো হয়,
+        // আর একই পেজ-লোডে একবারের বেশি পাঠানো হয় না।
+        let metaInitiateCheckoutSent = false;
+        function trackMetaInitiateCheckout(cart) {
+            if (metaInitiateCheckoutSent || !cart.length) return;
+            const send = () => {
+                if (metaInitiateCheckoutSent || typeof window.fbq !== 'function') return;
+                metaInitiateCheckoutSent = true;
+                window.fbq('track', 'InitiateCheckout', {
+                    content_ids: cart.map(item => item.productId),
+                    content_type: 'product',
+                    num_items: cart.reduce((sum, item) => sum + item.quantity, 0),
+                    value: getCheckoutTotal(),
+                    currency: 'BDT'
+                });
+            };
+            if (typeof window.fbq === 'function') send();
+            else document.addEventListener('DOMContentLoaded', send);
+        }
+
+        // ডেলিভারি অপশন কার্ডে স্ট্যান্ডার্ড ডেলিভারির চার্জ (ঢাকার ভেতরে/বাইরে অনুযায়ী) দেখানো
+        function updateShipFees() {
+            const el = document.getElementById('feeStandard');
+            if (el) el.textContent = '৳ ' + formatPrice(estimateDelivery(getSelectedArea()));
+        }
+
+        function updateSummaryTotals() {
+            updateShipFees();
+            const items = getCheckoutItems();
+            const count = items.reduce((sum, item) => sum + item.quantity, 0);
+            const subtotal = getCheckoutTotal();
+            const disc = currentDiscount();
+            const itemsRow = `<div class="order-summary-row"><span>আইটেম মোট (${count} টি)</span><span>৳ ${formatPrice(subtotal)}</span></div>`;
+            const discRow = `<div class="order-summary-row coupon-line${disc > 0 ? '' : ' zero'}"><span>কুপন / ডিসকাউন্ট${disc > 0 ? ` (${escHtml(couponState.code)})` : ''}</span><span>${disc > 0 ? '− ' : ''}৳ ${formatPrice(disc)}</span></div>`;
+
+            if (isSameDaySelected()) {
+                document.getElementById('orderSummary').innerHTML = `
+                    ${itemsRow}
+                    <div class="order-summary-row"><span>ডেলিভারি চার্জ</span><span>অর্ডার কনফার্ম হওয়ার পর জানানো হবে</span></div>
+                    ${discRow}
+                    <div class="order-summary-row total"><span>মোট (ডেলিভারি চার্জ ছাড়া)</span><span>৳ ${formatPrice(subtotal - disc)}</span></div>
+                `;
+                return;
+            }
+
+            const delivery = estimateDelivery(getSelectedArea());
+            const total = subtotal - disc + delivery;
+            const wUse = walletUseAmount();
+
+            document.getElementById('orderSummary').innerHTML = `
+                ${itemsRow}
+                <div class="order-summary-row"><span>ডেলিভারি চার্জ</span><span>৳ ${formatPrice(delivery)}</span></div>
+                ${discRow}
+                <div class="order-summary-row total"><span>মোট</span><span>৳ ${formatPrice(total)}</span></div>
+                ${wUse > 0 ? `
+                <div class="order-summary-row wallet-line"><span>STZ Wallet থেকে কাটা হবে</span><span>− ৳ ${formatPrice(wUse)}</span></div>
+                <div class="order-summary-row total"><span>${wUse >= total ? 'ডেলিভারিতে দিতে হবে না' : 'ডেলিভারির সময় দিতে হবে'}</span><span>৳ ${formatPrice(total - wUse)}</span></div>` : ''}
+            `;
+        }
+
+        // ===== সেভড ঠিকানা সারাংশ (Daraz-এর Shipping & Billing ব্লকের মতো) =====
+        // লগইন করা কাস্টমারের প্রোফাইলে সম্পূর্ণ ঠিকানা থাকলে ফর্ম লুকিয়ে সারাংশ দেখায়; "এডিট" চাপলে ফর্ম খোলে।
+        // ফর্মের ফিল্ডগুলো সবসময় DOM-এ থাকে, তাই অর্ডার দেওয়ার লজিক আগের মতোই সেগুলো থেকে পড়ে।
+        let addrHasSaved = false, addrCollapsed = false;
+        function addrComplete() {
+            return !!(document.getElementById('custName').value.trim() && document.getElementById('custPhone').value.trim()
+                && document.getElementById('custAddress').value.trim() && getSelectedArea());
+        }
+        function renderAddrView() {
+            const sum = document.getElementById('addrSummary'), form = document.getElementById('deliveryForm'), btn = document.getElementById('addrEditBtn');
+            if (!addrHasSaved) { btn.style.display = 'none'; sum.style.display = 'none'; form.style.display = ''; return; }
+            btn.style.display = '';
+            if (addrCollapsed && addrComplete()) {
+                document.getElementById('asName').textContent = document.getElementById('custName').value.trim();
+                document.getElementById('asPhone').textContent = document.getElementById('custPhone').value.trim();
+                document.getElementById('asAddr').textContent = document.getElementById('custAddress').value.trim();
+                document.getElementById('asArea').textContent = AREA_LABEL[getSelectedArea()] || '';
+                sum.style.display = 'block'; form.style.display = 'none'; btn.textContent = 'এডিট';
+            } else {
+                addrCollapsed = false;
+                sum.style.display = 'none'; form.style.display = ''; btn.textContent = 'সম্পন্ন';
+            }
+        }
+        document.getElementById('addrEditBtn').addEventListener('click', function () {
+            if (addrCollapsed) { addrCollapsed = false; }
+            else if (addrComplete()) { addrCollapsed = true; }
+            else { statusMsgWarn('দয়া করে নাম, ফোন নাম্বার, ঠিকানা ও ডেলিভারি এলাকা পূরণ করুন।'); return; }
+            renderAddrView();
+        });
+        function statusMsgWarn(text) {
+            const el = document.getElementById('statusMsg');
+            el.style.color = '#e74c3c'; el.textContent = text;
+        }
+
+        // ===== লগইন করা থাকলে সেভড প্রোফাইল/ঠিকানা দিয়ে ফর্ম অটো-ফিল করা হয় (তবে এডিট করা যায়,
+        // এবং লগইন না থাকলেও guest হিসেবে চেকআউট আগের মতোই কাজ করে) =====
+        async function prefillFromAccount() {
+            if (!getCustomerToken() || !getCustomerData()) return;
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/customer-auth/me`);
+                if (!res.ok) return; // টোকেন মেয়াদোত্তীর্ণ হলেও চেকআউট আটকাবে না, শুধু অটো-ফিল হবে না
+                const data = await res.json();
+
+                document.getElementById('custName').value = data.name || '';
+                document.getElementById('custPhone').value = cleanPhoneInput(data.phone || '');
+                if (data.address) document.getElementById('custAddress').value = data.address;
+
+                const savedArea = areaFromCityValue(data.city);
+                if (savedArea) setSelectedArea(savedArea);
+                walletBalance = Number(data.walletBalance) || 0;
+                syncWalletBox();
+                updateSameDayAvailability();
+                updateSummaryTotals();
+                updatePlaceOrderBtnText();
+                addrHasSaved = !!(data.name && data.phone && data.address);
+                addrCollapsed = addrHasSaved && addrComplete();
+                renderAddrView();
+            } catch (err) {
+                // নেটওয়ার্ক এরর হলেও guest checkout হিসেবে এগিয়ে যেতে দেওয়া হচ্ছে
+            }
+        }
+        prefillFromAccount();
+
+        // OTP চালু। সাময়িকভাবে বন্ধ করতে এটি true করুন (এবং ব্যাকএন্ডে env OTP_PAUSED=true দিন)।
+        const OTP_PAUSED = false;
+        let guestOtpRequired = !OTP_PAUSED && !getCustomerToken();
+        let guestOtpPhone = '';
+        let guestOtpRetryAt = 0;
+        let guestOtpSending = false;
+        const guestOtpBox = document.getElementById('guestOtpBox');
+        const guestOtpInput = document.getElementById('guestOtp');
+        const guestOtpMsg = document.getElementById('guestOtpMsg');
+        const sendGuestOtpBtn = document.getElementById('sendGuestOtp');
+        guestOtpBox.hidden = !guestOtpRequired;
+        // ফোন ফিল্ড: +88 আগে থেকেই বসানো, কাস্টমার শুধু 0 দিয়ে শুরু ১১ ডিজিট লিখবে।
+        // বাংলা অঙ্ক ইংরেজিতে বদলায়, ডিজিট ছাড়া সব বাদ যায়; +88 / 88 সহ পেস্ট করলে প্রিফিক্স কেটে যায়।
+        const BN_DIGITS = { '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4', '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9' };
+        function cleanPhoneInput(raw) {
+            let v = String(raw || '').replace(/[০-৯]/g, d => BN_DIGITS[d]);
+            const hadPlus88 = /^\s*\+?88/.test(v);
+            v = v.replace(/\D/g, '');
+            if (hadPlus88 && v.startsWith('88') && v.length > 11) v = v.slice(2);
+            return v.slice(0, 14);
+        }
+        function phoneError(v) {
+            if (!v) return 'ফোন নাম্বার দিন।';
+            if (v[0] !== '0') return 'ফোন নাম্বার অবশ্যই 0 দিয়ে শুরু হতে হবে (যেমন 017XXXXXXXX)।';
+            if (v.length !== 11) return 'ফোন নাম্বার ঠিক ১১ ডিজিটের হতে হবে (এখন ' + v.length + ' ডিজিট)।';
+            if (!/^01[3-9]\d{8}$/.test(v)) return 'সঠিক মোবাইল নাম্বার দিন (যেমন 017XXXXXXXX)।';
+            return '';
+        }
+        function showPhoneError(msg) {
+            document.getElementById('phoneField').classList.toggle('has-error', !!msg);
+            document.getElementById('custPhoneErr').textContent = msg || '';
+            document.getElementById('custPhone').setAttribute('aria-invalid', msg ? 'true' : 'false');
+        }
+        // showShort=false হলে লেখার মাঝপথে "ডিজিট কম" ইরর দেখায় না (শুধু ভুল শুরু/বেশি ডিজিট)
+        function validatePhoneField(showShort) {
+            const v = document.getElementById('custPhone').value;
+            let msg = phoneError(v);
+            if (!showShort && msg && v && v[0] === '0' && v.length < 11) msg = '';
+            showPhoneError(msg);
+            return !phoneError(v);
+        }
+        (function initPhoneField() {
+            const el = document.getElementById('custPhone');
+            el.addEventListener('input', () => {
+                const cleaned = cleanPhoneInput(el.value);
+                if (cleaned !== el.value) el.value = cleaned;
+                validatePhoneField(false);
+            });
+            el.addEventListener('blur', () => { if (el.value) validatePhoneField(true); });
+            if (el.value) { el.value = cleanPhoneInput(el.value); }
+        })();
+        function checkoutPhone() {
+            return document.getElementById('custPhone').value.trim();
+        }
+        function updateOtpResend() {
+            const seconds = Math.max(0, Math.ceil((guestOtpRetryAt - Date.now()) / 1000));
+            sendGuestOtpBtn.disabled = guestOtpSending || seconds > 0;
+            sendGuestOtpBtn.textContent = seconds ? `${seconds} সেকেন্ড পরে আবার পাঠান` : 'OTP পাঠান';
+        }
+        setInterval(updateOtpResend, 1000);
+        document.getElementById('custPhone').addEventListener('input', () => {
+            if (checkoutPhone() !== guestOtpPhone) {
+                guestOtpPhone = '';
+                guestOtpInput.value = '';
+                guestOtpMsg.textContent = 'এই নম্বরের জন্য নতুন OTP পাঠান।';
+            }
+        });
+        sendGuestOtpBtn.addEventListener('click', async () => {
+            if (guestOtpSending || Date.now() < guestOtpRetryAt) return;
+            const phone = checkoutPhone();
+            if (!validatePhoneField(true)) {
+                document.getElementById('custPhone').focus();
+                guestOtpMsg.textContent = '';
+                return;
+            }
+            guestOtpSending = true;
+            sendGuestOtpBtn.disabled = true;
+            guestOtpInput.value = '';
+            guestOtpPhone = '';
+            guestOtpMsg.textContent = 'কোড পাঠানো হচ্ছে…';
+            try {
+                const res = await fetch(`${API_BASE}/api/orders/checkout/otp`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json();
+                guestOtpRetryAt = Date.now() + (Number(data.retryAfter) || 0) * 1000;
+                if (!res.ok) throw new Error(data.error || 'কোড পাঠানো যায়নি।');
+                if (checkoutPhone() !== phone) throw new Error('ফোন নম্বর বদলেছে। বর্তমান নম্বরে নতুন OTP পাঠান।');
+                guestOtpPhone = phone;
+                guestOtpMsg.textContent = 'SMS পাঠানো হয়েছে। কোড লিখে অর্ডার কনফার্ম করুন।';
+                guestOtpInput.focus();
+            } catch (error) {
+                guestOtpMsg.textContent = error.message || 'কোড পাঠানো যায়নি।';
+            } finally { guestOtpSending = false; updateOtpResend(); }
+        });
+
+        async function placeOrder() {
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const email = document.getElementById('custEmail').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            const area = getSelectedArea();
+            const notes = document.getElementById('custNotes').value.trim();
+            const statusMsg = document.getElementById('statusMsg');
+            const btn = document.getElementById('placeOrderBtn');
+
+            if (!validatePhoneField(true)) {
+                addrCollapsed = false; renderAddrView();
+                const pf = document.getElementById('phoneField');
+                pf.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.getElementById('custPhone').focus({ preventScroll: true });
+                statusMsgWarn('ফোন নাম্বার ঠিক করুন।');
+                return;
+            }
+            if (!name || !phone || !address || !area) { addrCollapsed = false; renderAddrView(); }
+            if (!name || !phone || !address) {
+                statusMsg.style.color = '#e74c3c';
+                statusMsg.textContent = 'দয়া করে নাম, ফোন নাম্বার এবং ঠিকানা দিন।';
+                return;
+            }
+            if (!area) {
+                statusMsg.style.color = '#e74c3c';
+                statusMsg.textContent = 'দয়া করে ডেলিভারি এলাকা (ঢাকার ভেতরে/বাইরে) নির্বাচন করুন।';
+                return;
+            }
+
+            const fullAddress = address;
+
+            const cart = getCheckoutItems();
+            if (!cart.length) {
+                statusMsg.style.color = '#e74c3c';
+                statusMsg.textContent = 'কার্ট খালি।';
+                return;
+            }
+
+            const sameDay = isSameDaySelected();
+            const isCod = document.getElementById('payCod').checked || sameDay;
+
+            if (guestOtpRequired && (guestOtpPhone !== checkoutPhone() || !/^\d{6}$/.test(guestOtpInput.value.trim()))) {
+                statusMsgWarn('অর্ডারের ফোন নম্বরে OTP পাঠিয়ে ৬ সংখ্যার কোড লিখুন।');
+                guestOtpBox.hidden = false;
+                guestOtpInput.focus();
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'প্রসেস হচ্ছে...';
+            statusMsg.textContent = '';
+
+            try {
+                // লগইন করা থাকলে টোকেন পাঠানো হয় যাতে অর্ডারটা অ্যাকাউন্টের সাথে যুক্ত হয়
+                // (customerAuthFetch টোকেন না থাকলে চুপচাপ শুধু Content-Type হেডার পাঠায় — guest checkout ভাঙে না)
+                const res = await customerAuthFetch(`${API_BASE}/api/orders/checkout`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        customer: { name, phone, email, address: fullAddress, city: AREA_LABEL[area], district: '', thana: '', notes },
+                        paymentMethod: isCod ? 'cod' : 'online',
+                        deliveryType: sameDay ? 'sameday' : 'standard',
+                        useWallet: walletUseAmount() > 0,
+                        couponCode: couponState.code || undefined,
+                        otp: guestOtpInput.value.trim(),
+                        items: cart.map(item => ({
+                            productId: item.productId,
+                            variantLabel: item.variantLabel,
+                            quantity: item.quantity
+                        }))
+                    })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    if (data.code === 'CHECKOUT_OTP_REQUIRED') {
+                        guestOtpRequired = true;
+                        guestOtpBox.hidden = false;
+                    }
+                    if (guestOtpRequired) {
+                        guestOtpInput.value = '';
+                        guestOtpPhone = '';
+                        guestOtpMsg.textContent = 'আবার অর্ডার করতে নতুন OTP পাঠান।';
+                    }
+                    if (data.code === 'COURIER_SCORE_LOW') {
+                        const blockErr = new Error(data.error || 'অর্ডার গ্রহণ করা যাচ্ছে না।');
+                        blockErr.courierBlock = true;
+                        blockErr.onlineOk = data.onlinePaymentAllowed !== false;
+                        blockErr.advance = Number(data.advanceCharge) || 0;
+                        throw blockErr;
+                    }
+                    if (data.code === 'COUPON_INVALID') clearCoupon(data.error); // কুপন আর চলছে না — বাদ দিয়ে কাস্টমার আবার কনফার্ম করবে
+                    throw new Error(data.error || 'অর্ডার করা যায়নি।');
+                }
+
+                // পেমেন্ট গেটওয়েতে (বা সরাসরি সফল পেজে) পাঠানোর আগে কার্ট খালি করা হচ্ছে
+                if (BUY_NOW_ITEM) { try { sessionStorage.removeItem(BUY_NOW_KEY); } catch (e) {} } else { clearCart(); }
+
+                if (data.cod) {
+                    // সার্ভার-যাচাইকৃত total-ও পাঠানো হচ্ছে (order-success.html এখান থেকে Meta Pixel
+                    // Purchase ইভেন্ট পাঠাবে) — ক্লায়েন্টের নিজের হিসাব করা দাম না
+                    window.location.href = `order-success.html?order=${encodeURIComponent(data.orderNumber)}&value=${encodeURIComponent(data.total)}`;
+                } else {
+                    window.location.href = data.paymentUrl;
+                }
+
+            } catch (err) {
+                if (err.courierBlock) {
+                    statusMsg.textContent = '';
+                    btn.disabled = false;
+                    updatePlaceOrderBtnText();
+                    openCourierBlock(err.onlineOk, err.advance);
+                    return;
+                }
+                statusMsg.style.color = '#e74c3c';
+                statusMsg.textContent = '❌ ' + err.message;
+                btn.disabled = false;
+                updatePlaceOrderBtnText();
+            }
+        }
+
+
+        // ===== ডিসকাউন্ট কুপন =====
+        // ছাড়ের সংখ্যা সবসময় সার্ভার (POST /api/coupons/validate) থেকে আসে; অর্ডার দেওয়ার সময় সার্ভার আবার যাচাই করে।
+        // কার্ট বা ফোন নাম্বার বদলালে (নির্দিষ্ট কাস্টমারের কুপন ফোনের সাথে বাঁধা) নিঃশব্দে আবার যাচাই হয়।
+        let couponState = { code: '', discount: 0 };
+
+        function currentDiscount() { return couponState.code ? Math.max(0, couponState.discount) : 0; }
+
+        function setCouponMsg(text, isErr) {
+            const el = document.getElementById('couponMsg');
+            el.textContent = text || '';
+            el.className = 'cp-msg' + (isErr ? ' err' : '');
+        }
+
+        function renderCouponBox() {
+            const box = document.getElementById('couponBox');
+            if (!box) return;
+            const on = !!couponState.code;
+            box.classList.toggle('applied', on);
+            if (on) document.getElementById('couponAppliedText').textContent = '✓ ' + couponState.code + ' প্রয়োগ হয়েছে (− ৳ ' + formatPrice(couponState.discount) + ')';
+        }
+
+        function clearCoupon(msg) {
+            couponState = { code: '', discount: 0 };
+            renderCouponBox();
+            setCouponMsg(msg || '', !!msg);
+            updateSummaryTotals();
+            updatePlaceOrderBtnText();
+        }
+
+        async function fetchCouponQuote(code) {
+            const cart = getCheckoutItems();
+            const res = await fetch(`${API_BASE}/api/coupons/validate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code,
+                    phone: document.getElementById('custPhone').value.trim(),
+                    items: cart.map(item => ({ productId: item.productId, variantLabel: item.variantLabel, quantity: item.quantity }))
+                })
+            });
+            const data = await res.json().catch(() => ({}));
+            return res.ok && data.ok ? { ok: true, code: data.code, discount: Number(data.discount) || 0 } : { ok: false, error: data.error || 'কুপন যাচাই করা যায়নি।' };
+        }
+
+        async function applyCoupon() {
+            const input = document.getElementById('couponInput');
+            const btn = document.getElementById('couponApplyBtn');
+            const code = input.value.trim();
+            if (!code) { setCouponMsg('কুপন কোড লিখুন।', true); return; }
+            btn.disabled = true; setCouponMsg('যাচাই হচ্ছে...', false);
+            try {
+                const r = await fetchCouponQuote(code);
+                if (!r.ok) { setCouponMsg(r.error, true); return; }
+                couponState = { code: r.code, discount: r.discount };
+                input.value = '';
+                setCouponMsg('', false);
+                renderCouponBox();
+                updateSummaryTotals();
+                updatePlaceOrderBtnText();
+            } catch (e) {
+                setCouponMsg('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন।', true);
+            } finally { btn.disabled = false; }
+        }
+
+        async function revalidateCoupon() {
+            if (!couponState.code) return;
+            try {
+                const r = await fetchCouponQuote(couponState.code);
+                if (!r.ok) { clearCoupon(r.error); return; }
+                if (r.discount !== couponState.discount) {
+                    couponState.discount = r.discount;
+                    renderCouponBox(); updateSummaryTotals(); updatePlaceOrderBtnText();
+                }
+            } catch (e) { /* নেটওয়ার্ক এরর — আগের ছাড় থাকে, অর্ডারের সময় সার্ভার যাচাই করবে */ }
+        }
+
+        document.getElementById('couponApplyBtn').addEventListener('click', applyCoupon);
+        document.getElementById('couponInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); } });
+        document.getElementById('couponRemoveBtn').addEventListener('click', function () { clearCoupon(''); });
+        document.getElementById('custPhone').addEventListener('change', revalidateCoupon);
+
+        renderSummary();
+    </script>
+    <div class="cb-bg" id="courierBlockModal" role="dialog" aria-modal="true" aria-labelledby="cbTitle" onclick="if(event.target===this)closeCourierBlock()">
+        <div class="cb-box">
+            <div class="cb-head"><div class="cb-icon" aria-hidden="true">!</div><h3 id="cbTitle">অর্ডার সম্পন্ন করতে একটি ধাপ বাকি / One more step to place your order</h3></div>
+            <p>আপনার আগের ডেলিভারি রেকর্ডের কারণে এই মুহূর্তে ক্যাশ অন ডেলিভারিতে আপনার অর্ডারটি প্রসেস করা সম্ভব হচ্ছে না। তবে ডেলিভারি চার্জ অগ্রিম প্রদান করলে আপনি Smart Tech Zone এর একজন সম্মানিত কাস্টমার হিসেবে অর্ডার করার সুযোগ পাবেন।</p>
+            <div class="cb-adv">
+                <div class="row" id="cbRowOut"><span>অগ্রিম ডেলিভারি চার্জ, ঢাকার বাইরে / Outside Dhaka</span><span>১১৫ টাকা / BDT 115</span></div>
+                <div class="row" id="cbRowIn"><span>অগ্রিম ডেলিভারি চার্জ, ঢাকার মধ্যে / Inside Dhaka</span><span>৮০ টাকা / BDT 80</span></div>
+                <div class="num">01718381066 নম্বরে Send Money করে নিচের WhatsApp বাটনে ক্লিক করুন এবং পেমেন্টের স্ক্রিনশট পাঠান।</div>
+            </div>
+            <p class="terms">ডেলিভারি গ্রহণ করলে এই টাকা আপনার মোট বিল থেকে বাদ যাবে। ডেলিভারি গ্রহণ না করলে অগ্রিম চার্জ ফেরতযোগ্য নয়।</p>
+            <p class="en">Due to your previous delivery record, we are unable to process your Cash on Delivery order at the moment. However, by paying the delivery charge in advance, you can order as a valued Smart Tech Zone customer. Please Send Money to 01718381066, then click the WhatsApp button below and share the payment screenshot.</p>
+            <p class="en terms">If you accept the delivery, this amount is deducted from your total bill. If you refuse the delivery, the advance charge is non-refundable.</p>
+            <div class="cb-contact">
+                <a class="cb-btn wa" id="cbWaBtn" href="https://wa.me/8801718381066" target="_blank" rel="noopener" style="flex-basis:100%;">WhatsApp এ স্ক্রিনশট পাঠান / Send screenshot on WhatsApp</a>
+                <a class="cb-btn call" href="tel:+8801718381066">কল করুন / Call 01718381066</a>
+                <a class="cb-btn fb" href="https://www.facebook.com/smarttechzonedhaka" target="_blank" rel="noopener">Facebook</a>
+                <button type="button" class="cb-btn pay" id="cbPayOnline" onclick="chooseOnlinePayment()" style="display:none;">অনলাইন পেমেন্টে অর্ডার করুন / Pay online instead</button>
+            </div>
+            <button type="button" class="cb-close" onclick="closeCourierBlock()">বন্ধ করুন / Close</button>
+        </div>
+    </div>
+    <script>
+        // কুরিয়ার স্কোর গেট: সার্ভার COD অর্ডার আটকালে এই পপআপ দেখায়। ক্রেতাকে স্কোর বা "খারাপ" শব্দটা বলা হয় না,
+        // শুধু "আগের ডেলিভারি রেকর্ড" বলে অগ্রিম ডেলিভারি চার্জের পথ দেখানো হয়। চার্জ: ঢাকার বাইরে ১১৫, ঢাকার মধ্যে ৮০
+        // (backend/routes/orders.js এর ADVANCE_CHARGE_* এর সাথে মিলিয়ে রাখুন)।
+        function openCourierBlock(onlineOk, advance) {
+            const payBtn = document.getElementById('cbPayOnline');
+            const onlineOpt = document.getElementById('payOnline');
+            payBtn.style.display = (onlineOk && onlineOpt) ? '' : 'none';
+
+            // কাস্টমারের নিজের এলাকার সারিটা হাইলাইট
+            const inside = Number(advance) === 80;
+            const rowIn = document.getElementById('cbRowIn');
+            const rowOut = document.getElementById('cbRowOut');
+            rowIn.classList.toggle('mine', !!advance && inside);
+            rowOut.classList.toggle('mine', !!advance && !inside);
+
+            // WhatsApp বাটন: নাম ও ফোন বসানো মেসেজ আগে থেকে লেখা থাকবে
+            const nm = (document.getElementById('custName').value || '').trim();
+            const ph = (document.getElementById('custPhone').value || '').trim();
+            const amt = advance ? advance : 0;
+            const msg = 'আসসালামু আলাইকুম, আমি ' + (nm || 'একজন কাস্টমার') + (ph ? ' (ফোন: ' + ph + ')' : '') + '। '
+                + (amt ? amt + ' টাকা ' : '') + 'অগ্রিম ডেলিভারি চার্জ Send Money করেছি। পেমেন্টের স্ক্রিনশট সংযুক্ত করছি। অনুগ্রহ করে আমার অর্ডারটি প্রসেস করুন।\n\n'
+                + 'Hello, I am ' + (nm || 'a customer') + (ph ? ' (phone: ' + ph + ')' : '') + '. I have sent the advance delivery charge'
+                + (amt ? ' (BDT ' + amt + ')' : '') + ' via Send Money. Attaching the payment screenshot. Please process my order.';
+            document.getElementById('cbWaBtn').href = 'https://wa.me/8801718381066?text=' + encodeURIComponent(msg);
+
+            document.getElementById('courierBlockModal').classList.add('open');
+            const first = document.getElementById('cbWaBtn');
+            if (first) first.focus();
+        }
+        function closeCourierBlock() {
+            document.getElementById('courierBlockModal').classList.remove('open');
+        }
+        function chooseOnlinePayment() {
+            const r = document.getElementById('payOnline');
+            if (r) {
+                r.checked = true;
+                r.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            closeCourierBlock();
+            const opt = document.getElementById('payOnlineOption');
+            if (opt && opt.scrollIntoView) opt.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCourierBlock(); });
+    </script>
+</body>
+</html>

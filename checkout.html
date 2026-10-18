@@ -126,6 +126,21 @@
         .ck-field { min-width: 0; }
         .ck-field.ck-full { grid-column: 1 / -1; }
         .ck-form textarea { min-height: 60px; }
+        .ck-phone { display: flex; align-items: stretch; border: 1px solid #ccc; border-radius: 6px; background: #fff; overflow: hidden; }
+        .ck-phone:focus-within { border-color: #1a9cb7; box-shadow: 0 0 0 2px rgba(26,156,183,0.15); }
+        .ck-phone .ck-cc { flex: none; display: flex; align-items: center; padding: 0 10px; background: #f3f5f6; color: #444; font-weight: 700; font-size: 14px; border-right: 1px solid #ddd; user-select: none; }
+        .checkout-card .ck-phone input { flex: 1; min-width: 0; width: auto; border: none; border-radius: 0; box-shadow: none; outline: none; margin: 0; letter-spacing: 0.3px; }
+        .ck-field.has-error .ck-phone { border-color: #e74c3c; box-shadow: 0 0 0 2px rgba(231,76,60,0.15); }
+        .ck-err { color: #e74c3c; font-size: 12.5px; margin: 5px 0 0; min-height: 0; }
+        .ck-err:empty { display: none; }
+        #guestOtpBox { margin-top: 8px; }
+        #guestOtpBox .ck-otp-row { position: relative; }
+        #guestOtpBox .ck-otp-row input { margin-top: 0; padding-right: 84px; letter-spacing: 1px; }
+        #guestOtpBox .ck-otp-btn { position: absolute; top: 1px; right: 1px; bottom: 1px; min-width: 66px; padding: 0 14px; background: transparent; border: 0; border-radius: 0 5px 5px 0; color: #e74c3c; font: 700 12px Arial, sans-serif; letter-spacing: 0.6px; cursor: pointer; }
+        #guestOtpBox .ck-otp-btn:hover:not(:disabled) { background: #fff4f2; color: #c0392b; }
+        #guestOtpBox .ck-otp-btn:disabled { color: #888; background: transparent; cursor: not-allowed; }
+        #guestOtpBox p { margin: 6px 0 0; font-size: 12.5px; color: #555; }
+        #guestOtpBox p:empty { display: none; }
         .checkout-card label.area-option { display: flex; margin-top: 0; font-weight: normal; }
         .checkout-card label.payment-option { display: flex; margin-top: 10px; font-weight: normal; }
         .ck-addr { padding: 2px 0 4px; }
@@ -206,9 +221,20 @@
                         <label class="required">নাম</label>
                         <input type="text" id="custName" name="name" autocomplete="name" placeholder="আপনার পুরো নাম">
                     </div>
-                    <div class="ck-field">
-                        <label class="required">ফোন নাম্বার</label>
-                        <input type="tel" id="custPhone" name="tel" autocomplete="tel" placeholder="01XXXXXXXXX">
+                    <div class="ck-field" id="phoneField">
+                        <label class="required" for="custPhone">ফোন নাম্বার</label>
+                        <div class="ck-phone">
+                            <span class="ck-cc" aria-hidden="true">+88</span>
+                            <input type="tel" id="custPhone" name="tel" autocomplete="tel-national" inputmode="numeric" maxlength="14" placeholder="01XXXXXXXXX" aria-describedby="custPhoneErr">
+                        </div>
+                        <p class="ck-err" id="custPhoneErr" role="alert" aria-live="polite"></p>
+                        <div id="guestOtpBox" hidden>
+                            <div class="ck-otp-row">
+                                <input id="guestOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="৬ সংখ্যার কোড" aria-label="SMS-এ পাওয়া ৬ সংখ্যার OTP">
+                                <button type="button" id="sendGuestOtp" class="ck-otp-btn">SEND</button>
+                            </div>
+                            <p id="guestOtpMsg" role="status" aria-live="polite"></p>
+                        </div>
                     </div>
                     <div class="ck-field ck-full">
                         <label>ইমেইল (ঐচ্ছিক)</label>
@@ -313,13 +339,6 @@
             <div class="checkout-card">
                 <div class="ck-head"><h3>অর্ডার সামারি</h3></div>
                 <div id="orderSummary"></div>
-                <div id="guestOtpBox" style="margin:16px 0;" hidden>
-                    <label for="guestOtp"><strong>ফোন যাচাই (বাধ্যতামূলক)</strong></label>
-                    <p>অর্ডারের ফোন নম্বরে SMS কোড পাঠিয়ে নিচে লিখুন। কোডের মেয়াদ ৫ মিনিট।</p>
-                    <button type="button" id="sendGuestOtp">OTP পাঠান</button>
-                    <input id="guestOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="৬ সংখ্যার OTP" aria-label="SMS-এ পাওয়া ৬ সংখ্যার OTP" style="width:100%;margin-top:10px;padding:12px;">
-                    <p id="guestOtpMsg" role="status" aria-live="polite"></p>
-                </div>
                 <button class="place-order-btn" id="placeOrderBtn" onclick="placeOrder()">অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)</button>
                 <div id="statusMsg"></div>
             </div>
@@ -712,7 +731,7 @@
                 const data = await res.json();
 
                 document.getElementById('custName').value = data.name || '';
-                document.getElementById('custPhone').value = data.phone || '';
+                document.getElementById('custPhone').value = cleanPhoneInput(data.phone || '');
                 if (data.address) document.getElementById('custAddress').value = data.address;
 
                 const savedArea = areaFromCityValue(data.city);
@@ -731,8 +750,8 @@
         }
         prefillFromAccount();
 
-        // সাময়িকভাবে OTP বন্ধ। আবার চালু করতে এটি false করুন (এবং ব্যাকএন্ডে OTP_PAUSED=false দিন)।
-        const OTP_PAUSED = true;
+        // OTP চালু। সাময়িকভাবে বন্ধ করতে এটি true করুন (এবং ব্যাকএন্ডে env OTP_PAUSED=true দিন)।
+        const OTP_PAUSED = false;
         let guestOtpRequired = !OTP_PAUSED && !getCustomerToken();
         let guestOtpPhone = '';
         let guestOtpRetryAt = 0;
@@ -742,16 +761,53 @@
         const guestOtpMsg = document.getElementById('guestOtpMsg');
         const sendGuestOtpBtn = document.getElementById('sendGuestOtp');
         guestOtpBox.hidden = !guestOtpRequired;
+        // ফোন ফিল্ড: +88 আগে থেকেই বসানো, কাস্টমার শুধু 0 দিয়ে শুরু ১১ ডিজিট লিখবে।
+        // বাংলা অঙ্ক ইংরেজিতে বদলায়, ডিজিট ছাড়া সব বাদ যায়; +88 / 88 সহ পেস্ট করলে প্রিফিক্স কেটে যায়।
+        const BN_DIGITS = { '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4', '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9' };
+        function cleanPhoneInput(raw) {
+            let v = String(raw || '').replace(/[০-৯]/g, d => BN_DIGITS[d]);
+            const hadPlus88 = /^\s*\+?88/.test(v);
+            v = v.replace(/\D/g, '');
+            if (hadPlus88 && v.startsWith('88') && v.length > 11) v = v.slice(2);
+            return v.slice(0, 14);
+        }
+        function phoneError(v) {
+            if (!v) return 'ফোন নাম্বার দিন।';
+            if (v[0] !== '0') return 'ফোন নাম্বার অবশ্যই 0 দিয়ে শুরু হতে হবে (যেমন 017XXXXXXXX)।';
+            if (v.length !== 11) return 'ফোন নাম্বার ঠিক ১১ ডিজিটের হতে হবে (এখন ' + v.length + ' ডিজিট)।';
+            if (!/^01[3-9]\d{8}$/.test(v)) return 'সঠিক মোবাইল নাম্বার দিন (যেমন 017XXXXXXXX)।';
+            return '';
+        }
+        function showPhoneError(msg) {
+            document.getElementById('phoneField').classList.toggle('has-error', !!msg);
+            document.getElementById('custPhoneErr').textContent = msg || '';
+            document.getElementById('custPhone').setAttribute('aria-invalid', msg ? 'true' : 'false');
+        }
+        // showShort=false হলে লেখার মাঝপথে "ডিজিট কম" ইরর দেখায় না (শুধু ভুল শুরু/বেশি ডিজিট)
+        function validatePhoneField(showShort) {
+            const v = document.getElementById('custPhone').value;
+            let msg = phoneError(v);
+            if (!showShort && msg && v && v[0] === '0' && v.length < 11) msg = '';
+            showPhoneError(msg);
+            return !phoneError(v);
+        }
+        (function initPhoneField() {
+            const el = document.getElementById('custPhone');
+            el.addEventListener('input', () => {
+                const cleaned = cleanPhoneInput(el.value);
+                if (cleaned !== el.value) el.value = cleaned;
+                validatePhoneField(false);
+            });
+            el.addEventListener('blur', () => { if (el.value) validatePhoneField(true); });
+            if (el.value) { el.value = cleanPhoneInput(el.value); }
+        })();
         function checkoutPhone() {
-            let phone = document.getElementById('custPhone').value.trim().replace(/[\s\-()]/g, '');
-            if (phone.startsWith('+880')) phone = '0' + phone.slice(4);
-            else if (phone.startsWith('880')) phone = '0' + phone.slice(3);
-            return phone;
+            return document.getElementById('custPhone').value.trim();
         }
         function updateOtpResend() {
             const seconds = Math.max(0, Math.ceil((guestOtpRetryAt - Date.now()) / 1000));
             sendGuestOtpBtn.disabled = guestOtpSending || seconds > 0;
-            sendGuestOtpBtn.textContent = seconds ? `${seconds} সেকেন্ড পরে আবার পাঠান` : 'OTP পাঠান';
+            sendGuestOtpBtn.textContent = guestOtpSending ? '…' : seconds ? `${seconds}s` : (guestOtpRetryAt ? 'RESEND' : 'SEND');
         }
         setInterval(updateOtpResend, 1000);
         document.getElementById('custPhone').addEventListener('input', () => {
@@ -764,8 +820,9 @@
         sendGuestOtpBtn.addEventListener('click', async () => {
             if (guestOtpSending || Date.now() < guestOtpRetryAt) return;
             const phone = checkoutPhone();
-            if (!/^01[3-9]\d{8}$/.test(phone)) {
-                guestOtpMsg.textContent = 'সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন।';
+            if (!validatePhoneField(true)) {
+                document.getElementById('custPhone').focus();
+                guestOtpMsg.textContent = '';
                 return;
             }
             guestOtpSending = true;
@@ -800,6 +857,14 @@
             const statusMsg = document.getElementById('statusMsg');
             const btn = document.getElementById('placeOrderBtn');
 
+            if (!validatePhoneField(true)) {
+                addrCollapsed = false; renderAddrView();
+                const pf = document.getElementById('phoneField');
+                pf.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.getElementById('custPhone').focus({ preventScroll: true });
+                statusMsgWarn('ফোন নাম্বার ঠিক করুন।');
+                return;
+            }
             if (!name || !phone || !address || !area) { addrCollapsed = false; renderAddrView(); }
             if (!name || !phone || !address) {
                 statusMsg.style.color = '#e74c3c';
