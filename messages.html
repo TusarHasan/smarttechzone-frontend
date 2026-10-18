@@ -51,6 +51,7 @@
         /* অ্যাডমিন Message Buyer থেকে দারাজ-স্টাইল অর্ডার-কার্ড পাঠালে সেটা এভাবে দেখানো হয় —
            সাধারণ টেক্সট বাবলের বদলে ছবি/নাম/দাম সহ একটা মিনি প্রোডাক্ট কার্ড */
         .msgc-bubble.order-card-bubble { padding: 0; overflow: hidden; max-width: 78%; }
+        .msgc-bubble.customer.order-card-bubble { background: #fff; color: #333; border: 1px solid #ececec; }
         .msgc-oc-body { display: flex; gap: 10px; padding: 11px 12px 8px; }
         .msgc-oc-body img { width: 54px; height: 54px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; flex-shrink: 0; background: #fafafa; }
         .msgc-oc-info { min-width: 0; flex: 1; }
@@ -233,7 +234,7 @@
                         </div>
                     </div>
                     <div class="msgc-oc-footer">
-                        <span class="msgc-oc-order-no">প্রোডাক্ট</span>
+                        <span class="msgc-oc-order-no">${m.senderType === 'customer' ? 'আপনি এই প্রোডাক্ট নিয়ে জানতে চাইছেন' : 'প্রোডাক্ট'}</span>
                         <a class="msgc-oc-track-link" href="${escapeHtml(c.path || '#')}">প্রোডাক্ট দেখুন</a>
                     </div>
                     <div class="msgc-bubble-time">${timeLabel(m.createdAt)}</div>

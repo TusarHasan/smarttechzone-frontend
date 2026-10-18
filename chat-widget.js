@@ -28,6 +28,7 @@
         document.head.appendChild(sc);
     }
     let currentThread = null; // এখন প্যানেলে যে থ্রেড খোলা আছে
+    let currentProductId = null; // প্রোডাক্ট পেজ থেকে চ্যাট খুললে সেই প্রোডাক্ট (প্রথম মেসেজের সাথে প্রোডাক্ট কার্ড যায়)
     let panelOpen = false;
 
     function isLoggedIn() {
@@ -118,6 +119,7 @@
             /* অ্যাডমিন Message Buyer থেকে দারাজ-স্টাইল অর্ডার-কার্ড পাঠালে — সাধারণ টেক্সটের বদলে
                ছবি/নাম/দাম সহ একটা মিনি প্রোডাক্ট কার্ড, এই ফ্লোটিং উইজেটেই সবচেয়ে বেশি দেখা হয় */
             .stz-msg.order-card-bubble { padding: 0; overflow: hidden; max-width: 88%; }
+            .stz-msg.customer.order-card-bubble { background: #fff; color: #333; border: 1px solid #ececec; }
             .stz-ai-tag { display: inline-block; font-size: 10.5px; font-weight: 700; color: #4338ca; background: #eef2ff; border-radius: 8px; padding: 1px 8px; margin-bottom: 4px; }
             .stz-msg.order-card-bubble .stz-ai-tag { margin: 8px 0 0 11px; }
             .stz-ai-dots i { display: inline-block; width: 6px; height: 6px; margin: 0 2px; border-radius: 50%; background: #9ca3af; animation: stzAiDot 1s infinite ease-in-out; }
@@ -271,7 +273,7 @@
                     </div>
                 </div>
                 <div class="stz-oc-footer">
-                    <span class="stz-oc-order-no">প্রোডাক্ট</span>
+                    <span class="stz-oc-order-no">${m.senderType === 'customer' ? 'আপনি এই প্রোডাক্ট নিয়ে জানতে চাইছেন' : 'প্রোডাক্ট'}</span>
                     <a class="stz-oc-track-link" href="${escapeHtml(c.path || '#')}">প্রোডাক্ট দেখুন</a>
                 </div>
                 <div class="stz-msg-time">${timeLabel(m.createdAt)}</div>
@@ -353,6 +355,7 @@
 
     async function openPlatformChat() {
         if (!isLoggedIn()) return goToLogin();
+        currentProductId = null;
         openPanel();
         document.getElementById('stzChatTitle').textContent = 'Smart Tech Zone সাপোর্ট';
         document.getElementById('stzChatSubtitle').textContent = '';
@@ -371,6 +374,7 @@
     // product.html-এর "চ্যাট করুন" বাটন থেকে কল হয়
     window.openVendorChat = async function (productId, productName) {
         if (!isLoggedIn()) return goToLogin();
+        currentProductId = productId || null;
         openPanel();
         document.getElementById('stzChatTitle').textContent = 'Smart Tech Zone (ভেন্ডর)';
         document.getElementById('stzChatSubtitle').textContent = productName ? `প্রসঙ্গ: ${productName}` : '';
@@ -398,11 +402,13 @@
             const images = hasImages ? await imgComposer.upload() : [];
             const res = await customerAuthFetch(`${BACKEND_URL}/api/chat/threads/${currentThread._id}/messages`, {
                 method: 'POST',
-                body: JSON.stringify({ text, images })
+                body: JSON.stringify({ text, images, productId: currentProductId || undefined })
             });
             if (res.ok) {
                 const data = await res.json();
+                if (data.card) appendMessage(data.card);
                 appendMessage(data.message);
+                if (data.card) currentProductId = null; // কার্ড একবারই যায়
                 input.value = '';
                 if (imgComposer) imgComposer.clear();
             } else if (imgComposer) {
