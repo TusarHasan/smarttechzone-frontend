@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <script src="analytics.js" defer></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO: এটা প্রাইভেট/ইউটিলিটি পেজ (প্রতিটা ইউজারের জন্য আলাদা ডেটা বা কোনো নির্দিষ্ট
+         কনটেন্ট নেই) — তাই Google এটা ইনডেক্স না করুক, কিন্তু ভেতরের লিংকগুলো (যেমন প্রোডাক্ট
+         লিংক) অনুসরণ করুক, এই জন্য noindex, follow ব্যবহার করা হলো -->
+    <meta name="robots" content="noindex, follow">
+    <title>অ্যাকাউন্ট তৈরি করুন - Smart Tech Zone</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="register.css?v=20261018">
+    <script src="config.js"></script>
+    <script src="visitor-track.js" defer></script>
+    <script src="customer-auth.js"></script>
+    <script src="register.js?v=20261018" defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
+            <a href="cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
+        </div>
+    </nav>
+
+    <main class="signup-shell" aria-labelledby="signupTitle">
+        <header class="signup-heading">
+            <h1 id="signupTitle">স্মার্ট টেক জোন-এ নতুন একাউন্ট তৈরি করুন</h1>
+            <p>আগে থেকেই অ্যাকাউন্ট আছে? <a id="loginLink" href="login.html">লগইন করুন</a></p>
+        </header>
+        <section class="signup-card" aria-label="অ্যাকাউন্ট তৈরি করুন">
+            <form id="registerForm" class="signup-grid" autocomplete="on">
+                <div class="signup-column">
+                    <div class="signup-field">
+                        <label for="regPhone">ফোন নম্বর<span aria-hidden="true">*</span></label>
+                        <input type="tel" id="regPhone" name="tel" autocomplete="tel" placeholder="আপনার ফোন নম্বর লিখুন" maxlength="20" required aria-describedby="phoneHint">
+                        <p class="field-hint" id="phoneHint">যেমন: 017XXXXXXXX</p>
+                    </div>
+                    <div class="signup-field">
+                        <label for="regOtp">SMS ভেরিফিকেশন কোড<span id="otpRequiredMark" hidden aria-hidden="true">*</span></label>
+                        <div class="input-action">
+                            <input type="text" id="regOtp" name="otp" inputmode="numeric" autocomplete="one-time-code" placeholder="৬ সংখ্যার কোড" pattern="[0-9]{6}" maxlength="6" disabled aria-describedby="otpStatus">
+                            <button type="button" id="sendOtpBtn" class="send-otp" disabled>SEND</button>
+                        </div>
+                        <p class="field-hint" id="otpStatus" role="status" aria-live="polite">SMS ভেরিফিকেশনের অবস্থা যাচাই হচ্ছে…</p>
+                    </div>
+                    <div class="signup-field">
+                        <label for="regPassword">পাসওয়ার্ড<span aria-hidden="true">*</span></label>
+                        <div class="input-action">
+                            <input type="password" id="regPassword" name="new-password" autocomplete="new-password" minlength="6" placeholder="কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড" required>
+                            <button type="button" id="passwordToggle" class="password-toggle" aria-label="পাসওয়ার্ড দেখান" aria-pressed="false" aria-controls="regPassword"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m3 3 18 18"/></svg></button>
+                        </div>
+                    </div>
+                    <div class="signup-demographics">
+                        <fieldset class="birthday-field">
+                            <legend>জন্মদিন <span class="optional">(ঐচ্ছিক)</span></legend>
+                            <div class="birthday-selects">
+                                <select id="birthMonth" name="birthMonth" aria-label="জন্মের মাস" autocomplete="bday-month"><option value="">মাস</option></select>
+                                <select id="birthDay" name="birthDay" aria-label="জন্মের দিন" autocomplete="bday-day"><option value="">দিন</option></select>
+                                <select id="birthYear" name="birthYear" aria-label="জন্মের বছর" autocomplete="bday-year"><option value="">বছর</option></select>
+                            </div>
+                        </fieldset>
+                        <div class="gender-field"><label for="regGender">লিঙ্গ <span class="optional">(ঐচ্ছিক)</span></label><select id="regGender" name="gender"><option value="">নির্বাচন করুন</option><option value="male">পুরুষ</option><option value="female">নারী</option><option value="other">অন্যান্য</option></select></div>
+                    </div>
+                </div>
+                <div class="signup-column signup-details">
+                    <div class="signup-field"><label for="regName">পুরো নাম<span aria-hidden="true">*</span></label><input type="text" id="regName" name="name" autocomplete="name" maxlength="100" placeholder="আপনার পুরো নাম" required></div>
+                    <label class="promotion-option" for="regMarketingSms"><input type="checkbox" id="regMarketingSms" name="marketingSms"><span>SMS-এর মাধ্যমে বিশেষ অফার ও প্রমোশনের খবর পেতে চাই।</span></label>
+                    <button type="submit" class="signup-submit" id="registerBtn">SIGN UP</button>
+                    <p class="signup-terms">‘SIGN UP’ ক্লিক করার মাধ্যমে আমি <a href="terms-of-service.html" target="_blank" rel="noopener">ব্যবহারের শর্তাবলি</a> ও <a href="privacy-policy.html" target="_blank" rel="noopener">গোপনীয়তা নীতি</a> মেনে নিচ্ছি।</p>
+                    <div id="authMsg" class="signup-message" role="status" aria-live="polite" aria-atomic="true"></div>
+                    <p class="social-caption">অথবা, সাইন আপ করুন</p>
+                    <div class="signup-social-grid">
+                        <div id="googleSignUpBtn" class="google-signup" aria-label="Google দিয়ে সাইন আপ করুন"><span class="social-loading" id="googleStatus">Google লোড হচ্ছে…</span></div>
+                        <button type="button" id="fbSignUpBtn" class="facebook-signup"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1877f2" aria-hidden="true"><path d="M22 12.06C22 6.48 17.52 2 12 2S2 6.48 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.91h-2.33V22c4.78-.76 8.44-4.92 8.44-9.94z"/></svg>Facebook</button>
+                    </div>
+                    <details class="recovery-email"><summary>রিকভারি ইমেইল যোগ করুন (ঐচ্ছিক)</summary><label for="regEmail">ইমেইল</label><input type="email" id="regEmail" name="email" autocomplete="email" placeholder="example@gmail.com" aria-describedby="emailHint"><p class="field-hint" id="emailHint">পাসওয়ার্ড ভুলে গেলে এই ইমেইলে রিসেট লিংক পাবেন।</p></details>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+
+</body>
+</html>

@@ -45,7 +45,7 @@
                         <input type="tel" id="regPhone" name="tel" autocomplete="tel" placeholder="আপনার ফোন নম্বর লিখুন" maxlength="20" required aria-describedby="phoneHint">
                         <p class="field-hint" id="phoneHint">যেমন: 017XXXXXXXX</p>
                     </div>
-                    <div class="signup-field">
+                    <div class="signup-field" id="otpRow" hidden>
                         <label for="regOtp">SMS ভেরিফিকেশন কোড<span id="otpRequiredMark" hidden aria-hidden="true">*</span></label>
                         <div class="input-action">
                             <input type="text" id="regOtp" name="otp" inputmode="numeric" autocomplete="one-time-code" placeholder="৬ সংখ্যার কোড" pattern="[0-9]{6}" maxlength="6" disabled aria-describedby="otpStatus">

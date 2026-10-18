@@ -731,7 +731,9 @@
         }
         prefillFromAccount();
 
-        let guestOtpRequired = !getCustomerToken();
+        // সাময়িকভাবে OTP বন্ধ। আবার চালু করতে এটি false করুন (এবং ব্যাকএন্ডে OTP_PAUSED=false দিন)।
+        const OTP_PAUSED = true;
+        let guestOtpRequired = !OTP_PAUSED && !getCustomerToken();
         let guestOtpPhone = '';
         let guestOtpRetryAt = 0;
         let guestOtpSending = false;

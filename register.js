@@ -65,6 +65,7 @@
             const data = await request('/registration-options');
             otpEnabled = data.smsOtpEnabled === true;
             const otpAvailable = data.smsOtpAvailable === true;
+            $('otpRow').hidden = !otpEnabled;
             $('regOtp').disabled = !otpEnabled || !otpAvailable;
             $('regOtp').required = otpEnabled;
             $('otpRequiredMark').hidden = !otpEnabled;
