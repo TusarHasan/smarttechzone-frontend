@@ -313,6 +313,13 @@
             <div class="checkout-card">
                 <div class="ck-head"><h3>অর্ডার সামারি</h3></div>
                 <div id="orderSummary"></div>
+                <div id="guestOtpBox" style="margin:16px 0;" hidden>
+                    <label for="guestOtp"><strong>ফোন যাচাই (বাধ্যতামূলক)</strong></label>
+                    <p>অর্ডারের ফোন নম্বরে SMS কোড পাঠিয়ে নিচে লিখুন। কোডের মেয়াদ ৫ মিনিট।</p>
+                    <button type="button" id="sendGuestOtp">OTP পাঠান</button>
+                    <input id="guestOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="৬ সংখ্যার OTP" aria-label="SMS-এ পাওয়া ৬ সংখ্যার OTP" style="width:100%;margin-top:10px;padding:12px;">
+                    <p id="guestOtpMsg" role="status" aria-live="polite"></p>
+                </div>
                 <button class="place-order-btn" id="placeOrderBtn" onclick="placeOrder()">অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)</button>
                 <div id="statusMsg"></div>
             </div>
@@ -724,6 +731,63 @@
         }
         prefillFromAccount();
 
+        let guestOtpRequired = !getCustomerToken();
+        let guestOtpPhone = '';
+        let guestOtpRetryAt = 0;
+        let guestOtpSending = false;
+        const guestOtpBox = document.getElementById('guestOtpBox');
+        const guestOtpInput = document.getElementById('guestOtp');
+        const guestOtpMsg = document.getElementById('guestOtpMsg');
+        const sendGuestOtpBtn = document.getElementById('sendGuestOtp');
+        guestOtpBox.hidden = !guestOtpRequired;
+        function checkoutPhone() {
+            let phone = document.getElementById('custPhone').value.trim().replace(/[\s\-()]/g, '');
+            if (phone.startsWith('+880')) phone = '0' + phone.slice(4);
+            else if (phone.startsWith('880')) phone = '0' + phone.slice(3);
+            return phone;
+        }
+        function updateOtpResend() {
+            const seconds = Math.max(0, Math.ceil((guestOtpRetryAt - Date.now()) / 1000));
+            sendGuestOtpBtn.disabled = guestOtpSending || seconds > 0;
+            sendGuestOtpBtn.textContent = seconds ? `${seconds} সেকেন্ড পরে আবার পাঠান` : 'OTP পাঠান';
+        }
+        setInterval(updateOtpResend, 1000);
+        document.getElementById('custPhone').addEventListener('input', () => {
+            if (checkoutPhone() !== guestOtpPhone) {
+                guestOtpPhone = '';
+                guestOtpInput.value = '';
+                guestOtpMsg.textContent = 'এই নম্বরের জন্য নতুন OTP পাঠান।';
+            }
+        });
+        sendGuestOtpBtn.addEventListener('click', async () => {
+            if (guestOtpSending || Date.now() < guestOtpRetryAt) return;
+            const phone = checkoutPhone();
+            if (!/^01[3-9]\d{8}$/.test(phone)) {
+                guestOtpMsg.textContent = 'সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন।';
+                return;
+            }
+            guestOtpSending = true;
+            sendGuestOtpBtn.disabled = true;
+            guestOtpInput.value = '';
+            guestOtpPhone = '';
+            guestOtpMsg.textContent = 'কোড পাঠানো হচ্ছে…';
+            try {
+                const res = await fetch(`${API_BASE}/api/orders/checkout/otp`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json();
+                guestOtpRetryAt = Date.now() + (Number(data.retryAfter) || 0) * 1000;
+                if (!res.ok) throw new Error(data.error || 'কোড পাঠানো যায়নি।');
+                if (checkoutPhone() !== phone) throw new Error('ফোন নম্বর বদলেছে। বর্তমান নম্বরে নতুন OTP পাঠান।');
+                guestOtpPhone = phone;
+                guestOtpMsg.textContent = 'SMS পাঠানো হয়েছে। কোড লিখে অর্ডার কনফার্ম করুন।';
+                guestOtpInput.focus();
+            } catch (error) {
+                guestOtpMsg.textContent = error.message || 'কোড পাঠানো যায়নি।';
+            } finally { guestOtpSending = false; updateOtpResend(); }
+        });
+
         async function placeOrder() {
             const name = document.getElementById('custName').value.trim();
             const phone = document.getElementById('custPhone').value.trim();
@@ -758,6 +822,13 @@
             const sameDay = isSameDaySelected();
             const isCod = document.getElementById('payCod').checked || sameDay;
 
+            if (guestOtpRequired && (guestOtpPhone !== checkoutPhone() || !/^\d{6}$/.test(guestOtpInput.value.trim()))) {
+                statusMsgWarn('অর্ডারের ফোন নম্বরে OTP পাঠিয়ে ৬ সংখ্যার কোড লিখুন।');
+                guestOtpBox.hidden = false;
+                guestOtpInput.focus();
+                return;
+            }
+
             btn.disabled = true;
             btn.textContent = 'প্রসেস হচ্ছে...';
             statusMsg.textContent = '';
@@ -773,6 +844,7 @@
                         deliveryType: sameDay ? 'sameday' : 'standard',
                         useWallet: walletUseAmount() > 0,
                         couponCode: couponState.code || undefined,
+                        otp: guestOtpInput.value.trim(),
                         items: cart.map(item => ({
                             productId: item.productId,
                             variantLabel: item.variantLabel,
@@ -783,6 +855,15 @@
                 const data = await res.json();
 
                 if (!res.ok) {
+                    if (data.code === 'CHECKOUT_OTP_REQUIRED') {
+                        guestOtpRequired = true;
+                        guestOtpBox.hidden = false;
+                    }
+                    if (guestOtpRequired) {
+                        guestOtpInput.value = '';
+                        guestOtpPhone = '';
+                        guestOtpMsg.textContent = 'আবার অর্ডার করতে নতুন OTP পাঠান।';
+                    }
                     if (data.code === 'COURIER_SCORE_LOW') {
                         const blockErr = new Error(data.error || 'অর্ডার গ্রহণ করা যাচ্ছে না।');
                         blockErr.courierBlock = true;
