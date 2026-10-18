@@ -1526,8 +1526,29 @@
     // সেটা ঠিক করতে পারে
     function executeBuyNow() {
         if (isOutOfStock) { alert('❌ এই প্রোডাক্টটি বর্তমানে স্টকে নেই।'); return; }
-        addCurrentToCart();
-        window.location.href = 'cart.html';
+        if (!currentProduct) return;
+        // Buy Now এখন কার্ট পেজ এড়িয়ে সরাসরি চেকআউটে যায় (Daraz-এর মতো)। শুধু এই একটা আইটেম চেকআউটে যায়;
+        // কার্টের আগের আইটেমগুলো যেমন ছিল তেমনই থাকে (checkout.html ?buynow=1 দেখে sessionStorage থেকে পড়ে)।
+        const info = getSelectedVariantInfo();
+        const item = {
+            productId: currentProduct._id,
+            name: currentProduct.name,
+            price: info.price,
+            variantLabel: info.variantLabel,
+            image: resolveImageUrl(info.image),
+            quantity: quantity
+        };
+        try {
+            sessionStorage.setItem('stz_buynow', JSON.stringify(item));
+        } catch (e) {
+            // sessionStorage বন্ধ থাকলে (প্রাইভেট মোড ইত্যাদি) আগের পথ: কার্টে যোগ করে চেকআউটে
+            addCurrentToCart();
+            window.location.href = 'checkout.html';
+            return;
+        }
+        // "কতজন Cart-এ যোগ করেছে" ও Meta AddToCart ট্র্যাকিং আগের মতোই (addToCart() যা করত)
+        try { trackCartAdd(item.productId); trackMetaAddToCart(item); } catch (e) { /* ট্র্যাকিং ঐচ্ছিক */ }
+        window.location.href = 'checkout.html?buynow=1';
     }
 
     function buyNow() {
