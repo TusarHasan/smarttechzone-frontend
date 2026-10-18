@@ -43,7 +43,13 @@
 .auth-divider::before,.auth-divider::after { content:''; flex:1; height:1px; background:#e9e9ec; }
 .social-login-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; align-items:center; }
 #googleConfig { display:none; }
-#googleSignInBtn { min-width:0; min-height:40px; display:flex; justify-content:center; }
+/* Google may briefly retain its HTML fallback alongside the personalized
+   iframe. Reserve one row and show only the iframe when it is available. */
+#googleSignInBtn { min-width:0; height:40px; overflow:hidden; display:flex; justify-content:center; }
+#googleSignInBtn > div { flex-shrink:0; }
+#googleSignInBtn > div:has(> iframe) > div { display:none; }
+#googleSignInBtn > div > iframe { position:relative !important; top:0 !important; }
+.social-login-row { min-height:40px; }
 .fb-login-btn { width:100%; height:40px; background:#fff; color:#333; border:1px solid #dadce0; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px; font:500 14px Arial,sans-serif; transition:background .2s,border-color .2s; }
 .fb-login-btn:hover { background:#f3f7ff; border-color:#1877f2; }
 @media(max-width:700px) { .auth-container { margin:32px auto; padding:0 16px; } .auth-welcome { flex-direction:column; gap:8px; text-align:center; } .auth-welcome h1 { font-size:19px; } .auth-card { padding:26px 22px 30px; } }
@@ -215,10 +221,12 @@
         }
         window.addEventListener('load', resizeGoogleButton);
         let googleResizeTimer;
-        new ResizeObserver(() => {
+        // Only viewport resizing can request another render. Google changing
+        // its own markup must never trigger a render feedback loop.
+        window.addEventListener('resize', () => {
             clearTimeout(googleResizeTimer);
             googleResizeTimer = setTimeout(resizeGoogleButton, 150);
-        }).observe(googleButton);
+        });
 
         // Google-এর "Sign in with Google" বাটনে ক্লিক করলে গুগল নিজে থেকেই এই ফাংশনটা কল করে,
         // একটা যাচাইকৃত ID টোকেন (credential) সহ — সেটা ব্যাকএন্ডে পাঠিয়ে লগইন/অ্যাকাউন্ট তৈরি হচ্ছে
