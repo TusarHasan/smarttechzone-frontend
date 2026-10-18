@@ -191,16 +191,26 @@
         }
 
         const googleButton = document.getElementById('googleSignInBtn');
+        let googleInitialized = false;
+        let googleButtonWidth = 0;
         function resizeGoogleButton() {
             if (!window.google?.accounts?.id) return;
-            google.accounts.id.initialize({
-                client_id: document.getElementById('googleConfig').dataset.client_id,
-                callback: handleGoogleCredentialResponse, auto_select: false
-            });
+            const width = Math.floor(googleButton.getBoundingClientRect().width);
+            // Google changes its contents after rendering/personalization. Only
+            // rebuild for a real column-width change, never a height change.
+            if (width <= 0 || width === googleButtonWidth) return;
+            if (!googleInitialized) {
+                google.accounts.id.initialize({
+                    client_id: document.getElementById('googleConfig').dataset.client_id,
+                    callback: handleGoogleCredentialResponse, auto_select: false
+                });
+                googleInitialized = true;
+            }
+            googleButtonWidth = width;
+            googleButton.replaceChildren();
             google.accounts.id.renderButton(googleButton, {
                 type: 'standard', theme: 'outline', size: 'large', text: 'signin_with',
-                shape: 'rectangular', logo_alignment: 'center', locale: 'en',
-                width: Math.floor(googleButton.getBoundingClientRect().width)
+                shape: 'rectangular', logo_alignment: 'center', locale: 'en', width
             });
         }
         window.addEventListener('load', resizeGoogleButton);
