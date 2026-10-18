@@ -203,6 +203,16 @@
         finally { socialBusy = false; $('fbSignUpBtn').disabled = false; }
     }
     const googleHost = $('googleSignUpBtn');
+    // The SDK creates a zero-size iframe before its personalized button is ready.
+    // Keep its official HTML fallback visible until an actual iframe is visible.
+    function syncGooglePresentation() {
+        const iframe = googleHost.querySelector('iframe');
+        const rect = iframe && iframe.getBoundingClientRect();
+        googleHost.classList.toggle('google-has-frame', Boolean(rect && rect.width > 0 && rect.height > 0));
+    }
+    new MutationObserver(syncGooglePresentation).observe(googleHost, {
+        childList: true, subtree: true, attributes: true, attributeFilter: ['style']
+    });
     let googleInitialized = false;
     let googleWidth = 0;
     function renderGoogle() {
@@ -218,6 +228,7 @@
             googleInitialized = true;
         }
         googleWidth = width;
+        googleHost.classList.remove('google-has-frame');
         googleHost.replaceChildren();
         google.accounts.id.renderButton(googleHost, {
             type: 'standard', theme: 'outline', size: 'large', text: 'signup_with',

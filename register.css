@@ -56,7 +56,7 @@
 .signup-social-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: center; }
 .google-signup { height: 40px; min-width: 0; display: flex; justify-content: center; overflow: hidden; }
 .google-signup > div { flex-shrink: 0; }
-.google-signup > div:has(> iframe) > div { display: none; }
+.google-signup.google-has-frame > div > div { display: none; }
 .google-signup > div > iframe { position: relative !important; top: 0 !important; }
 .social-loading { display: flex; align-items: center; justify-content: center; border: 1px solid #dadce0; border-radius: 4px; width: 100%; font-size: 12px; color: #707070; }
 .facebook-signup { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 40px; border: 1px solid #dadce0; border-radius: 4px; background: #fff; color: #333; font: 500 14px Arial, sans-serif; cursor: pointer; transition: background .2s, border-color .2s; }
