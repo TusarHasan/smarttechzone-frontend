@@ -968,7 +968,7 @@
 
         const specRows = [];
         if (product.brand) specRows.push(['Brand', product.brand]);
-        if (product.sku) specRows.push(['SKU', product.sku]);
+        // Seller SKU (সাপ্লায়ার/ভ্যারিয়েন্ট কোড) কাস্টমারকে কোথাও দেখানো হয় না
         if (product.model) specRows.push(['Model', product.model]);
         const specTable = document.getElementById('specTable');
         if (specRows.length) {
@@ -1103,7 +1103,7 @@
             image: images.length ? images : [mainImage],
             description: desc,
             brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
-            sku: product.sku || undefined,
+            sku: product._id ? String(product._id) : undefined,
             offers: {
                 '@type': 'Offer',
                 url: pageUrl,

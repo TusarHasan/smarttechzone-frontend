@@ -252,7 +252,8 @@ function buildProductJsonLd(product, images, pageUrl, desc) {
     const { inStock } = stockInfoOf(product);
     const brandName = (product.brand && !/^no\s*brand$/i.test(product.brand)) ? product.brand : linkableBrandOf(product);
     const validUntil = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-    const sku = product.sku || (activeVariantsOf(product).find(v => v.sku) || {}).sku || String(product._id);
+    // Seller SKU কাস্টমারের দেখার মতো কোথাও (পেজ সোর্সসহ) যাবে না, তাই structured data-তে প্রোডাক্ট ID
+    const sku = String(product._id);
 
     const jsonLd = {
         '@context': 'https://schema.org',
@@ -302,7 +303,6 @@ function buildSsrBlock(product, related, pageUrl) {
     if (product.model) specRows.push(['Model', brand ? `<a href="/models/model.html?brand=${encodeURIComponent(brand)}&amp;model=${encodeURIComponent(product.model)}">${escapeHtml(product.model)}</a>` : escapeHtml(product.model)]);
     if (product.partType) specRows.push(['Part type', escapeHtml(product.partType)]);
     if (product.brand && !/^no\s*brand$/i.test(product.brand)) specRows.push(['Brand', escapeHtml(product.brand)]);
-    if (product.sku) specRows.push(['SKU', escapeHtml(product.sku)]);
     if (product.warrantyDuration) specRows.push(['Warranty', escapeHtml(product.warrantyDuration)]);
     const specs = specRows.length ? '<table style="border-collapse:collapse;margin:10px 0;">' + specRows.map(([k, v]) => `<tr><td style="padding:4px 14px 4px 0;color:#666;">${k}</td><td style="padding:4px 0;">${v}</td></tr>`).join('') + '</table>' : '';
 
