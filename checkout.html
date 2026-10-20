@@ -1010,7 +1010,7 @@
                 })
             });
             const data = await res.json().catch(() => ({}));
-            return res.ok && data.ok ? { ok: true, code: data.code, type:data.type, value:data.value, discount: Number(data.discount) || 0 } : { ok: false, error: data.error || 'কুপন যাচাই করা যায়নি।' };
+            return res.ok && data.ok ? { ok: true, code: data.code, type:data.type, value:data.value, discount: Number(data.discount) || 0 } : { ok: false, loginRequired:res.status===401, error: data.error || 'কুপন যাচাই করা যায়নি।' };
         }
 
         async function applyCoupon() {
@@ -1021,7 +1021,7 @@
             btn.disabled = true; setCouponMsg('যাচাই হচ্ছে...', false);
             try {
                 const r = await fetchCouponQuote(code);
-                if (!r.ok) { setCouponMsg(r.error, true); return; }
+                if (!r.ok) { setCouponMsg(r.error, true); if(r.loginRequired){const link=document.createElement('a');link.href='login.html?redirect='+encodeURIComponent(location.pathname+location.search);link.textContent=' লগইন করুন';link.style.marginInlineStart='6px';document.getElementById('couponMsg').append(link);} return; }
                 couponState = { code: r.code, discount: r.discount, type:r.type, value:r.value };
                 input.value = '';
                 setCouponMsg('', false);

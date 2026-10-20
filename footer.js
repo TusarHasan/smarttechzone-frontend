@@ -226,6 +226,8 @@
         document.head.appendChild(css);
         var banner=document.createElement('aside');banner.id='stzWelcomeBanner';banner.className='stz-welcome-banner';banner.setAttribute('aria-label','প্রথম অর্ডারের অফার');
         banner.innerHTML='<a href="/register.html">🎉 Grand Opening Offer! সাইন আপ করলেই প্রথম অর্ডারে ১০% ছাড়! Use Code: <strong>HELLOSTZ</strong></a>';
+        var returnTo=/\/(register|login)(\.html)?$/.test(location.pathname)?'/account.html':location.pathname+location.search;
+        banner.querySelector('a').href='/register.html?redirect='+encodeURIComponent(returnTo);
         document.body.prepend(banner);
         function sizeHeader(){document.documentElement.style.setProperty('--stz-welcome-height',banner.getBoundingClientRect().height+'px');var ticker=document.getElementById('stzWsTicker');document.documentElement.style.setProperty('--stz-existing-ticker-height',(ticker?ticker.getBoundingClientRect().height:0)+'px');}
         sizeHeader();window.addEventListener('resize',sizeHeader);
