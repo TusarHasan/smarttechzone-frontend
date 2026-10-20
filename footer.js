@@ -217,3 +217,27 @@
         }
     });
 })();
+// First-order campaign: shared across retail pages. No order is submitted here.
+(function () {
+    function startWelcomeCampaign() {
+        if(window.self!==window.top || /^\/wholesale(\/|$)/.test(location.pathname) || document.getElementById('stzWelcomeBanner'))return;
+        var css=document.createElement('style');
+        css.textContent='.stz-welcome-banner{position:sticky;top:0;z-index:103;padding:8px 14px;text-align:center;background:#fff0ec;color:#8d2f23;font:500 13px/1.6 "Segoe UI","Noto Sans Bengali",Arial,sans-serif;border-bottom:1px solid #f5d7cf}.stz-welcome-banner a{color:inherit;text-decoration:none}.stz-welcome-banner strong{color:#c33728;white-space:nowrap}.stz-ws-ticker{top:var(--stz-welcome-height,0px)!important}.navbar{top:calc(var(--stz-welcome-height,0px) + var(--stz-existing-ticker-height,0px))!important}.stz-welcome-toast{position:fixed;right:20px;bottom:22px;z-index:10050;max-width:390px;box-sizing:border-box;width:calc(100% - 40px);background:white;border:1px solid #f3c4ba;border-top:4px solid #e74c3c;border-radius:12px;padding:20px 36px 20px 20px;box-shadow:0 8px 35px #24324426;font:15px/1.8 "Segoe UI","Noto Sans Bengali",Arial,sans-serif;color:#293443}.stz-welcome-toast strong{color:#cc3e2f}.stz-welcome-toast button{position:absolute;right:8px;top:8px;border:0;background:transparent;font-size:24px;line-height:1;padding:6px;cursor:pointer;color:#677383}@media(max-width:600px){.stz-welcome-banner{font-size:12px;padding:6px 12px}.stz-welcome-toast{bottom:16px;right:16px;width:calc(100% - 32px)}}';
+        document.head.appendChild(css);
+        var banner=document.createElement('aside');banner.id='stzWelcomeBanner';banner.className='stz-welcome-banner';banner.setAttribute('aria-label','প্রথম অর্ডারের অফার');
+        banner.innerHTML='<a href="/register.html">🎉 Grand Opening Offer! সাইন আপ করলেই প্রথম অর্ডারে ১০% ছাড়! Use Code: <strong>HELLOSTZ</strong></a>';
+        document.body.prepend(banner);
+        function sizeHeader(){document.documentElement.style.setProperty('--stz-welcome-height',banner.getBoundingClientRect().height+'px');var ticker=document.getElementById('stzWsTicker');document.documentElement.style.setProperty('--stz-existing-ticker-height',(ticker?ticker.getBoundingClientRect().height:0)+'px');}
+        sizeHeader();window.addEventListener('resize',sizeHeader);
+        if(window.ResizeObserver){var observer=new ResizeObserver(sizeHeader);observer.observe(banner);var ticker=document.getElementById('stzWsTicker');if(ticker)observer.observe(ticker);}
+        var pending;try{pending=sessionStorage.getItem('stzWelcomeCoupon');}catch{}
+        if(pending==='HELLOSTZ'){
+            var toast=document.createElement('section');toast.className='stz-welcome-toast';toast.setAttribute('role','status');
+            var close=document.createElement('button');close.type='button';close.setAttribute('aria-label','বন্ধ করুন');close.textContent='×';close.addEventListener('click',function(){toast.remove();});
+            var text=document.createElement('p');text.style.margin='0';text.textContent='🎉 স্বাগতম Smart Tech Zone-এ! আপনার প্রথম অর্ডারে ১০% ছাড় পেতে কুপন কোড ব্যবহার করুন: ';
+            var code=document.createElement('strong');code.textContent='HELLOSTZ';text.append(code);toast.append(close,text);document.body.append(toast);
+            try{sessionStorage.removeItem('stzWelcomeCoupon');}catch{}
+        }
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startWelcomeCampaign);else startWelcomeCampaign();
+})();

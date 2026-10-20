@@ -181,6 +181,7 @@
                 birthday, gender: $('regGender').value, marketingSms: $('regMarketingSms').checked
             });
             setCustomerSession(data.token, data.customer);
+            try { sessionStorage.setItem('stzWelcomeCoupon','HELLOSTZ'); } catch {}
             location.assign(redirectTo);
         } catch (error) { message(error.message, true); }
         finally {
@@ -199,6 +200,7 @@
             // Social sign-up uses the existing provider-verified account flow.
             const data = await request(`/${provider}`, credentials);
             setCustomerSession(data.token, data.customer);
+            if(data.isNewCustomer)try { sessionStorage.setItem('stzWelcomeCoupon','HELLOSTZ'); } catch {}
             location.assign(redirectTo);
         } catch (error) { message(error.message, true); }
         finally { socialBusy = false; $('fbSignUpBtn').disabled = false; }
