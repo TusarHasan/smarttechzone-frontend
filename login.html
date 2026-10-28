@@ -151,6 +151,10 @@
         const redirectTo = params.get('redirect') || 'account.html';
         document.getElementById('registerLink').href = `register.html?redirect=${encodeURIComponent(redirectTo)}`;
         document.getElementById('forgotLink').href = `forgot-password.html?redirect=${encodeURIComponent(redirectTo)}`;
+        // অর্ডার করতে লগইন লাগে: চেকআউট থেকে পাঠানো হলে কারণটা জানিয়ে দেওয়া হয়
+        if (/^checkout\.html/.test(redirectTo)) {
+            document.getElementById('authMsg').textContent = 'অর্ডার করতে আগে লগইন করুন। অ্যাকাউন্ট না থাকলে ওপরের "রেজিস্টার করুন" চাপুন, আপনার কার্টের পণ্য থেকে যাবে।';
+        }
 
         // ইতিমধ্যে লগইন করা থাকলে আর এই পেজে থাকার দরকার নেই
         if (getCustomerToken() && getCustomerData()) {
