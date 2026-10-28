@@ -278,6 +278,43 @@
     #variantSheetBody .attr-group:last-child { margin-bottom: 0; }
     #variantSheetBody .attr-group-label { flex: none; padding-top: 0; margin-bottom: 10px; }
     #variantSheetBody .qty-row { margin-top: 20px; }
+    /* ===== শীটে বড় ছবির ঘর (Daraz-এর মতো) =====
+       ক্রেতা যেন ছবি দেখে নিজের ফোনের সঠিক পণ্যটা বাছতে পারে, ভুল অর্ডার কমে। শুধু শীটের ভেতরে প্রযোজ্য
+       (ডেস্কটপের ছোট swatch আগের মতোই থাকে)। প্রতি সারিতে ৩টা, ছবির নিচে ভ্যারিয়েন্টের নাম, বাছাইটা লাল দাগে,
+       কোণার আইকনে চাপলে পুরো স্ক্রিনে ছবি বড় হয়। */
+    .attr-swatch-name, .attr-swatch-zoom { display: none; }
+    #variantSheetBody .attr-swatch-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    #variantSheetBody .attr-swatch {
+        position: relative; width: auto; height: auto; padding: 0; overflow: hidden;
+        border: 2px solid #eee; border-radius: 6px; display: flex; flex-direction: column;
+    }
+    #variantSheetBody .attr-swatch.active { border-color: #e74c3c; padding: 0; }
+    #variantSheetBody .attr-swatch img {
+        width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: contain;
+        background: #f6f7f9; border-radius: 0;
+    }
+    #variantSheetBody .attr-swatch-name {
+        display: block; padding: 6px 4px; text-align: center; font-size: 13px; line-height: 1.25;
+        color: #444; background: #f6f7f9; min-height: 2.5em; word-break: break-word;
+    }
+    #variantSheetBody .attr-swatch.active .attr-swatch-name { color: #e74c3c; background: #fdf1f0; }
+    #variantSheetBody .attr-swatch-zoom {
+        display: flex; align-items: center; justify-content: center; position: absolute; top: 6px; right: 6px;
+        width: 26px; height: 26px; border-radius: 50%; background: rgba(0,0,0,.45); color: #fff;
+        font-size: 15px; line-height: 1;
+    }
+    .variant-sheet { max-height: 90vh; }
+    .variant-sheet-thumb { width: 80px; height: 80px; object-fit: contain; background: #f6f7f9; cursor: zoom-in; }
+    .variant-sheet-variant { font-size: 13px; color: #555; margin-top: 4px; word-break: break-word; }
+    .variant-sheet-variant:empty { display: none; }
+    /* ছবি পুরো স্ক্রিনে বড় করে দেখানো */
+    .swatch-zoom { display: none; position: fixed; inset: 0; z-index: 1100; background: rgba(0,0,0,.92);
+        flex-direction: column; align-items: center; justify-content: center; padding: 12px; }
+    .swatch-zoom.open { display: flex; }
+    .swatch-zoom img { max-width: 100%; max-height: 82vh; object-fit: contain; background: #fff; border-radius: 4px; }
+    .swatch-zoom-caption { color: #fff; font-size: 15px; margin-top: 12px; text-align: center; }
+    .swatch-zoom-close { position: absolute; top: 10px; right: 14px; background: none; border: none;
+        color: #fff; font-size: 34px; line-height: 1; cursor: pointer; padding: 6px 10px; }
 
     /* ============ মোবাইল প্রোডাক্ট পেজ — Daraz অ্যাপ স্টাইল (শুধু ≤768px; ডেস্কটপ অপরিবর্তিত) ============
        নতুন এলিমেন্টগুলো (.m-*) ডেস্কটপে display:none। মোবাইলে: সোয়াইপযোগ্য ছবির গ্যালারি (1/N),
@@ -673,13 +710,19 @@
     <button type="button" class="m-ab-btn m-ab-cart" id="mCartBtn" onclick="addToCartClick()">Add to Cart</button>
 </div>
 
+<div class="swatch-zoom" id="swatchZoom" onclick="closeSwatchZoom()">
+    <button type="button" class="swatch-zoom-close" onclick="closeSwatchZoom()" aria-label="বন্ধ করুন">&times;</button>
+    <img id="swatchZoomImg" src="" alt="">
+    <div class="swatch-zoom-caption" id="swatchZoomCaption"></div>
+</div>
 <div class="variant-sheet-backdrop" id="variantSheetBackdrop" onclick="closeVariantSheet()"></div>
 <div class="variant-sheet" id="variantSheet" role="dialog" aria-modal="true" aria-label="ভ্যারিয়েন্ট বাছাই করুন">
     <div class="variant-sheet-header">
-        <img id="sheetThumb" class="variant-sheet-thumb" src="" alt="">
+        <img id="sheetThumb" class="variant-sheet-thumb" src="" alt="" onclick="openSwatchZoom(this.src, document.getElementById('sheetVariantName').textContent)">
         <div class="variant-sheet-price-wrap">
             <div class="variant-sheet-price">৳<span id="sheetPrice"></span></div>
             <div class="variant-sheet-original" id="sheetOriginalPrice" style="display:none;">৳<span id="sheetOriginalPriceValue"></span></div>
+            <div class="variant-sheet-variant" id="sheetVariantName"></div>
         </div>
         <button type="button" class="variant-sheet-close" onclick="closeVariantSheet()" aria-label="বন্ধ করুন">&times;</button>
     </div>
@@ -1239,6 +1282,8 @@
                         const safeId = `attr-${name.replace(/\s+/g, '_')}-${val.replace(/\s+/g, '_')}`;
                         return `<span class="attr-swatch" onclick="selectAttribute('${name.replace(/'/g, "\\'")}', '${val.replace(/'/g, "\\'")}')" id="${safeId}" title="${val}">
                             <img src="${thumbUrl}" alt="${escapeAttr(product.name)} - ${escapeAttr(val)}" onerror="this.style.display='none'">
+                            <span class="attr-swatch-name">${escapeAttr(val)}</span>
+                            <span class="attr-swatch-zoom" onclick="event.stopPropagation(); openSwatchZoom(this.parentNode.querySelector('img').src, this.parentNode.getAttribute('title'))" aria-label="ছবি বড় করুন">&#x2922;</span>
                         </span>`;
                     }).join('') + `</div></div>`;
             } else {
@@ -1433,6 +1478,9 @@
         if (!sheetThumb) return;
         const mainImg = document.getElementById('mainImage');
         if (mainImg && mainImg.src) sheetThumb.src = mainImg.src;
+        // বাছা ভ্যারিয়েন্টের নাম (Daraz-এর মতো, যেমন "Black, Samsung Galaxy A52"); পুরনো ধরনের ভ্যারিয়েন্টে ফাঁকা
+        const nameEl = document.getElementById('sheetVariantName');
+        if (nameEl) nameEl.textContent = (typeof selectedAttrs === 'object' && selectedAttrs) ? Object.values(selectedAttrs).join(', ') : '';
         document.getElementById('sheetPrice').textContent = document.getElementById('productPrice').textContent;
         const originalWrap = document.getElementById('originalPriceWrap');
         const sheetOriginalWrap = document.getElementById('sheetOriginalPrice');
@@ -1442,6 +1490,17 @@
         } else {
             sheetOriginalWrap.style.display = 'none';
         }
+    }
+
+    // ছবিতে চাপলে পুরো স্ক্রিনে বড় করে দেখানো; যেকোনো জায়গায় চাপলে বা বন্ধ বাটনে বন্ধ হয়
+    function openSwatchZoom(src, caption) {
+        if (!src) return;
+        document.getElementById('swatchZoomImg').src = src;
+        document.getElementById('swatchZoomCaption').textContent = caption || '';
+        document.getElementById('swatchZoom').classList.add('open');
+    }
+    function closeSwatchZoom() {
+        document.getElementById('swatchZoom').classList.remove('open');
     }
 
     function openVariantSheet(action) {
