@@ -23,6 +23,12 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .product-card { animation: fadeInUp 0.35s ease both; }
+        /* কার্ডের রেটিং + বিক্রির সংখ্যা (হোমপেজের কার্ডের মতো) */
+        .sr-meta { display:flex; align-items:center; gap:6px; font-size:11.5px; color:#777; flex-wrap:wrap; margin-top:4px; }
+        .sr-rate { display:inline-flex; align-items:center; gap:4px; }
+        .sr-dot { width:3px; height:3px; border-radius:50%; background:#ccc; }
+        .sr-meta .stz-stars { position:relative; display:inline-block; color:#ddd; letter-spacing:1px; line-height:1; font-size:12px; }
+        .sr-meta .stz-stars-fill { position:absolute; left:0; top:0; overflow:hidden; white-space:nowrap; color:#f5a623; }
     </style>
     <script src="config.js"></script>
     <script src="visitor-track.js" defer></script>
@@ -184,6 +190,26 @@
             return `<div class="price">৳ ${p.price}</div>`;
         }
 
+        // তারা: নিচে ফ্যাকাশে ধূসর ৫টা, উপরে রঙিন ৫টা — গড় রেটিং অনুযায়ী width কেটে আংশিক ভরাট (index.html-এর মতো)
+        function starsHtml(avg) {
+            const pct = Math.max(0, Math.min(100, (Number(avg) || 0) / 5 * 100));
+            return `<span class="stz-stars" aria-label="${Number(avg || 0).toFixed(1)} out of 5"><span class="stz-stars-fill" style="width:${pct}%">★★★★★</span>★★★★★</span>`;
+        }
+        function fmtSold(n) {
+            n = Number(n) || 0;
+            if (n <= 0) return '';
+            if (n >= 1000) return (Math.floor(n / 100) / 10) + 'K+ sold';
+            return n + ' sold';
+        }
+        // রিভিউ বা বিক্রি কোনোটাই না থাকলে কিছু দেখানো হয় না (বানানো সংখ্যা নয়)
+        function metaBlockHtml(p) {
+            const rating = p.reviewCount > 0
+                ? `<span class="sr-rate">${starsHtml(p.ratingAvg)}<span>${Number(p.ratingAvg).toFixed(1)} (${p.reviewCount})</span></span>` : '';
+            const sold = fmtSold(p.soldCount);
+            if (!rating && !sold) return '';
+            return `<div class="sr-meta">${rating}${(rating && sold) ? '<span class="sr-dot"></span>' : ''}${sold ? `<span>${sold}</span>` : ''}</div>`;
+        }
+
         function renderItems(items) {
             const grid = document.getElementById('searchGrid');
             items.forEach(p => {
@@ -197,6 +223,7 @@
                     <img src="${imgUrl}" alt="${(p.name || '').replace(/"/g, '&quot;')}" onerror="this.src='https://via.placeholder.com/200'">
                     <h3>${p.name}</h3>
                     ${priceBlockHtml(p)}
+                    ${metaBlockHtml(p)}
                     <button onclick="event.stopPropagation(); quickAddToCart('${p._id}', '${(p.name || '').replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}', this)" style="width:100%; background:#F57224; color:#fff; border:none; padding:8px; border-radius:2px; cursor:pointer; font-size:13px; font-weight:500; margin-top:6px; transition:opacity .2s;" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">Add to Cart</button>
                 `;
                 grid.appendChild(card);

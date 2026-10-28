@@ -574,7 +574,7 @@
     <section class="category-section">
         <section class="products-section">
     <div class="container">
-        <h2 class="section-title" id="productsSectionTitle">Latest Products</h2>
+        <h2 class="section-title" id="productsSectionTitle">Popular Products</h2>
         <div id="categoryBanner"></div>
         <div id="product-list" class="product-grid mp-grid"></div>
         <div class="load-more-wrapper" id="loadMoreWrapper" style="display:none;">
@@ -735,7 +735,7 @@
             const titleEl = document.getElementById('productsSectionTitle');
             const banner = document.getElementById('categoryBanner');
 
-            titleEl.textContent = currentCategory ? [currentCategory, currentBrand, currentModel].filter(Boolean).join(' · ') : 'Latest Products';
+            titleEl.textContent = currentCategory ? [currentCategory, currentBrand, currentModel].filter(Boolean).join(' · ') : 'Popular Products';
             if (!currentCategory) banner.innerHTML = '';
 
             const listEl = document.getElementById('product-list');

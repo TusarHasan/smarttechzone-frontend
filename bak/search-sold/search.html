@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="analytics.js" defer></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO: এটা প্রাইভেট/ইউটিলিটি পেজ (প্রতিটা ইউজারের জন্য আলাদা ডেটা বা কোনো নির্দিষ্ট
+         কনটেন্ট নেই) — তাই Google এটা ইনডেক্স না করুক, কিন্তু ভেতরের লিংকগুলো (যেমন প্রোডাক্ট
+         লিংক) অনুসরণ করুক, এই জন্য noindex, follow ব্যবহার করা হলো -->
+    <meta name="robots" content="noindex, follow">
+    <title>Search Results - Smart Tech Zone</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .load-more-wrapper { text-align: center; margin: 30px 0; }
+        .load-more-btn {
+            background: #fff; border: 1px solid #e74c3c; color: #e74c3c; padding: 10px 32px;
+            border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 700;
+        }
+        .load-more-btn:hover { background: #fdf1f0; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .product-card { animation: fadeInUp 0.35s ease both; }
+    </style>
+    <script src="config.js"></script>
+    <script src="visitor-track.js" defer></script>
+    <script src="customer-auth.js"></script>
+    <script src="wishlist.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" defer></script>
+    <script src="chat-widget.js" defer></script>
+    <script src="cart.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
+            <a href="cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
+        </div>
+    </nav>
+    <main>
+
+    <div class="brand-header">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a> / <span>Search</span>
+        </div>
+        <h1 id="searchTitle">সার্চ ফলাফল</h1>
+        <p id="searchSubtitle">&nbsp;</p>
+    </div>
+
+    <section class="product-section">
+        <div class="container">
+            <div class="product-grid" id="searchGrid">
+                <p style="grid-column: 1/-1; text-align:center; color:#999;">লোড হচ্ছে...</p>
+            </div>
+            <div class="load-more-wrapper" id="loadMoreWrapper" style="display:none;">
+                <button class="load-more-btn" id="loadMoreBtn" onclick="renderNextPage()">Load More</button>
+            </div>
+        </div>
+    </section>
+
+    </main>
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+
+    <script>
+        const API_BASE = BACKEND_URL;
+        const params = new URLSearchParams(window.location.search);
+        const QUERY = (params.get('q') || '').trim();
+
+        // SEO: কিওয়ার্ডসহ পরিষ্কার URL — /product/<slug>-i<id>
+        // *** হুবহু কপি আছে: product.html, index.html, brands/brand.html, models/model.html,
+        // netlify/edge-functions/product-seo.js ও model-seo.js, backend/routes/sitemap.js ***
+        function slugifyProductName(name) {
+            let s = String(name || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            if (s.length > 70) {
+                const cut = s.slice(0, 70);
+                const lastDash = cut.lastIndexOf('-');
+                s = lastDash > 20 ? cut.slice(0, lastDash) : cut;
+            }
+            return s || 'product';
+        }
+        function buildProductPath(name, id) {
+            return `/product/${slugifyProductName(name)}-i${id}`;
+        }
+
+        function resolveImg(url, w, h) {
+            if (!url) return 'https://via.placeholder.com/200';
+            const abs = url.startsWith('http') ? url : `${API_BASE}${url}`;
+            if (!w) return abs;
+            const qs = new URLSearchParams({ url: abs, w: String(w), fit: 'cover', q: '75' });
+            if (h) qs.set('h', String(h));
+            return `/.netlify/images?${qs.toString()}`;
+        }
+
+        async function quickAddToCart(productId, name, price, image, btnEl) {
+            // ভ্যারিয়েন্ট থাকলে কার্টে অন্ধভাবে না তুলে প্রোডাক্ট পেজে পাঠানো হয় (cart.js-এর resolveQuickAddItem দেখুন)
+            const oldText = btnEl ? btnEl.textContent : '';
+            if (btnEl) { btnEl.disabled = true; btnEl.textContent = '...'; }
+            const r = await resolveQuickAddItem(productId, { name, price, image });
+            if (btnEl) { btnEl.disabled = false; btnEl.textContent = oldText; }
+            if (r.needsChoice) {
+                window.location.href = buildProductPath(name, productId);
+                return;
+            }
+            addToCart(r.item);
+            const card = btnEl ? btnEl.closest('.product-card') : null;
+            flyToCart(r.item.image || image, name, (card && card.querySelector('img')) || btnEl);
+        }
+
+        let currentPage = 1;
+        let totalPages = 1;
+        const PAGE_SIZE = 24;
+
+        async function loadSearchResults() {
+            const grid = document.getElementById('searchGrid');
+            const titleEl = document.getElementById('searchTitle');
+            const subtitleEl = document.getElementById('searchSubtitle');
+
+            if (!QUERY) {
+                titleEl.textContent = 'সার্চ ফলাফল';
+                subtitleEl.textContent = 'কিছু খুঁজতে উপরের বক্সে লিখুন';
+                grid.innerHTML = '';
+                return;
+            }
+
+            titleEl.textContent = `"${QUERY}" এর ফলাফল`;
+            currentPage = 1;
+            await loadSearchPage();
+        }
+
+        async function loadSearchPage() {
+            const grid = document.getElementById('searchGrid');
+            const subtitleEl = document.getElementById('searchSubtitle');
+            try {
+                // পুরো ক্যাটালগ ব্রাউজারে এনে ক্লায়েন্ট-সাইডে ফিল্টার করার বদলে ব্যাকএন্ডের search+pagination
+                // ব্যবহার করা হচ্ছে — নাম/SKU/ব্র্যান্ড/মডেল সবগুলোতেই মিলিয়ে দেখে (fields=summary: ছোট পেলোড)
+                const qs = new URLSearchParams({ status: 'published', fields: 'summary', search: QUERY, page: currentPage, limit: PAGE_SIZE });
+                const res = await fetch(`${API_BASE}/api/products?${qs.toString()}`);
+                const data = await res.json();
+                totalPages = data.totalPages || 1;
+
+                subtitleEl.textContent = `${data.total || 0} টি প্রোডাক্ট পাওয়া গেছে`;
+
+                if (currentPage === 1) grid.innerHTML = '';
+
+                const items = data.products || [];
+                if (currentPage === 1 && items.length === 0) {
+                    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999;">কোনো প্রোডাক্ট পাওয়া যায়নি। অন্য কিছু লিখে খুঁজে দেখুন।</p>';
+                    document.getElementById('loadMoreWrapper').style.display = 'none';
+                    return;
+                }
+
+                renderItems(items);
+                document.getElementById('loadMoreWrapper').style.display = currentPage < totalPages ? 'block' : 'none';
+            } catch (err) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999;">সার্চ করতে সমস্যা হয়েছে।</p>';
+            }
+        }
+
+        // Daraz-এর মতো — originalPrice থাকলে (Add Products ফর্মে Special Price ব্যবহার করলে) সেটা
+        // কেটে/স্ট্রাইকথ্রু দেখিয়ে পাশে আসল বিক্রয় মূল্য (p.price) দেখানো হয়। কার্টে/চেকআউটে সবসময়
+        // p.price-ই যোগ হয় (নিচের quickAddToCart কলে অপরিবর্তিত), তাই দাম মিসম্যাচের কোনো ঝুঁকি নেই।
+        function priceBlockHtml(p) {
+            if (p.originalPrice && p.originalPrice > p.price) {
+                const pct = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
+                return `<div class="price-block-row">
+                    <span class="price-old">৳ ${p.originalPrice}</span>
+                    <span class="price">৳ ${p.price}</span>
+                    <span class="discount-tag">-${pct}%</span>
+                </div>`;
+            }
+            return `<div class="price">৳ ${p.price}</div>`;
+        }
+
+        function renderItems(items) {
+            const grid = document.getElementById('searchGrid');
+            items.forEach(p => {
+                const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0], 200, 200) : 'https://via.placeholder.com/200';
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.style.cursor = 'pointer';
+                card.onclick = () => window.location.href = buildProductPath(p.name, p._id);
+                card.innerHTML = `
+                    ${typeof stzWishlistHeartHtml === 'function' ? stzWishlistHeartHtml(p._id) : ''}
+                    <img src="${imgUrl}" alt="${(p.name || '').replace(/"/g, '&quot;')}" onerror="this.src='https://via.placeholder.com/200'">
+                    <h3>${p.name}</h3>
+                    ${priceBlockHtml(p)}
+                    <button onclick="event.stopPropagation(); quickAddToCart('${p._id}', '${(p.name || '').replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}', this)" style="width:100%; background:#F57224; color:#fff; border:none; padding:8px; border-radius:2px; cursor:pointer; font-size:13px; font-weight:500; margin-top:6px; transition:opacity .2s;" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">Add to Cart</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderNextPage() {
+            currentPage++;
+            loadSearchPage();
+        }
+
+        loadSearchResults();
+    </script>
+</body>
+</html>
