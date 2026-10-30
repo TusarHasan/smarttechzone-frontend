@@ -187,13 +187,21 @@
                     body: JSON.stringify({ phone, password })
                 });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'লগইন করা যায়নি।');
+                if (!res.ok) { const e = new Error(data.error || 'লগইন করা যায়নি।'); e.code = data.code; throw e; }
 
                 setCustomerSession(data.token, data.customer);
                 window.location.href = redirectTo;
             } catch (err) {
                 msg.style.color = '#e74c3c';
                 msg.textContent = '❌ ' + err.message;
+                // এই নম্বরে অ্যাকাউন্টই নেই (যেমন আগে ম্যানুয়াল/ফোনে অর্ডার করেছেন) — সরাসরি রেজিস্টার লিংক
+                if (err.code === 'NO_ACCOUNT') {
+                    const a = document.createElement('a');
+                    a.href = `register.html?redirect=${encodeURIComponent(redirectTo)}`;
+                    a.textContent = ' রেজিস্টার করুন →';
+                    a.style.cssText = 'color:#e74c3c;font-weight:700;text-decoration:underline;white-space:nowrap;';
+                    msg.appendChild(a);
+                }
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'লগইন করুন';
