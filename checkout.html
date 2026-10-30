@@ -69,13 +69,24 @@
         .mfs-panel { display: none; margin-top: 10px; border: 1.5px solid #f0a8a0; border-radius: 6px; padding: 14px; background: #fffaf9; }
         .mfs-panel .mfs-title { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 8px; }
         .mfs-providers { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-        .mfs-prov { flex: 1; min-width: 90px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1.5px solid #e2e2e2; border-radius: 6px; padding: 9px 8px; cursor: pointer; background: #fff; font-size: 14px; font-weight: 600; color: #333; }
-        .mfs-prov input { width: auto; margin: 0; }
-        .mfs-prov.selected { border-color: #e74c3c; background: #fdf6f5; }
+        .mfs-prov { position: relative; flex: 1; min-width: 96px; display: flex; align-items: center; justify-content: center; border: 2px solid #e2e2e2; border-radius: 10px; padding: 8px 6px; cursor: pointer; background: #fff; transition: border-color .15s, box-shadow .15s, transform .15s; }
+        .mfs-prov:hover { border-color: #f0a8a0; transform: translateY(-1px); }
+        .mfs-prov input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
+        .mfs-prov:focus-within { box-shadow: 0 0 0 3px rgba(231,76,60,.25); }
+        .mfs-prov.selected { border-color: #e74c3c; box-shadow: 0 0 0 3px rgba(231,76,60,.18); }
+        .mfs-prov.selected::after { content: '✓'; position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; border-radius: 50%; background: #e74c3c; color: #fff; font-size: 13px; font-weight: 800; line-height: 22px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+        .mfs-logo { display: block; height: 44px; width: auto; max-width: 100%; }
+        .mfs-logos { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+        .mfs-logos img { display: block; height: 28px; width: auto; border: 1px solid #eee; border-radius: 6px; background: #fff; }
         .mfs-steps { margin: 0 0 10px 18px; padding: 0; font-size: 13.5px; color: #444; line-height: 1.7; }
         .mfs-steps b { color: #111; }
         .mfs-panel input[type="text"], .mfs-panel input[type="tel"] { width: 100%; box-sizing: border-box; margin: 0 0 8px; }
         .mfs-note { font-size: 12.5px; color: #888; margin: 4px 0 0; line-height: 1.6; }
+        .mfs-copyrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+        .mfs-big { font-size: 20px; font-weight: 800; color: #111; letter-spacing: .5px; }
+        .mfs-copy { border: 1.5px solid #e74c3c; background: #fff; color: #e74c3c; border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .mfs-copy.done { background: #16a34a; border-color: #16a34a; color: #fff; }
+        .mfs-steps li { margin-bottom: 8px; }
         #statusMsg { margin-top: 12px; font-size: 14px; text-align: center; }
         .empty-cart { text-align: center; padding: 60px 20px; color: #888; }
         .empty-cart a { color: #e74c3c; font-weight: bold; text-decoration: none; }
@@ -310,18 +321,21 @@
                 <div class="po-text">
                     <strong>অনলাইন পেমেন্ট</strong>
                     <span>bKash, Nagad অথবা Rocket-এ Send Money করে এখনই পরিশোধ করুন</span>
+                    <div class="mfs-logos"><img src="images/pay-bkash.png" alt="bKash" width="67" height="28"><img src="images/pay-nagad.png" alt="Nagad" width="67" height="28"><img src="images/pay-rocket.png" alt="Rocket" width="67" height="28"></div>
                 </div>
             </label>
             <div class="mfs-panel" id="mfsPanel">
                 <div class="mfs-title">কোন মাধ্যমে পেমেন্ট করবেন?</div>
                 <div class="mfs-providers">
-                    <label class="mfs-prov"><input type="radio" name="mfsProvider" value="bkash"><span>bKash</span></label>
-                    <label class="mfs-prov"><input type="radio" name="mfsProvider" value="nagad"><span>Nagad</span></label>
-                    <label class="mfs-prov"><input type="radio" name="mfsProvider" value="rocket"><span>Rocket</span></label>
+                    <label class="mfs-prov" title="bKash"><input type="radio" name="mfsProvider" value="bkash" aria-label="bKash"><img class="mfs-logo" src="images/pay-bkash.png" alt="bKash" width="105" height="44"></label>
+                    <label class="mfs-prov" title="Nagad"><input type="radio" name="mfsProvider" value="nagad" aria-label="Nagad"><img class="mfs-logo" src="images/pay-nagad.png" alt="Nagad" width="105" height="44"></label>
+                    <label class="mfs-prov" title="Rocket"><input type="radio" name="mfsProvider" value="rocket" aria-label="Rocket"><img class="mfs-logo" src="images/pay-rocket.png" alt="Rocket" width="105" height="44"></label>
                 </div>
                 <ol class="mfs-steps">
-                    <li>আপনার bKash / Nagad / Rocket অ্যাপ থেকে এই নম্বরে <b>Send Money</b> করুন: <b>01718381066</b></li>
-                    <li>টাকার পরিমাণ: <b id="mfsAmount">৳ 0</b> (পুরো অর্ডারের টাকা)</li>
+                    <li>আপনার bKash / Nagad / Rocket অ্যাপ খুলে <b>Send Money</b> বেছে নিন এবং এই নম্বরে পাঠান:
+                        <div class="mfs-copyrow"><span class="mfs-big" id="mfsNumber">01718381066</span><button type="button" class="mfs-copy" onclick="mfsCopy('number', this)">কপি করুন</button></div></li>
+                    <li>টাকার পরিমাণ (পুরো অর্ডারের টাকা, কম বা বেশি নয়):
+                        <div class="mfs-copyrow"><span class="mfs-big" id="mfsAmount">৳ 0</span><button type="button" class="mfs-copy" onclick="mfsCopy('amount', this)">কপি করুন</button></div></li>
                     <li>পেমেন্ট শেষে পাওয়া <b>TrxID</b> এবং যে নম্বর থেকে পাঠিয়েছেন সেটা নিচে লিখুন</li>
                 </ol>
                 <input type="text" id="mfsTrx" placeholder="TrxID (যেমন 8N7A6D5E4C)" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false">
@@ -681,7 +695,35 @@
             if (!panel || !online) return;
             const on = online.checked && !isSameDaySelected();
             panel.style.display = on ? 'block' : 'none';
-            if (on) document.getElementById('mfsAmount').textContent = '৳ ' + formatPrice(mfsAmountNow());
+            if (on) {
+                document.getElementById('mfsAmount').textContent = '৳ ' + formatPrice(mfsAmountNow());
+                // বেশিরভাগ কাস্টমার নিজের নম্বর থেকেই পাঠায়: ফাঁকা থাকলে অর্ডারের ফোন নম্বর বসিয়ে দেওয়া হয় (বদলানো যায়)
+                const snd = document.getElementById('mfsSender');
+                const ph = (document.getElementById('custPhone').value || '').trim();
+                if (snd && !snd.value && !snd.dataset.touched && /^01[3-9]\d{8}$/.test(ph)) snd.value = ph;
+            }
+        }
+        // নম্বর/টাকা কপি: নতুন ব্রাউজারে clipboard API, না থাকলে পুরনো পদ্ধতি। টাকা কমা/৳ ছাড়া সংখ্যা হিসেবে কপি হয়
+        function mfsCopy(what, btn) {
+            const text = what === 'number'
+                ? document.getElementById('mfsNumber').textContent.trim()
+                : String(Math.round(mfsAmountNow() * 100) / 100);
+            const done = () => {
+                const old = btn.getAttribute('data-label') || btn.textContent;
+                btn.setAttribute('data-label', old);
+                btn.textContent = 'কপি হয়েছে ✓';
+                btn.classList.add('done');
+                setTimeout(() => { btn.textContent = old; btn.classList.remove('done'); }, 1800);
+            };
+            const fallback = () => {
+                const ta = document.createElement('textarea');
+                ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); done(); } catch (e) { /* কপি না হলে কাস্টমার হাতে লিখে নেবে */ }
+                document.body.removeChild(ta);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+            else fallback();
         }
         document.querySelectorAll('input[name="mfsProvider"]').forEach(r => r.addEventListener('change', function () {
             document.querySelectorAll('.mfs-prov').forEach(el => el.classList.remove('selected'));
@@ -692,9 +734,47 @@
             if (v !== this.value) this.value = v;
         });
         document.getElementById('mfsSender').addEventListener('input', function () {
+            this.dataset.touched = '1';
             const v = this.value.replace(/[^0-9+]/g, '');
             if (v !== this.value) this.value = v;
         });
+
+        // ===== ফর্ম মনে রাখা: bKash অ্যাপে গিয়ে ফিরলে ব্রাউজার পেজ রিলোড করলেও মাধ্যম, TrxID ও নম্বর ফিরে আসে =====
+        // শুধু এই ট্যাবের sessionStorage-এ (ট্যাব বন্ধ করলে মুছে যায়), অর্ডার হয়ে গেলে মুছে ফেলা হয়
+        const MFS_DRAFT_KEY = 'stz_mfs_draft';
+        function mfsDraftSave() {
+            try {
+                if (!document.getElementById('payOnline').checked) { sessionStorage.removeItem(MFS_DRAFT_KEY); return; }
+                const prov = document.querySelector('input[name="mfsProvider"]:checked');
+                const snd = document.getElementById('mfsSender');
+                sessionStorage.setItem(MFS_DRAFT_KEY, JSON.stringify({
+                    provider: prov ? prov.value : '',
+                    trx: document.getElementById('mfsTrx').value || '',
+                    sender: snd.value || '',
+                    touched: snd.dataset.touched ? 1 : 0
+                }));
+            } catch (e) { /* sessionStorage না থাকলেও চেকআউট ঠিকই চলে */ }
+        }
+        function mfsDraftRestore() {
+            try {
+                const d = JSON.parse(sessionStorage.getItem(MFS_DRAFT_KEY) || 'null');
+                const online = document.getElementById('payOnline');
+                if (!d || !online || online.disabled) return;
+                online.checked = true;
+                online.dispatchEvent(new Event('change', { bubbles: true }));
+                if (d.provider) {
+                    const r = document.querySelector('input[name="mfsProvider"][value="' + d.provider + '"]');
+                    if (r) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
+                }
+                if (d.trx) document.getElementById('mfsTrx').value = String(d.trx).toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 40);
+                const snd = document.getElementById('mfsSender');
+                if (d.sender) snd.value = String(d.sender).replace(/[^0-9+]/g, '').slice(0, 14);
+                if (d.touched) snd.dataset.touched = '1';
+            } catch (e) { /* নষ্ট ডেটা হলে চুপচাপ বাদ */ }
+        }
+        document.addEventListener('input', e => { if (e.target && (e.target.id === 'mfsTrx' || e.target.id === 'mfsSender')) mfsDraftSave(); });
+        document.addEventListener('change', e => { if (e.target && (e.target.name === 'mfsProvider' || e.target.name === 'paymentMethod')) mfsDraftSave(); });
+        window.addEventListener('load', mfsDraftRestore);
 
         function updateSummaryTotals() {
             updateShipFees();
@@ -945,6 +1025,10 @@
                 // পেমেন্ট গেটওয়েতে (বা সরাসরি সফল পেজে) পাঠানোর আগে কার্ট খালি করা হচ্ছে
                 if (BUY_NOW_ITEM) { try { sessionStorage.removeItem(BUY_NOW_KEY); } catch (e) {} } else { clearCart(); }
 
+                if (data.mfs && mfsData) {
+                    // সফল পেজের WhatsApp বাটনের জন্য শেষ তথ্য (শুধু এই ট্যাবে), আর ফর্মের মনে-রাখা তথ্য মুছে ফেলা
+                    try { sessionStorage.setItem('stz_mfs_last', JSON.stringify({ order: data.orderNumber, trx: mfsData.trxId, provider: mfsData.provider })); sessionStorage.removeItem(MFS_DRAFT_KEY); } catch (e) {}
+                }
                 if (data.cod) {
                     // সার্ভার-যাচাইকৃত total-ও পাঠানো হচ্ছে (order-success.html এখান থেকে Meta Pixel
                     // Purchase ইভেন্ট পাঠাবে) — ক্লায়েন্টের নিজের হিসাব করা দাম না

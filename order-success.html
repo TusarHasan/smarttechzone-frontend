@@ -63,6 +63,7 @@
                 কোনো প্রশ্ন থাকলে আমাদের সাথে যোগাযোগ করুন।
             </p>
             <div class="result-actions">
+                <a id="mfsWaBtn" class="btn-primary" style="display:none; background:#16a34a;" href="https://wa.me/8801718381066" target="_blank" rel="noopener">পেমেন্টে সমস্যা? WhatsApp করুন</a>
                 <a href="track.html" class="btn-primary">অর্ডার ট্র্যাক করুন</a>
                 <a href="index.html" class="btn-secondary">কেনাকাটা চালিয়ে যান</a>
             </div>
@@ -82,6 +83,18 @@
                 'আপনার অর্ডার ও পেমেন্টের তথ্য আমরা পেয়েছি। TrxID মিলিয়ে পেমেন্ট নিশ্চিত হলে অর্ডারটি প্রসেস করা হবে।<br>' +
                 'যাচাই হতে কিছু সময় লাগতে পারে। অর্ডারের অবস্থা দেখতে আপনার ফোন নাম্বার এবং উপরের অর্ডার নাম্বারটি দিয়ে ট্র্যাক করুন।<br>' +
                 'কোনো প্রশ্ন থাকলে হটলাইন 01718381066-এ যোগাযোগ করুন।';
+        }
+        // পেমেন্ট নিয়ে সমস্যা হলে WhatsApp: অর্ডার নম্বর (আর একই ট্যাবে থাকলে TrxID) আগে থেকে লেখা মেসেজ
+        if (params.get('pay') === 'mfs' && orderNumber) {
+            let last = null;
+            try { last = JSON.parse(sessionStorage.getItem('stz_mfs_last') || 'null'); } catch (e) {}
+            const names = { bkash: 'bKash', nagad: 'Nagad', rocket: 'Rocket' };
+            const info = (last && last.order === orderNumber && last.trx) ? ' (' + (names[last.provider] || 'Send Money') + ', TrxID ' + last.trx + ')' : '';
+            const msg = 'আসসালামু আলাইকুম, আমার অর্ডার ' + orderNumber + '-এর পেমেন্ট' + info + ' নিয়ে একটা সমস্যা/প্রশ্ন আছে।\n\n'
+                + 'Hello, I have an issue/question about the payment' + info + ' for my order ' + orderNumber + '.';
+            const wa = document.getElementById('mfsWaBtn');
+            wa.href = 'https://wa.me/8801718381066?text=' + encodeURIComponent(msg);
+            wa.style.display = '';
         }
         document.getElementById('orderNumberBox').textContent = orderNumber
             ? `অর্ডার নাম্বার: ${orderNumber}`
