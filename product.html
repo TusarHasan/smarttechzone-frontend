@@ -155,6 +155,12 @@
         padding: 8px 24px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;
     }
 
+    /* Specifications — Daraz-স্টাইল গোছানো গ্রিড: উপরে ধূসর লেবেল, নিচে মান (Brand | SKU / Model) */
+    .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; margin-top: 12px; font-size: 14px; }
+    .spec-item { min-width: 0; overflow-wrap: anywhere; }
+    .spec-k { color: #888; font-size: 13px; margin-bottom: 3px; }
+    .spec-v { color: #222; font-weight: 500; }
+    @media (max-width: 340px) { .spec-grid { grid-template-columns: 1fr; } }
     .spec-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
     .spec-table tr { border-bottom: 1px solid #f0f0f0; }
     .spec-table td { padding: 10px 8px; }
@@ -633,7 +639,7 @@
 
         <div class="lower-section" id="specSection">
             <div class="section-title">Specifications</div>
-            <table class="spec-table" id="specTable"></table>
+            <div class="spec-grid" id="specTable"></div>
         </div>
 
         <div class="lower-section" id="boxSection">
@@ -1009,17 +1015,7 @@
             viewMoreBtn.textContent = 'VIEW MORE';
         }
 
-        const specRows = [];
-        if (product.brand) specRows.push(['Brand', product.brand]);
-        // Seller SKU (সাপ্লায়ার/ভ্যারিয়েন্ট কোড) কাস্টমারকে কোথাও দেখানো হয় না
-        if (product.model) specRows.push(['Model', product.model]);
-        const specTable = document.getElementById('specTable');
-        if (specRows.length) {
-            specTable.innerHTML = specRows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
-            document.getElementById('specSection').style.display = 'block';
-        } else {
-            document.getElementById('specSection').style.display = 'none';
-        }
+        renderSpecs(null);
 
         if (product.whatsInBox) {
             document.getElementById('boxContent').textContent = product.whatsInBox;
@@ -1319,6 +1315,27 @@
         });
     }
 
+    // Specifications গ্রিড: Brand | SKU / Model। SKU ভ্যারিয়েন্ট বদলালে সেই ভ্যারিয়েন্টেরটা দেখায়
+    // (সার্ভার শুধু সংখ্যার SKU পাঠায়; না থাকলে SKU সারিই আসে না)
+    let specVariant = null;
+    function renderSpecs(v) {
+        const product = currentProduct;
+        if (!product) return;
+        if (v) specVariant = v;
+        const pv = specVariant || (product.variants && product.variants[0]) || null;
+        // ভ্যারিয়েন্ট থাকলে সেই ভ্যারিয়েন্টেরই SKU (অন্যটার নয়); কোনো ভ্যারিয়েন্টেই SKU না থাকলে প্রোডাক্ট-লেভেলেরটা
+        const vars = product.variants || [];
+        const sku = vars.length && vars.some(x => x && x.sku) ? ((pv && pv.sku) || '') : (product.sku || '');
+        const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const rows = [];
+        if (product.brand) rows.push(['Brand', product.brand]);
+        if (sku) rows.push(['SKU', sku]);
+        if (product.model) rows.push(['Model', product.model]);
+        const box = document.getElementById('specTable');
+        box.innerHTML = rows.map(([k, val]) => `<div class="spec-item"><div class="spec-k">${k}</div><div class="spec-v">${esc(val)}</div></div>`).join('');
+        document.getElementById('specSection').style.display = rows.length ? 'block' : 'none';
+    }
+
     function findMatchingVariant() {
         const variants = currentProduct.variants || [];
         let match = variants.find(v =>
@@ -1331,6 +1348,7 @@
     function applySelectedVariant() {
         const v = findMatchingVariant();
         if (!v) return;
+        renderSpecs(v);
         document.getElementById('productPrice').textContent = formatPrice(v.price);
         updatePriceDisplay(v.price, v.originalPrice);
         if (v.images && v.images.length) {
@@ -1393,6 +1411,7 @@
 
     function selectLegacyVariant(i) {
         const v = currentProduct.variants[i];
+        renderSpecs(v);
         document.querySelectorAll('.attr-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(`legacy-btn-${i}`).classList.add('active');
         document.getElementById('productPrice').textContent = formatPrice(v.price);
