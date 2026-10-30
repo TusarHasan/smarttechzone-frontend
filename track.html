@@ -181,7 +181,7 @@
 
                 <div class="track-card">
                     <div class="tr-sec">অর্ডারের বিবরণ</div>
-                    <div class="pay-line pay-${esc(o.paymentStatus)}">${esc(payLabels[o.paymentStatus] || o.paymentStatus)}
+                    <div class="pay-line pay-${esc(o.paymentStatus)}">${esc(o.paymentMethod === 'mfs' && o.paymentStatus === 'pending' ? 'পেমেন্ট যাচাই চলছে' : o.paymentMethod === 'mfs' && o.paymentStatus === 'failed' ? 'পেমেন্ট যাচাই করা যায়নি, হটলাইন 01718381066-এ জানান' : (payLabels[o.paymentStatus] || o.paymentStatus))}
                         <span style="color:#999;font-weight:normal;">&mdash; ${o.paymentMethod === 'cod' ? 'ক্যাশ অন ডেলিভারি' : 'অনলাইন পেমেন্ট'}</span></div>
                     ${(o.items || []).map(i => `
                         <div class="order-item-row">

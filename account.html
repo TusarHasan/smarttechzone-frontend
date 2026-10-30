@@ -1345,7 +1345,9 @@
             const stepsHtml = idx >= 0
                 ? `<div class="order-steps">${steps.map((s, i) => `<div class="st ${i <= idx ? 'done' : ''}">${s[1]}</div>`).join('')}</div>` : '';
             const payLabel = o.paymentMethod === 'wallet' ? 'STZ Wallet (পরিশোধিত)'
-                : o.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (' + (o.paymentStatus === 'paid' ? 'পরিশোধিত' : 'বাকি') + ')';
+                : o.paymentMethod === 'cod' ? 'Cash on Delivery'
+                : o.paymentMethod === 'mfs' ? 'Online Payment (' + (o.paymentStatus === 'paid' ? 'পরিশোধিত' : o.paymentStatus === 'failed' ? 'যাচাই করা যায়নি' : 'যাচাই চলছে') + ')'
+                : 'Online Payment (' + (o.paymentStatus === 'paid' ? 'পরিশোধিত' : 'বাকি') + ')';
             const c = o.courier || {};
             const logistics = c.provider
                 ? `Courier: ${escapeHtmlPm(c.provider)}${c.trackingCode ? ' · Tracking: ' + escapeHtmlPm(c.trackingCode) : ''}${c.status ? ' · Status: ' + escapeHtmlPm(c.status) : ''}`

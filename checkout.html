@@ -65,6 +65,17 @@
         .coupon-box.applied .cp-applied { display: flex; }
         .order-summary-row.coupon-line span:last-child { color: #16a34a; font-weight: bold; }
         .payment-option .po-text span { font-size: 12.5px; color: #888; }
+        /* bKash / Nagad / Rocket Send Money পেমেন্ট প্যানেল (অনলাইন পেমেন্ট বাছাই করলে দেখায়) */
+        .mfs-panel { display: none; margin-top: 10px; border: 1.5px solid #f0a8a0; border-radius: 6px; padding: 14px; background: #fffaf9; }
+        .mfs-panel .mfs-title { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 8px; }
+        .mfs-providers { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+        .mfs-prov { flex: 1; min-width: 90px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1.5px solid #e2e2e2; border-radius: 6px; padding: 9px 8px; cursor: pointer; background: #fff; font-size: 14px; font-weight: 600; color: #333; }
+        .mfs-prov input { width: auto; margin: 0; }
+        .mfs-prov.selected { border-color: #e74c3c; background: #fdf6f5; }
+        .mfs-steps { margin: 0 0 10px 18px; padding: 0; font-size: 13.5px; color: #444; line-height: 1.7; }
+        .mfs-steps b { color: #111; }
+        .mfs-panel input[type="text"], .mfs-panel input[type="tel"] { width: 100%; box-sizing: border-box; margin: 0 0 8px; }
+        .mfs-note { font-size: 12.5px; color: #888; margin: 4px 0 0; line-height: 1.6; }
         #statusMsg { margin-top: 12px; font-size: 14px; text-align: center; }
         .empty-cart { text-align: center; padding: 60px 20px; color: #888; }
         .empty-cart a { color: #e74c3c; font-weight: bold; text-decoration: none; }
@@ -298,9 +309,25 @@
                 <input type="radio" name="paymentMethod" id="payOnline" value="online">
                 <div class="po-text">
                     <strong>অনলাইন পেমেন্ট</strong>
-                    <span>bKash, Nagad, Rocket অথবা কার্ড দিয়ে এখনই পরিশোধ করুন</span>
+                    <span>bKash, Nagad অথবা Rocket-এ Send Money করে এখনই পরিশোধ করুন</span>
                 </div>
             </label>
+            <div class="mfs-panel" id="mfsPanel">
+                <div class="mfs-title">কোন মাধ্যমে পেমেন্ট করবেন?</div>
+                <div class="mfs-providers">
+                    <label class="mfs-prov"><input type="radio" name="mfsProvider" value="bkash"><span>bKash</span></label>
+                    <label class="mfs-prov"><input type="radio" name="mfsProvider" value="nagad"><span>Nagad</span></label>
+                    <label class="mfs-prov"><input type="radio" name="mfsProvider" value="rocket"><span>Rocket</span></label>
+                </div>
+                <ol class="mfs-steps">
+                    <li>আপনার bKash / Nagad / Rocket অ্যাপ থেকে এই নম্বরে <b>Send Money</b> করুন: <b>01718381066</b></li>
+                    <li>টাকার পরিমাণ: <b id="mfsAmount">৳ 0</b> (পুরো অর্ডারের টাকা)</li>
+                    <li>পেমেন্ট শেষে পাওয়া <b>TrxID</b> এবং যে নম্বর থেকে পাঠিয়েছেন সেটা নিচে লিখুন</li>
+                </ol>
+                <input type="text" id="mfsTrx" placeholder="TrxID (যেমন 8N7A6D5E4C)" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false">
+                <input type="tel" id="mfsSender" placeholder="যে নম্বর থেকে টাকা পাঠিয়েছেন (01XXXXXXXXX)" maxlength="14" inputmode="numeric" autocomplete="off">
+                <p class="mfs-note">আমরা TrxID মিলিয়ে পেমেন্ট নিশ্চিত করার পরই অর্ডার প্রসেস হবে। ভুল TrxID বা কম টাকা পাঠালে অর্ডার প্রসেস হবে না।</p>
+            </div>
             <div id="sameDayPaymentNote" style="display:none; font-size:12.5px; color:#888; margin-top:8px;">সেইম ডে ডেলিভারিতে শুধুমাত্র ক্যাশ অন ডেলিভারি সুবিধা রয়েছে।</div>
             <div class="wallet-box" id="walletBox">
                 <label for="useWallet">
@@ -508,7 +535,8 @@
             const isCod = document.getElementById('payCod').checked;
             const btn = document.getElementById('placeOrderBtn');
             if (walletCoversAll()) { btn.textContent = 'অর্ডার কনফার্ম করুন (Wallet দিয়ে পরিশোধ)'; return; }
-            btn.textContent = isCod ? 'অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)' : 'অর্ডার করুন — পেমেন্টে যান';
+            btn.textContent = isCod ? 'অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)' : 'অর্ডার কনফার্ম করুন (পেমেন্ট জমা দিন)';
+            updateMfsPanel();
         }
 
         document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
@@ -645,8 +673,32 @@
             if (el) el.textContent = '৳ ' + formatPrice(estimateDelivery(getSelectedArea()));
         }
 
+        // ===== bKash / Nagad / Rocket Send Money প্যানেল =====
+        function mfsAmountNow() { return getCheckoutTotal() - currentDiscount() + estimateDelivery(getSelectedArea()); }
+        function updateMfsPanel() {
+            const panel = document.getElementById('mfsPanel');
+            const online = document.getElementById('payOnline');
+            if (!panel || !online) return;
+            const on = online.checked && !isSameDaySelected();
+            panel.style.display = on ? 'block' : 'none';
+            if (on) document.getElementById('mfsAmount').textContent = '৳ ' + formatPrice(mfsAmountNow());
+        }
+        document.querySelectorAll('input[name="mfsProvider"]').forEach(r => r.addEventListener('change', function () {
+            document.querySelectorAll('.mfs-prov').forEach(el => el.classList.remove('selected'));
+            this.closest('.mfs-prov').classList.add('selected');
+        }));
+        document.getElementById('mfsTrx').addEventListener('input', function () {
+            const v = this.value.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+            if (v !== this.value) this.value = v;
+        });
+        document.getElementById('mfsSender').addEventListener('input', function () {
+            const v = this.value.replace(/[^0-9+]/g, '');
+            if (v !== this.value) this.value = v;
+        });
+
         function updateSummaryTotals() {
             updateShipFees();
+            updateMfsPanel();
             const items = getCheckoutItems();
             const count = items.reduce((sum, item) => sum + item.quantity, 0);
             const subtotal = getCheckoutTotal();
@@ -827,6 +879,26 @@
             const sameDay = isSameDaySelected();
             const isCod = document.getElementById('payCod').checked || sameDay;
 
+            // অনলাইন পেমেন্ট = bKash/Nagad/Rocket Send Money: প্রোভাইডার, TrxID ও প্রেরকের নম্বর লাগবে (সার্ভারও আবার যাচাই করে)
+            let mfsData = null;
+            if (!isCod) {
+                const prov = document.querySelector('input[name="mfsProvider"]:checked');
+                const trx = (document.getElementById('mfsTrx').value || '').trim().toUpperCase();
+                const sender = (document.getElementById('mfsSender').value || '').trim().replace(/[\s-]/g, '');
+                let mfsErr = '';
+                if (!prov) mfsErr = 'bKash, Nagad বা Rocket বেছে নিন।';
+                else if (!/^[A-Z0-9_-]{4,40}$/.test(trx)) mfsErr = 'সঠিক TrxID লিখুন (ইংরেজি অক্ষর ও সংখ্যা)।';
+                else if (!/^(\+?88)?01[3-9]\d{8}$/.test(sender)) mfsErr = 'যে নম্বর থেকে টাকা পাঠিয়েছেন সেই মোবাইল নম্বরটি সঠিকভাবে লিখুন।';
+                if (mfsErr) {
+                    statusMsg.style.color = '#e74c3c';
+                    statusMsg.textContent = mfsErr;
+                    const panel = document.getElementById('mfsPanel');
+                    if (panel && panel.scrollIntoView) panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+                mfsData = { provider: prov.value, trxId: trx, senderNumber: sender };
+            }
+
             btn.disabled = true;
             btn.textContent = 'প্রসেস হচ্ছে...';
             statusMsg.textContent = '';
@@ -839,6 +911,7 @@
                     body: JSON.stringify({
                         customer: { name, phone, email, address: fullAddress, city: AREA_LABEL[area], district: '', thana: '', notes },
                         paymentMethod: isCod ? 'cod' : 'online',
+                        mfs: mfsData || undefined,
                         deliveryType: sameDay ? 'sameday' : 'standard',
                         useWallet: walletUseAmount() > 0,
                         couponCode: couponState.code || undefined,
@@ -875,7 +948,7 @@
                 if (data.cod) {
                     // সার্ভার-যাচাইকৃত total-ও পাঠানো হচ্ছে (order-success.html এখান থেকে Meta Pixel
                     // Purchase ইভেন্ট পাঠাবে) — ক্লায়েন্টের নিজের হিসাব করা দাম না
-                    window.location.href = `order-success.html?order=${encodeURIComponent(data.orderNumber)}&value=${encodeURIComponent(data.total)}`;
+                    window.location.href = `order-success.html?order=${encodeURIComponent(data.orderNumber)}&value=${encodeURIComponent(data.total)}${data.mfs ? '&pay=mfs' : ''}`;
                 } else {
                     window.location.href = data.paymentUrl;
                 }
