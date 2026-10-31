@@ -29,6 +29,36 @@
         .sr-dot { width:3px; height:3px; border-radius:50%; background:#ccc; }
         .sr-meta .stz-stars { position:relative; display:inline-block; color:#ddd; letter-spacing:1px; line-height:1; font-size:12px; }
         .sr-meta .stz-stars-fill { position:absolute; left:0; top:0; overflow:hidden; white-space:nowrap; color:#f5a623; }
+
+        /* ===== সার্চ টুলবার, নোটিশ, খালি-ফলাফল ===== */
+        .sr-toolbar { max-width:1200px; margin:0 auto 16px; padding:0 4px; display:none; }
+        .sr-toolbar.on { display:block; }
+        .sr-row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+        .sr-row label { font-size:13px; color:#555; display:inline-flex; align-items:center; gap:6px; }
+        .sr-row select, .sr-row input[type=number] { padding:7px 10px; border:1px solid #ddd; border-radius:6px; font-size:13px; background:#fff; }
+        .sr-row input[type=number] { width:88px; }
+        .sr-apply { background:#e74c3c; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; }
+        .sr-reset { background:none; border:none; color:#e74c3c; font-size:13px; cursor:pointer; text-decoration:underline; padding:4px; }
+        .sr-chips { display:flex; gap:8px; overflow-x:auto; padding:10px 0 2px; -webkit-overflow-scrolling:touch; }
+        .sr-chip { flex:0 0 auto; border:1px solid #e3e3e3; background:#fff; color:#444; border-radius:999px; padding:6px 14px; font-size:13px; cursor:pointer; white-space:nowrap; }
+        .sr-chip small { color:#999; margin-left:4px; }
+        .sr-chip.on { border-color:#e74c3c; color:#e74c3c; background:#fdf1f0; font-weight:600; }
+        .sr-notice { max-width:1200px; margin:0 auto 14px; padding:11px 16px; border-radius:8px; font-size:14px; line-height:1.5; display:none; }
+        .sr-notice.on { display:block; }
+        .sr-notice.info { background:#fff8e6; border:1px solid #f3e1a6; color:#6b5413; }
+        .sr-notice.soft { background:#f2f7ff; border:1px solid #d3e3fb; color:#2c4a77; }
+        .sr-notice a { color:#e74c3c; font-weight:700; cursor:pointer; text-decoration:underline; }
+        .sr-empty { grid-column:1/-1; text-align:center; padding:30px 12px 10px; color:#555; }
+        .sr-empty h2 { font-size:18px; margin-bottom:8px; color:#333; }
+        .sr-empty ul { list-style:none; padding:0; margin:12px auto; max-width:420px; text-align:left; font-size:14px; line-height:1.9; color:#666; }
+        .sr-empty ul li:before { content:"•"; color:#e74c3c; margin-right:8px; }
+        .sr-pop { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:12px 0 18px; }
+        .sr-help { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:8px; }
+        .sr-help a, .sr-help button { padding:9px 18px; border-radius:6px; font-size:14px; font-weight:600; text-decoration:none; border:1px solid #e74c3c; color:#e74c3c; background:#fff; cursor:pointer; }
+        .sr-help a.wa { background:#25D366; border-color:#25D366; color:#fff; }
+        .product-card h3 mark { background:#fff1c2; color:inherit; padding:0 1px; border-radius:2px; }
+        .sr-oos { display:inline-block; font-size:11.5px; color:#999; margin-top:2px; }
+        @media (max-width:600px){ .sr-row input[type=number]{ width:74px; } }
     </style>
     <script src="config.js"></script>
     <script src="visitor-track.js" defer></script>
@@ -63,6 +93,25 @@
 
     <section class="product-section">
         <div class="container">
+            <div class="sr-notice" id="srNotice"></div>
+            <div class="sr-toolbar" id="srToolbar">
+                <div class="sr-row">
+                    <label>সাজান:
+                        <select id="srSort">
+                            <option value="">সবচেয়ে প্রাসঙ্গিক</option>
+                            <option value="popular">জনপ্রিয়</option>
+                            <option value="price_asc">দাম: কম থেকে বেশি</option>
+                            <option value="price_desc">দাম: বেশি থেকে কম</option>
+                            <option value="newest">নতুন</option>
+                        </select>
+                    </label>
+                    <label>দাম ৳ <input type="number" id="srMin" min="0" inputmode="numeric" placeholder="কম"> – <input type="number" id="srMax" min="0" inputmode="numeric" placeholder="বেশি"></label>
+                    <label><input type="checkbox" id="srStock"> শুধু স্টকে আছে</label>
+                    <button class="sr-apply" id="srApply" type="button">প্রয়োগ</button>
+                    <button class="sr-reset" id="srReset" type="button" style="display:none;">ফিল্টার মুছুন</button>
+                </div>
+                <div class="sr-chips" id="srChips"></div>
+            </div>
             <div class="product-grid" id="searchGrid">
                 <p style="grid-column: 1/-1; text-align:center; color:#999;">লোড হচ্ছে...</p>
             </div>
@@ -126,6 +175,41 @@
         let currentPage = 1;
         let totalPages = 1;
         const PAGE_SIZE = 24;
+        let legacyMode = false;   // নতুন /api/search না পেলে (ব্যাকএন্ড আপডেটের আগে) পুরনো পদ্ধতিতে চলে
+        let logged = false;       // একই পেজ-লোডে একবারই লগ
+        let lastMeta = null;
+        const F = {               // ফিল্টার/সর্ট — URL-এ থাকে, তাই শেয়ার ও Back কাজ করে
+            sort: params.get('sort') || '',
+            brand: params.get('brand') || '',
+            min: params.get('min') || '',
+            max: params.get('max') || '',
+            stock: params.get('stock') === '1',
+            exact: params.get('exact') === '1'   // "আমি যা লিখেছি তাই খুঁজুন" (বানান সংশোধন বন্ধ)
+        };
+
+        function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+        // সার্চের শব্দ হাইলাইট (আগে escape তারপর <mark>)
+        function hl(text, q) {
+            const ws = String(q || '').toLowerCase().split(/[\s\-_,+./]+/).filter(w => w.length >= 2).slice(0, 6).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+            if (!ws.length) return esc(text);
+            const re = new RegExp('(' + ws.join('|') + ')', 'ig');
+            return String(text || '').split(re).map((p, i) => (i % 2 ? '<mark>' + esc(p) + '</mark>' : esc(p))).join('');
+        }
+
+        function syncUrl() {
+            const u = new URLSearchParams();
+            u.set('q', QUERY);
+            if (F.sort) u.set('sort', F.sort);
+            if (F.brand) u.set('brand', F.brand);
+            if (F.min) u.set('min', F.min);
+            if (F.max) u.set('max', F.max);
+            if (F.stock) u.set('stock', '1');
+            if (F.exact) u.set('exact', '1');
+            try { history.replaceState(null, '', 'search.html?' + u.toString()); } catch (e) { }
+        }
+        function hasFilter() { return !!(F.brand || F.min || F.max || F.stock); }
+
+        function searchAgain(term) { window.location.href = 'search.html?q=' + encodeURIComponent(term); }
 
         async function loadSearchResults() {
             const grid = document.getElementById('searchGrid');
@@ -140,37 +224,167 @@
             }
 
             titleEl.textContent = `"${QUERY}" এর ফলাফল`;
+            document.title = `"${QUERY}" - Search - Smart Tech Zone`;
+            document.getElementById('srSort').value = F.sort;
+            document.getElementById('srMin').value = F.min;
+            document.getElementById('srMax').value = F.max;
+            document.getElementById('srStock').checked = F.stock;
             currentPage = 1;
             await loadSearchPage();
+        }
+
+        // নতুন সার্চ API; ব্যর্থ বা না থাকলে (404) পুরনো /api/products?search= এ ফিরে যায়
+        async function fetchResults() {
+            if (!legacyMode) {
+                try {
+                    const qs = new URLSearchParams({ q: QUERY, page: currentPage, limit: PAGE_SIZE });
+                    if (F.sort) qs.set('sort', F.sort);
+                    if (F.brand) qs.set('brand', F.brand);
+                    if (F.min) qs.set('minPrice', F.min);
+                    if (F.max) qs.set('maxPrice', F.max);
+                    if (F.stock) qs.set('inStock', 'true');
+                    if (F.exact) qs.set('exact', '1');
+                    const res = await fetch(`${API_BASE}/api/search?${qs.toString()}`);
+                    if (res.ok) return await res.json();
+                    if (res.status !== 404) throw new Error('search failed');
+                } catch (e) {
+                    if (!(e && e.message === 'search failed')) { /* নেটওয়ার্ক সমস্যা: পুরনো পদ্ধতি চেষ্টা */ }
+                }
+                legacyMode = true;
+            }
+            const qs = new URLSearchParams({ status: 'published', fields: 'summary', search: QUERY, page: currentPage, limit: PAGE_SIZE });
+            const res = await fetch(`${API_BASE}/api/products?${qs.toString()}`);
+            return await res.json();
         }
 
         async function loadSearchPage() {
             const grid = document.getElementById('searchGrid');
             const subtitleEl = document.getElementById('searchSubtitle');
+            if (currentPage === 1) grid.style.opacity = '0.5';
             try {
-                // পুরো ক্যাটালগ ব্রাউজারে এনে ক্লায়েন্ট-সাইডে ফিল্টার করার বদলে ব্যাকএন্ডের search+pagination
-                // ব্যবহার করা হচ্ছে — নাম/SKU/ব্র্যান্ড/মডেল সবগুলোতেই মিলিয়ে দেখে (fields=summary: ছোট পেলোড)
-                const qs = new URLSearchParams({ status: 'published', fields: 'summary', search: QUERY, page: currentPage, limit: PAGE_SIZE });
-                const res = await fetch(`${API_BASE}/api/products?${qs.toString()}`);
-                const data = await res.json();
+                const data = await fetchResults();
+                grid.style.opacity = '';
                 totalPages = data.totalPages || 1;
-
+                if (currentPage === 1) {
+                    grid.innerHTML = '';
+                    lastMeta = data;
+                    renderMeta(data);
+                    syncUrl();
+                    if (!logged && !legacyMode && !hasFilter() && !F.sort) { logged = true; logSearch(data); }
+                }
                 subtitleEl.textContent = `${data.total || 0} টি প্রোডাক্ট পাওয়া গেছে`;
-
-                if (currentPage === 1) grid.innerHTML = '';
 
                 const items = data.products || [];
                 if (currentPage === 1 && items.length === 0) {
-                    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999;">কোনো প্রোডাক্ট পাওয়া যায়নি। অন্য কিছু লিখে খুঁজে দেখুন।</p>';
+                    renderEmpty();
                     document.getElementById('loadMoreWrapper').style.display = 'none';
                     return;
                 }
-
                 renderItems(items);
                 document.getElementById('loadMoreWrapper').style.display = currentPage < totalPages ? 'block' : 'none';
             } catch (err) {
-                grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999;">সার্চ করতে সমস্যা হয়েছে।</p>';
+                grid.style.opacity = '';
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999;">সার্চ করতে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।</p>';
             }
+        }
+
+        // নামহীন লগ (শুধু সার্চ লেখা + কতটা মিলেছে) — অ্যাডমিন রিপোর্টের জন্য; কাস্টমারের পেজে কোনো প্রভাব ফেলে না
+        function logSearch(d) {
+            try {
+                fetch(`${API_BASE}/api/search/log`, {
+                    method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ q: QUERY, total: d.total || 0, corrected: !!d.corrected, relaxed: !!d.relaxed, didYouMean: d.didYouMean || '' })
+                }).catch(() => { });
+            } catch (e) { }
+        }
+
+        // "আপনি কি ... খুঁজছেন?", কাছাকাছি ফলাফল নোটিশ, টুলবার ও ব্র্যান্ড চিপ
+        function renderMeta(d) {
+            const notice = document.getElementById('srNotice');
+            const tb = document.getElementById('srToolbar');
+            let html = '', cls = '';
+            if (d.corrected && d.didYouMean) {
+                cls = 'soft';
+                html = `<b>"${esc(d.didYouMean)}"</b> এর ফলাফল দেখানো হচ্ছে। আপনি লিখেছিলেন "${esc(QUERY)}" — তাই খুঁজুন: <a onclick="searchAgainExact()">"${esc(QUERY)}" ই</a>`;
+            } else if (d.relaxed) {
+                cls = 'info';
+                const dropped = (d.droppedTokens || []).filter(Boolean);
+                html = dropped.length
+                    ? `<b>${esc(dropped.join(', '))}</b> সহ হুবহু কিছু পাওয়া যায়নি — বাকি শব্দ মিলিয়ে <b>কাছাকাছি</b> প্রোডাক্ট দেখানো হচ্ছে।`
+                    : `হুবহু মিল পাওয়া যায়নি — <b>কাছাকাছি</b> প্রোডাক্ট দেখানো হচ্ছে।`;
+                if (d.didYouMean) html += ` আপনি কি খুঁজছেন: <a onclick="searchAgain('${esc(d.didYouMean).replace(/'/g, '&#39;')}')">${esc(d.didYouMean)}</a>?`;
+            } else if (d.didYouMean) {
+                cls = 'soft';
+                html = `আপনি কি খুঁজছেন: <a onclick="searchAgain('${esc(d.didYouMean).replace(/'/g, '&#39;')}')">${esc(d.didYouMean)}</a>?`;
+            }
+            notice.className = 'sr-notice' + (html ? ' on ' + cls : '');
+            notice.innerHTML = html;
+
+            // টুলবার: নতুন API-তে ফলাফল থাকলে বা ফিল্টার চালু থাকলে
+            const show = !legacyMode && ((d.total || 0) > 0 || hasFilter());
+            tb.className = 'sr-toolbar' + (show ? ' on' : '');
+            document.getElementById('srReset').style.display = (hasFilter() || F.sort) ? '' : 'none';
+            const chips = document.getElementById('srChips');
+            const brands = (d.facets && d.facets.brands) || [];
+            chips.innerHTML = brands.length > 1 || F.brand
+                ? [`<button class="sr-chip${F.brand ? '' : ' on'}" data-b="">সব</button>`].concat(brands.map(b => `<button class="sr-chip${F.brand && F.brand.toLowerCase() === b.name.toLowerCase() ? ' on' : ''}" data-b="${esc(b.name)}">${esc(b.name)}<small>${b.count}</small></button>`)).join('')
+                : '';
+            chips.querySelectorAll('.sr-chip').forEach(c => c.addEventListener('click', () => { F.brand = c.getAttribute('data-b') || ''; currentPage = 1; loadSearchPage(); }));
+        }
+        window.searchAgainExact = function () { window.location.href = 'search.html?q=' + encodeURIComponent(QUERY) + '&exact=1'; };
+
+        function applyFilters() {
+            F.sort = document.getElementById('srSort').value;
+            F.min = (document.getElementById('srMin').value || '').trim();
+            F.max = (document.getElementById('srMax').value || '').trim();
+            F.stock = document.getElementById('srStock').checked;
+            currentPage = 1;
+            loadSearchPage();
+        }
+        document.getElementById('srApply').addEventListener('click', applyFilters);
+        document.getElementById('srSort').addEventListener('change', applyFilters);
+        document.getElementById('srStock').addEventListener('change', applyFilters);
+        ['srMin', 'srMax'].forEach(id => document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') applyFilters(); }));
+        document.getElementById('srReset').addEventListener('click', () => {
+            F.sort = ''; F.brand = ''; F.min = ''; F.max = ''; F.stock = false;
+            document.getElementById('srSort').value = ''; document.getElementById('srMin').value = ''; document.getElementById('srMax').value = ''; document.getElementById('srStock').checked = false;
+            currentPage = 1; loadSearchPage();
+        });
+
+        // কিছু না মিললে: সাহায্যকারী পেজ — টিপস, জনপ্রিয় সার্চ, চ্যাট/WhatsApp
+        async function renderEmpty() {
+            const grid = document.getElementById('searchGrid');
+            const filtered = hasFilter();
+            const wa = 'https://wa.me/8801718381066?text=' + encodeURIComponent('আসসালামু আলাইকুম, আমি "' + QUERY + '" খুঁজছি কিন্তু ওয়েবসাইটে পাচ্ছি না। আছে কি?');
+            grid.innerHTML = `<div class="sr-empty">
+                <h2>${filtered ? 'এই ফিল্টারে কোনো প্রোডাক্ট নেই' : `"${esc(QUERY)}" এর জন্য কিছু পাওয়া যায়নি`}</h2>
+                ${filtered ? '<p>ফিল্টার বদলে বা মুছে আবার দেখুন।</p>' : `<ul>
+                    <li>বানান ঠিক আছে কি না দেখুন (যেমন: samsung, redmi, iphone)</li>
+                    <li>শুধু মডেল লিখে খুঁজুন — যেমন <b>A54</b> বা <b>Note 12</b></li>
+                    <li>কম শব্দ লিখুন — যেমন "display" বা "battery"</li>
+                </ul>`}
+                <div class="sr-pop" id="srPop"></div>
+                <p style="font-size:14px;margin-bottom:6px;">পার্টসটা না পেলে আমাদের জানান — আমরা ব্যবস্থা করে দেব:</p>
+                <div class="sr-help">
+                    <a class="wa" href="${wa}" target="_blank" rel="noopener">WhatsApp-এ জানান</a>
+                    <button type="button" onclick="var f=document.getElementById('stzChatFab'); if(f) f.click(); else window.open('${wa}','_blank');">চ্যাটে জানান</button>
+                </div></div>`;
+            if (filtered) {
+                const b = document.createElement('button');
+                b.className = 'sr-chip'; b.textContent = 'ফিল্টার মুছুন';
+                b.onclick = () => document.getElementById('srReset').click();
+                document.getElementById('srPop').appendChild(b);
+                return;
+            }
+            try {
+                const r = await fetch(`${API_BASE}/api/search/popular`);
+                const d = await r.json();
+                const pop = document.getElementById('srPop');
+                if (pop && d.queries && d.queries.length) {
+                    pop.innerHTML = '<div style="width:100%;font-size:13px;color:#888;">জনপ্রিয় সার্চ:</div>' + d.queries.map(q => `<button class="sr-chip" data-q="${esc(q)}">${esc(q)}</button>`).join('');
+                    pop.querySelectorAll('[data-q]').forEach(c => c.addEventListener('click', () => searchAgain(c.getAttribute('data-q'))));
+                }
+            } catch (e) { }
         }
 
         // Daraz-এর মতো — originalPrice থাকলে (Add Products ফর্মে Special Price ব্যবহার করলে) সেটা
@@ -219,7 +433,7 @@
                 card.innerHTML = `
                     ${typeof stzWishlistHeartHtml === 'function' ? stzWishlistHeartHtml(p._id) : ''}
                     <img src="${imgUrl}" alt="${(p.name || '').replace(/"/g, '&quot;')}" onerror="this.src='https://via.placeholder.com/200'">
-                    <h3>${p.name}</h3>
+                    <h3>${hl(p.name, (lastMeta && lastMeta.corrected && lastMeta.didYouMean) ? lastMeta.didYouMean : QUERY)}</h3>
                     ${priceBlockHtml(p)}
                     ${metaBlockHtml(p)}
                     <button onclick="event.stopPropagation(); quickAddToCart('${p._id}', '${(p.name || '').replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}', this)" style="width:100%; background:#F57224; color:#fff; border:none; padding:8px; border-radius:2px; cursor:pointer; font-size:13px; font-weight:500; margin-top:6px; transition:opacity .2s;" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">Add to Cart</button>

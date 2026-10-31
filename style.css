@@ -887,3 +887,23 @@ body {
 }
 
 .product-card .stz-price-block { margin-bottom: 12px; }
+
+/* ===== লাইভ সার্চ সাজেশন (search.js) — হিস্ট্রি ড্রপডাউনের ভেতরেই দেখায় ===== */
+.stz-search-history-dropdown .stz-active { background: #f7f7f7; }
+.stz-search-history-dropdown mark { background: #fff1c2; color: inherit; padding: 0 1px; border-radius: 2px; }
+.stz-ss-p { display: flex; align-items: center; gap: 10px; padding: 8px 14px; cursor: pointer; border-bottom: 1px solid #f5f5f5; }
+.stz-ss-p:hover { background: #f7f7f7; }
+.stz-ss-p img { width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px; border-radius: 4px; background: #fafafa; }
+.stz-ss-t { min-width: 0; flex: 1; }
+.stz-ss-n { font-size: 13px; color: #333; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.stz-ss-pr { font-size: 12.5px; font-weight: 700; color: #e74c3c; margin-top: 2px; }
+.stz-ss-oos { font-weight: 500; color: #999; font-size: 11.5px; margin-left: 4px; }
+.stz-ss-q { padding: 9px 16px; font-size: 14px; color: #333; cursor: pointer; }
+.stz-ss-q:hover { background: #f7f7f7; color: #e74c3c; }
+.stz-ss-qi { margin-right: 8px; font-size: 12px; opacity: .6; }
+.stz-ss-dym { padding: 10px 16px; font-size: 13.5px; color: #555; cursor: pointer; background: #fffaf0; border-bottom: 1px solid #f3e8c8; }
+.stz-ss-dym b { color: #e74c3c; }
+.stz-ss-none { padding: 14px 16px; font-size: 13.5px; color: #888; }
+.stz-ss-all { padding: 11px 16px; font-size: 13.5px; font-weight: 600; color: #e74c3c; cursor: pointer; text-align: center; border-top: 1px solid #f0f0f0; }
+.stz-ss-all:hover { background: #fdf1f0; }
+.stz-search-history-dropdown { max-height: 70vh; }
