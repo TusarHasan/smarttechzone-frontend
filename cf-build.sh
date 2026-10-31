@@ -9,7 +9,7 @@ OUT="${OUT:-$HOME/cf-dist}"
 TMP="$(mktemp -d)"
 rm -rf "$OUT" "$OUT.zip" && mkdir -p "$OUT"
 cd "$SRC"
-tar --exclude=./cf-dist --exclude=./.git --exclude=./node_modules --exclude=./netlify --exclude=./functions \
+tar --exclude=./cf-dist --exclude=./cf-dist.zip --exclude=./.git --exclude=./node_modules --exclude=./netlify --exclude=./functions \
     --exclude=./cf-lib --exclude=./.wrangler --exclude=./.vscode --exclude=./.gitignore --exclude=./bak \
     --exclude='./Claude outputs' --exclude=./_to_delete --exclude=./netlify.toml --exclude=./cf-build.sh \
     --exclude='*.md' -cf - . | tar -xf - -C "$OUT"
