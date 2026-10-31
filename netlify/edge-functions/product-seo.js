@@ -150,6 +150,16 @@ function shortProductName(name, max) {
     return s;
 }
 
+// টাইটেল/মেটা বর্ণনার জন্য নাম ছোট করা: শব্দের মাঝে না কেটে, ঝুলে থাকা "(", "Includes", "with", "&" ইত্যাদি বাদ দিয়ে
+// (আগে "...(XT2429-1) Includes Price in Bangladesh" এর মতো অসম্পূর্ণ বাক্য হতো)
+function cleanShortName(name, max) {
+    let s = shortProductName(name, max);
+    if ((s.match(/\(/g) || []).length > (s.match(/\)/g) || []).length) s = s.slice(0, s.lastIndexOf('(')).trim();
+    const dangling = /[\s,;:+&\-–\/]*\b(includes?|including|with|without|and|or|for|of|the|a|an|set|kit|pack|\+)\s*$/i;
+    for (let i = 0; i < 4 && dangling.test(s); i++) s = s.replace(dangling, '');
+    return s.replace(/[\s,;:+&\-–\/(]+$/, '');
+}
+
 function trimAtWord(text, max) {
     const t = String(text || '').replace(/\s+/g, ' ').trim();
     if (t.length <= max) return t;
@@ -180,11 +190,11 @@ function stockInfoOf(product) {
 }
 
 function buildSeoTitle(product) {
-    return `${shortProductName(product.name, 70)} Price in Bangladesh | ${SITE_NAME}`;
+    return `${cleanShortName(product.name, 66)} Price in Bangladesh | ${SITE_NAME}`;
 }
 
 function buildMetaDescription(product) {
-    const short = shortProductName(product.name, 80);
+    const short = cleanShortName(product.name, 80);
     const { inStock } = stockInfoOf(product);
     const brand = linkableBrandOf(product) || (product.brand && !/^no\s*brand$/i.test(product.brand) ? product.brand : '');
     const compat = [brand, product.model].filter(Boolean).join(' ').trim();

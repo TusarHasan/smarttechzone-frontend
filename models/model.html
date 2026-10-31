@@ -112,7 +112,7 @@
                 return;
             }
 
-            titleEl.textContent = `${brand} ${model} — Replacement Parts`;
+            titleEl.textContent = `${modelFullName(brand, model)} — Replacement Parts`;
             // SEO ফিক্স: আগে এখানে ../brands/<brand>.html (যেমন samsung.html) লিংক করা হতো —
             // এই স্ট্যাটিক stub ফাইলগুলো মাত্র ৮টা পুরনো ব্র্যান্ডের জন্যই আছে (Apple, Samsung,
             // Xiaomi, Oppo, Vivo, Realme, Nokia, Symphony), বাকি ১৩টা ব্র্যান্ডের (Honor, Huawei,
@@ -157,9 +157,18 @@
             }
         }
 
+        // মডেলের নামে ব্র্যান্ড আগে থেকেই থাকলে দুইবার যোগ না করা (netlify/edge-functions/model-seo.js-এ হুবহু কপি)
+        function modelFullName(brand, model) {
+            const b = String(brand || '').trim();
+            const m = String(model || '').trim();
+            if (b && m.toLowerCase().startsWith(b.toLowerCase())) return m;
+            return `${b} ${m}`.trim();
+        }
+
         function updateModelSeoTags(brand, model) {
-            const title = `${brand} ${model} মোবাইলের রিপ্লেসমেন্ট পার্টস (ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট ও আরও) - Smart Tech Zone`;
-            const desc = `${brand} ${model} মোবাইলের জন্য ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট, ক্যামেরা সহ সব ধরনের রিপ্লেসমেন্ট পার্টস — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`.substring(0, 160);
+            const full = modelFullName(brand, model);
+            const title = `${full} মোবাইলের রিপ্লেসমেন্ট পার্টস (ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট ও আরও) - Smart Tech Zone`;
+            const desc = `${full} মোবাইলের জন্য ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট, ক্যামেরা সহ সব ধরনের রিপ্লেসমেন্ট পার্টস — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`.substring(0, 160);
             const pageUrl = `https://smarttechzone.com.bd/models/model.html?brand=${encodeURIComponent(brand)}&model=${encodeURIComponent(model)}`;
 
             document.getElementById('pageTitleTag').textContent = title;
@@ -177,7 +186,7 @@
             const jsonLd = {
                 '@context': 'https://schema.org',
                 '@type': 'ItemList',
-                name: `${brand} ${model} Replacement Parts`,
+                name: `${modelFullName(brand, model)} Replacement Parts`,
                 url: pageUrl,
                 itemListElement: products.slice(0, 30).map((p, i) => ({
                     '@type': 'ListItem',

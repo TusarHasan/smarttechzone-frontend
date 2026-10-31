@@ -57,10 +57,25 @@ function setTagTextById(html, tag, id, text) {
     return html.replace(re, (_m, pre, _old, post) => pre + text + post);
 }
 
-// model.html-এর updateModelSeoTags() (লাইন ১২৪-১৩৪) এর সাথে হুবহু মিলিয়ে
+// SEO: মডেলের নামে আগে থেকেই ব্র্যান্ড থাকলে (যেমন brand=Motorola, model="Motorola Edge 50 Fusion")
+// ব্র্যান্ড আবার যোগ করলে title-এ "Motorola Motorola ..." দুইবার আসে — সেটা এড়াতে।
+// *** হুবহু কপি আছে: models/model.html ***
+function modelFullName(brand, model) {
+    const b = String(brand || '').trim();
+    const m = String(model || '').trim();
+    if (b && m.toLowerCase().startsWith(b.toLowerCase())) return m;
+    return `${b} ${m}`.trim();
+}
+// অর্থহীন ব্র্যান্ড বাকেট ("No Brand", "Others" ইত্যাদি) — এই URL-গুলো ডুপ্লিকেট কনটেন্ট, ইনডেক্স হওয়া উচিত নয়
+function isJunkBrand(brand) {
+    return /^(no\s*brand|others?|unknown|none|n\/a|-)$/i.test(String(brand || '').trim());
+}
+
+// model.html-এর updateModelSeoTags() এর সাথে হুবহু মিলিয়ে
 function computeModelSeoFields(brand, model) {
-    const title = `${brand} ${model} মোবাইলের রিপ্লেসমেন্ট পার্টস (ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট ও আরও) - Smart Tech Zone`;
-    const desc = `${brand} ${model} মোবাইলের জন্য ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট, ক্যামেরা সহ সব ধরনের রিপ্লেসমেন্ট পার্টস — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`.substring(0, 160);
+    const full = modelFullName(brand, model);
+    const title = `${full} মোবাইলের রিপ্লেসমেন্ট পার্টস (ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট ও আরও) - Smart Tech Zone`;
+    const desc = `${full} মোবাইলের জন্য ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট, ক্যামেরা সহ সব ধরনের রিপ্লেসমেন্ট পার্টস — Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।`.substring(0, 160);
     const pageUrl = `${SITE_URL}/models/model.html?brand=${encodeURIComponent(brand)}&model=${encodeURIComponent(model)}`;
     return { title, desc, pageUrl };
 }
@@ -70,7 +85,7 @@ function buildModelJsonLd(brand, model, products, pageUrl) {
     return {
         '@context': 'https://schema.org',
         '@type': 'ItemList',
-        name: `${brand} ${model} Replacement Parts`,
+        name: `${modelFullName(brand, model)} Replacement Parts`,
         url: pageUrl,
         itemListElement: products.slice(0, 30).map((p, i) => ({
             '@type': 'ListItem',
@@ -89,6 +104,7 @@ function injectModelSeoIntoHtml(html, brand, model, products) {
     out = setAttrById(out, 'canonicalTag', 'href', escapeAttr(pageUrl));
     out = setAttrById(out, 'ogTitleTag', 'content', escapeAttr(title));
     out = setAttrById(out, 'ogDescTag', 'content', escapeAttr(desc));
+    if (isJunkBrand(brand)) out = out.replace('</head>', '<meta name="robots" content="noindex,follow"></head>');
 
     if (products && products.length) {
         const firstWithImage = products.find(p => p.images && p.images.length);
@@ -162,4 +178,4 @@ export default async (request, context) => {
 // দিলে ডুপ্লিকেট হয়ে পেজে ফাংশনটা দুইবার চলতে পারতো, তাই বাদ দেওয়া হলো (product-seo.js ও
 // brand-seo.js-এও একই কারণে বাদ দেওয়া হয়েছে)
 
-export { injectModelSeoIntoHtml, computeModelSeoFields, buildModelJsonLd };
+export { modelFullName, isJunkBrand, injectModelSeoIntoHtml, computeModelSeoFields, buildModelJsonLd };
