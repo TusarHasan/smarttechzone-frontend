@@ -132,9 +132,7 @@
             if (!url) return 'https://via.placeholder.com/200';
             const abs = url.startsWith('http') ? url : `${API_BASE}${url}`;
             if (!w) return abs;
-            const qs = new URLSearchParams({ url: abs, w: String(w), fit: 'cover', q: '75' });
-            if (h) qs.set('h', String(h));
-            return `/.netlify/images?${qs.toString()}`;
+            return stzImg(abs, w, h);
         }
 
         async function quickAddToCart(productId, name, price, image, btnEl) {

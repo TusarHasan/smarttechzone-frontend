@@ -88,15 +88,42 @@ function resolveImageUrl(url) {
     return url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
 }
 
+// পারফর্মেন্স: পুরো HTML-এ regex চালালে প্রতিটা '<'-এ ব্যাকট্র্যাক হয় (১৩৬KB পেজে ~৩ms/কল) —
+// Cloudflare Pages Functions-এর ফ্রি প্ল্যানে CPU সীমা ১০ms, তাই আগে indexOf দিয়ে ট্যাগটা খুঁজে শুধু সেই
+// ছোট অংশে regex চালানো হয়। না পেলে আগের মতো পুরো HTML-এ regex-এ ফিরে যায় (ফলাফল একই)।
+function findIdIndex(html, id) {
+    const a = html.indexOf(`id="${id}"`);
+    return a !== -1 ? a : html.indexOf(`id='${id}'`);
+}
+
 // <tag id="theId" ... attr="OLD">  →  attr-এর ভ্যালু বদলে দেয়, বাকি সব অপরিবর্তিত রাখে
 function setAttrById(html, id, attr, value) {
     const re = new RegExp(`(<[^>]*\\bid=["']${id}["'][^>]*\\s${attr}=["'])([^"']*)(["'])`, 'i');
+    const idx = findIdIndex(html, id);
+    if (idx !== -1) {
+        const start = html.lastIndexOf('<', idx);
+        const end = html.indexOf('>', idx);
+        if (start !== -1 && end !== -1) {
+            const tag = html.slice(start, end + 1);
+            if (re.test(tag)) return html.slice(0, start) + tag.replace(re, (_m, pre, _old, post) => pre + value + post) + html.slice(end + 1);
+        }
+    }
     return html.replace(re, (_m, pre, _old, post) => pre + value + post);
 }
 
 // <tag id="theId" ...>OLD TEXT</tag>  →  ভেতরের টেক্সট বদলে দেয়
 function setTagTextById(html, tag, id, text) {
     const re = new RegExp(`(<${tag}[^>]*\\bid=["']${id}["'][^>]*>)([\\s\\S]*?)(</${tag}>)`, 'i');
+    const idx = findIdIndex(html, id);
+    if (idx !== -1) {
+        const start = html.lastIndexOf('<' + tag, idx);
+        if (start !== -1) {
+            const sub = html.slice(start);
+            const re2 = new RegExp(`^(<${tag}[^>]*\\bid=["']${id}["'][^>]*>)([\\s\\S]*?)(</${tag}>)`, 'i');
+            const mm = re2.exec(sub);
+            if (mm) return html.slice(0, start) + mm[1] + text + mm[3] + sub.slice(mm[0].length);
+        }
+    }
     return html.replace(re, (_m, pre, _old, post) => pre + text + post);
 }
 

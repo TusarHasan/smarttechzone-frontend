@@ -4,3 +4,8 @@ node_modules/
 
 # Leftover git lock/temp files moved aside during automated commits (safe to ignore/delete)
 _to_delete/
+
+# Cloudflare Pages ডিপ্লয় আউটপুট (cf-build.sh বানায়)
+cf-dist/
+cf-dist.zip
+.wrangler/
