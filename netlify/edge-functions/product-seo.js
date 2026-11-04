@@ -430,7 +430,7 @@ async function fetchRelated(product) {
         : (product.category ? `phoneBrand=${encodeURIComponent(brand)}&category=${encodeURIComponent(product.category)}` : '');
     if (!q) return [];
     try {
-        const r = await fetchJson(`${BACKEND_URL}/api/products?status=published&fields=summary&${q}`, RELATED_TIMEOUT_MS);
+        const r = await fetchJson(`${BACKEND_URL}/api/products?status=published&fields=summary&${q}&page=1&limit=13`, RELATED_TIMEOUT_MS);
         const list = Array.isArray(r.data) ? r.data : ((r.data && r.data.products) || []);
         return list.filter(p => p && p._id && p.name && String(p._id) !== String(product._id)).slice(0, 12);
     } catch (e) {
