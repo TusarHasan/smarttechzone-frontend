@@ -1,0 +1,50 @@
+name: Deploy storefront to Cloudflare Pages
+
+# main branch-এ পুশ করলেই smarttechzone.com.bd (Cloudflare Pages: smarttechzone-store) অটো-ডিপ্লয় হবে।
+# বিল্ডের ধাপ আগের মতোই cf-build.sh (স্ট্যাটিক ফাইল + functions/ থেকে _worker.js + _routes.json)।
+# দরকার: এই GitHub রিপোজিটরির Settings > Secrets and variables > Actions-এ CLOUDFLARE_API_TOKEN (Cloudflare Pages: Edit পারমিশনসহ)।
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-storefront
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install wrangler (লোকাল বিল্ডের ভার্সনই)
+        run: npm install -g wrangler@3.114.17
+
+      - name: Build deploy folder (cf-build.sh)
+        run: WRANGLER=wrangler OUT="$RUNNER_TEMP/cf-dist" bash ./cf-build.sh
+
+      - name: Sanity check
+        run: |
+          D="$RUNNER_TEMP/cf-dist"
+          test -s "$D/_worker.js"   || { echo "_worker.js নেই"; exit 1; }
+          test -s "$D/_routes.json" || { echo "_routes.json নেই"; exit 1; }
+          test -s "$D/index.html"   || { echo "index.html নেই"; exit 1; }
+          N=$(find "$D" -type f | wc -l)
+          echo "files: $N"
+          [ "$N" -ge 60 ] || { echo "ফাইল সংখ্যা অস্বাভাবিক কম"; exit 1; }
+
+      - name: Deploy to Cloudflare Pages
+        working-directory: ${{ runner.temp }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: b63204ee499f29344c87631c20e94049
+        run: wrangler pages deploy cf-dist --project-name=smarttechzone-store --branch=main --commit-dirty=true
