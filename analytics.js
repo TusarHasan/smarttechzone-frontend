@@ -1,10 +1,33 @@
+// গতি: GA, Clarity আর Meta Pixel (দুটো) মিলিয়ে প্রায় ১.৮MB তৃতীয় পক্ষের স্ক্রিপ্ট আছে। এগুলো পেজ আঁকার সময়ই নামালে
+// মোবাইলে সাইট ধীর হয়, তাই স্ক্রিপ্ট ফাইল নামানো পিছিয়ে দেওয়া হয়: পেজ পুরো লোড হলে (load), অথবা ভিজিটর প্রথম
+// স্ক্রল/ট্যাপ/কী চাপলে, অথবা সর্বোচ্চ ৫ সেকেন্ড পর — যেটা আগে। ট্র্যাকিং কমে না: fbq/gtag/clarity-র "স্টাব" সাথে সাথেই
+// তৈরি হয়, তাই product/cart/checkout/order-success পেজের fbq('track', ...) কলগুলো লাইনে থাকে, স্ক্রিপ্ট নামলে সব পাঠানো হয়।
+// checkout, cart, order-success, order-failed পেজে (কনভার্সন পেজ) কোনো দেরি নেই, আগের মতো সাথে সাথেই লোড হয়।
+(function () {
+    var queue = [], started = false;
+    window.__stzDefer = function (fn) { if (started) { try { fn(); } catch (e) { } } else queue.push(fn); };
+    function start() {
+        if (started) return;
+        started = true;
+        queue.splice(0).forEach(function (fn) { try { fn(); } catch (e) { } });
+    }
+    if (/checkout|order-success|order-failed|cart/i.test(location.pathname)) { started = true; return; }
+    ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(function (ev) {
+        window.addEventListener(ev, start, { capture: true, passive: true, once: true });
+    });
+    if (document.readyState === 'complete') start(); else window.addEventListener('load', start, { once: true });
+    setTimeout(start, 5000);
+})();
+
 // Google Analytics (GA4) ট্র্যাকিং কোড — SmartTechZone.com.bd
 // সব পেজে <head>-এর ঠিক পরে <script src="analytics.js"></script> (বা সাব-ফোল্ডারে "../analytics.js") হিসেবে লোড করা হয়
 (function () {
-    var gtagScript = document.createElement('script');
-    gtagScript.async = true;
-    gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-GHMHK6V5SN';
-    document.head.appendChild(gtagScript);
+    window.__stzDefer(function () {
+        var gtagScript = document.createElement('script');
+        gtagScript.async = true;
+        gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-GHMHK6V5SN';
+        document.head.appendChild(gtagScript);
+    });
 
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
@@ -17,8 +40,10 @@
 // ভিডিওর মতো দেখা যায়) তা ট্র্যাক করার জন্য। Project: Smart Tech Zone (Project ID: ykax67effp)
 (function (c, l, a, r, i, t, y) {
     c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
-    t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
-    y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+    window.__stzDefer(function () {
+        t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+        y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+    });
 })(window, document, "clarity", "script", "ykax67effp");
 
 // Meta (Facebook) Pixel — বেস কোড, সব পেজে PageView স্বয়ংক্রিয়ভাবে ট্র্যাক করে। Dataset/Pixel ID:
@@ -33,8 +58,10 @@
     };
     if (!f._fbq) f._fbq = n;
     n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = [];
-    t = b.createElement(e); t.async = !0; t.src = v;
-    s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+    window.__stzDefer(function () {
+        t = b.createElement(e); t.async = !0; t.src = v;
+        s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+    });
 }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
 window.fbq('init', '390654674084858');
 // Meta Ads অ্যাকাউন্টের (353613444752028) নিজস্ব পিক্সেল — উপরের মূল পিক্সেলটা Ad Account-এর
