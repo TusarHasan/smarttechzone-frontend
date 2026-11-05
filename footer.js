@@ -175,7 +175,6 @@
                         <span class="payment-badge">bKash</span>
                         <span class="payment-badge">Nagad</span>
                         <span class="payment-badge">Rocket</span>
-                        <span class="payment-badge">Card</span>
                     </div>
                 </div>
             </div>
