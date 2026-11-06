@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <script src="analytics.js" defer></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO: এটা প্রাইভেট/ইউটিলিটি পেজ (প্রতিটা ইউজারের জন্য আলাদা ডেটা বা কোনো নির্দিষ্ট
+         কনটেন্ট নেই) — তাই Google এটা ইনডেক্স না করুক, কিন্তু ভেতরের লিংকগুলো (যেমন প্রোডাক্ট
+         লিংক) অনুসরণ করুক, এই জন্য noindex, follow ব্যবহার করা হলো -->
+    <meta name="robots" content="noindex, follow">
+    <title>অর্ডার সফল হয়েছে - Smart Tech Zone</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .result-container { max-width: 600px; margin: 60px auto; padding: 0 20px; text-align: center; }
+        .result-card {
+            background: #fff; border-radius: 10px; padding: 40px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .result-icon { font-size: 56px; margin-bottom: 10px; }
+        .result-card h2 { color: #27ae60; margin: 10px 0; }
+        .order-number-box {
+            background: #f7f9fa; border: 1px dashed #ccc; border-radius: 6px; padding: 14px;
+            margin: 20px 0; font-size: 18px; font-weight: bold; color: #333; letter-spacing: 0.5px;
+        }
+        .result-note { color: #666; font-size: 14px; line-height: 1.7; }
+        .result-actions { margin-top: 26px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .result-actions a {
+            display: inline-block; padding: 12px 24px; border-radius: 6px; text-decoration: none;
+            font-weight: bold; font-size: 14px;
+        }
+        .btn-primary { background: #e74c3c; color: #fff; }
+        .btn-secondary { background: #f0f0f0; color: #333; }
+    </style>
+    <script src="config.js"></script>
+    <script src="visitor-track.js" defer></script>
+    <script src="customer-auth.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" defer></script>
+    <script src="chat-widget.js" defer></script>
+    <script src="cart.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
+            <a href="cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
+        </div>
+    </nav>
+
+    <div class="result-container">
+        <div class="result-card">
+            <div class="result-icon">✅</div>
+            <h2>অর্ডার সফলভাবে সম্পন্ন হয়েছে!</h2>
+            <div class="order-number-box" id="orderNumberBox">অর্ডার নাম্বার: ...</div>
+            <p class="result-note" id="resultNote">
+                আপনার পেমেন্ট সফলভাবে সম্পন্ন হয়েছে এবং অর্ডারটি প্রসেসিংয়ে পাঠানো হয়েছে।<br>
+                অর্ডার ট্র্যাক করতে আপনার ফোন নাম্বার এবং উপরের অর্ডার নাম্বারটি ব্যবহার করুন।<br>
+                কোনো প্রশ্ন থাকলে আমাদের সাথে যোগাযোগ করুন।
+            </p>
+            <div class="result-actions">
+                <a id="mfsWaBtn" class="btn-primary" style="display:none; background:#16a34a;" href="https://wa.me/8801718381066" target="_blank" rel="noopener">পেমেন্টে সমস্যা? WhatsApp করুন</a>
+                <a href="track.html" class="btn-primary">অর্ডার ট্র্যাক করুন</a>
+                <a href="index.html" class="btn-secondary">কেনাকাটা চালিয়ে যান</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const orderNumber = params.get('order') || params.get('tran_id') || '';
+        // bKash/Nagad/Rocket Send Money: পেমেন্ট এখনো যাচাই হয়নি, তাই "পেমেন্ট সম্পন্ন" লেখা যাবে না
+        if (params.get('pay') === 'mfs') {
+            document.getElementById('resultNote').innerHTML =
+                'আপনার অর্ডার ও পেমেন্টের তথ্য আমরা পেয়েছি। TrxID মিলিয়ে পেমেন্ট নিশ্চিত হলে অর্ডারটি প্রসেস করা হবে।<br>' +
+                'যাচাই হতে কিছু সময় লাগতে পারে। অর্ডারের অবস্থা দেখতে আপনার ফোন নাম্বার এবং উপরের অর্ডার নাম্বারটি দিয়ে ট্র্যাক করুন।<br>' +
+                'কোনো প্রশ্ন থাকলে হটলাইন 01718381066-এ যোগাযোগ করুন।';
+        }
+        // পেমেন্ট নিয়ে সমস্যা হলে WhatsApp: অর্ডার নম্বর (আর একই ট্যাবে থাকলে TrxID) আগে থেকে লেখা মেসেজ
+        if (params.get('pay') === 'mfs' && orderNumber) {
+            let last = null;
+            try { last = JSON.parse(sessionStorage.getItem('stz_mfs_last') || 'null'); } catch (e) {}
+            const names = { bkash: 'bKash', nagad: 'Nagad', rocket: 'Rocket' };
+            const info = (last && last.order === orderNumber && last.trx) ? ' (' + (names[last.provider] || 'Send Money') + ', TrxID ' + last.trx + ')' : '';
+            const msg = 'আসসালামু আলাইকুম, আমার অর্ডার ' + orderNumber + '-এর পেমেন্ট' + info + ' নিয়ে একটা সমস্যা/প্রশ্ন আছে।\n\n'
+                + 'Hello, I have an issue/question about the payment' + info + ' for my order ' + orderNumber + '.';
+            const wa = document.getElementById('mfsWaBtn');
+            wa.href = 'https://wa.me/8801718381066?text=' + encodeURIComponent(msg);
+            wa.style.display = '';
+        }
+        document.getElementById('orderNumberBox').textContent = orderNumber
+            ? `অর্ডার নাম্বার: ${orderNumber}`
+            : 'অর্ডার সম্পন্ন হয়েছে';
+
+        // Meta Pixel — Purchase ইভেন্ট। value প্যারামিটারটা সার্ভার থেকে আসে (checkout.html-এর COD
+        // রেসপন্স, অথবা SSLCommerz পেমেন্ট ভ্যালিডেট হওয়ার পর ব্যাকএন্ডের redirect — routes/orders.js
+        // এর payment/success দেখো) — কখনো ক্লায়েন্ট-সাইডে দাম বানানো হয় না, param না থাকলে ইভেন্টই
+        // পাঠানো হয় না। localStorage গার্ড দিয়ে একই অর্ডারের জন্য পেজ রিফ্রেশ/আবার ভিজিট করলে Purchase
+        // বারবার পাঠানো ঠেকানো হচ্ছে (নইলে রিপোর্টে ভুলভাবে একই অর্ডার একাধিকবার গোনা হতে পারতো)।
+        // analytics.js 'defer' দিয়ে লোড হয় — অর্থাৎ এই ইনলাইন স্ক্রিপ্ট চলার সময় window.fbq এখনো তৈরি হয় না
+        // (আগে তাই Purchase কখনোই পাঠানো হয়নি)। DOMContentLoaded defer-করা স্ক্রিপ্টগুলো চলার পরে ফায়ার করে,
+        // তখন fbq রেডি।
+        function trackMetaPurchase() {
+            const value = params.get('value');
+            if (typeof window.fbq !== 'function' || !orderNumber || !value) return;
+            const guardKey = 'stz_meta_purchase_fired_' + orderNumber;
+            try {
+                if (localStorage.getItem(guardKey)) return;
+                localStorage.setItem(guardKey, '1');
+            } catch (e) { /* localStorage না থাকলেও (প্রাইভেট মোড ইত্যাদি) ইভেন্ট পাঠানো বন্ধ করার দরকার নেই */ }
+            window.fbq('track', 'Purchase', {
+                value: parseFloat(value),
+                currency: 'BDT',
+                content_type: 'product'
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', trackMetaPurchase);
+        } else {
+            trackMetaPurchase();
+        }
+    </script>
+</body>
+</html>
