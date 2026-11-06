@@ -100,33 +100,8 @@
             ? `অর্ডার নাম্বার: ${orderNumber}`
             : 'অর্ডার সম্পন্ন হয়েছে';
 
-        // Meta Pixel — Purchase ইভেন্ট। value প্যারামিটারটা সার্ভার থেকে আসে (checkout.html-এর COD
-        // রেসপন্স, অথবা SSLCommerz পেমেন্ট ভ্যালিডেট হওয়ার পর ব্যাকএন্ডের redirect — routes/orders.js
-        // এর payment/success দেখো) — কখনো ক্লায়েন্ট-সাইডে দাম বানানো হয় না, param না থাকলে ইভেন্টই
-        // পাঠানো হয় না। localStorage গার্ড দিয়ে একই অর্ডারের জন্য পেজ রিফ্রেশ/আবার ভিজিট করলে Purchase
-        // বারবার পাঠানো ঠেকানো হচ্ছে (নইলে রিপোর্টে ভুলভাবে একই অর্ডার একাধিকবার গোনা হতে পারতো)।
-        // analytics.js 'defer' দিয়ে লোড হয় — অর্থাৎ এই ইনলাইন স্ক্রিপ্ট চলার সময় window.fbq এখনো তৈরি হয় না
-        // (আগে তাই Purchase কখনোই পাঠানো হয়নি)। DOMContentLoaded defer-করা স্ক্রিপ্টগুলো চলার পরে ফায়ার করে,
-        // তখন fbq রেডি।
-        function trackMetaPurchase() {
-            const value = params.get('value');
-            if (typeof window.fbq !== 'function' || !orderNumber || !value) return;
-            const guardKey = 'stz_meta_purchase_fired_' + orderNumber;
-            try {
-                if (localStorage.getItem(guardKey)) return;
-                localStorage.setItem(guardKey, '1');
-            } catch (e) { /* localStorage না থাকলেও (প্রাইভেট মোড ইত্যাদি) ইভেন্ট পাঠানো বন্ধ করার দরকার নেই */ }
-            window.fbq('track', 'Purchase', {
-                value: parseFloat(value),
-                currency: 'BDT',
-                content_type: 'product'
-            });
-        }
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', trackMetaPurchase);
-        } else {
-            trackMetaPurchase();
-        }
+        // Meta Pixel — Purchase এখান থেকে আর পাঠানো হয় না (২০২৬-১১-০৬)। এখন শুধু অর্ডার Delivered হলে সার্ভার থেকে
+        // Meta Conversions API দিয়ে যায় (backend/services/metaCapi.js), যাতে ক্যান্সেল/ফেরত/ভুয়া অর্ডার পিক্সেলে না ঢোকে।
     </script>
 </body>
 </html>
