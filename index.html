@@ -159,6 +159,45 @@
             .hero-slide-text p { font-size: 14px; margin-bottom: 20px; }
         }
 
+
+        /* ===== Hero স্লাইডারে প্রোডাক্ট স্লাইড: (১) বাছাই করা রেয়ার প্রোডাক্ট, প্রতি স্লাইডে ১টা + Order Now
+           (২) সবচেয়ে দামি প্রোডাক্টের ক্যাটালগ, প্রতি স্লাইডে ৪টা পাশাপাশি ===== */
+        .hp-slide { background: linear-gradient(135deg, #0b1220 0%, #1e293b 55%, #334155 100%); }
+        .hp-inner { max-width: 1200px; margin: 0 auto; width: 100%; height: 100%; padding: 26px 48px 40px; display: flex; align-items: center; justify-content: space-between; gap: 28px; box-sizing: border-box; }
+        .hp-text { color: #fff; min-width: 0; flex: 1; }
+        .hp-tag { display: inline-block; background: #f97316; color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; padding: 4px 12px; border-radius: 50px; margin-bottom: 14px; }
+        .hp-name { font-size: 25px; font-weight: 800; line-height: 1.3; margin: 0 0 16px; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .hp-price { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 22px; }
+        .hp-from { font-size: 13px; opacity: .8; }
+        .hp-now { font-size: 32px; font-weight: 800; color: #fbbf24; }
+        .hp-old { font-size: 16px; text-decoration: line-through; opacity: .6; }
+        .hp-off { background: #e74c3c; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+        .hp-img { flex-shrink: 0; width: clamp(190px, 36%, 310px); aspect-ratio: 1 / 1; background: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+        .hp-img img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .hp-cat-inner { max-width: 1200px; margin: 0 auto; width: 100%; height: 100%; padding: 16px 28px 46px; display: flex; flex-direction: column; box-sizing: border-box; }
+        .hp-cat-head { color: #fff; display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+        .hp-cat-head b { font-size: 19px; font-weight: 800; }
+        .hp-cat-head span { font-size: 12.5px; opacity: .75; }
+        .hp-cat-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+        .hp-card { background: #fff; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; text-decoration: none; color: #222; min-height: 0; transition: transform .15s ease, box-shadow .15s ease; }
+        .hp-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.3); }
+        .hp-card-img { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+        .hp-card-img img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+        .hp-card-name { font-size: 12px; line-height: 1.35; margin: 8px 0 4px; height: 32px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
+        .hp-card-price { font-size: 14.5px; font-weight: 800; color: #e74c3c; }
+        .hp-card-price small { font-size: 11px; font-weight: 600; color: #777; margin-right: 3px; }
+        .hero-dots.many .hero-dot { width: 18px; }
+        @media (max-width: 760px) {
+            .hp-inner { flex-direction: column-reverse; justify-content: center; text-align: center; padding: 22px 20px 48px; gap: 16px; }
+            .hp-img { width: 200px; }
+            .hp-name { font-size: 18px; margin-bottom: 10px; -webkit-line-clamp: 3; }
+            .hp-price { justify-content: center; margin-bottom: 14px; }
+            .hp-now { font-size: 26px; }
+            .hp-cat-inner { padding: 16px 14px 48px; }
+            .hp-cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .hp-card-img { flex: none; height: 118px; }
+        }
+
         /* ===== প্রোমো স্ট্রিপ: Follow Us বক্স + Flash Sale প্রোমো ব্যানার ===== */
         .promo-strip { padding: 24px 30px 0; background: #f5f5f5; }
         .promo-strip .container { display: flex; gap: 16px; flex-wrap: wrap; }
@@ -1149,56 +1188,175 @@
         mpApplyAuthState();
 
         // ============ Hero Carousel — প্রতি ৪.৫ সেকেন্ডে অটো-রোটেট, ডট ক্লিকেও যাওয়া যায়,
-        // হোভার করলে থেমে যায় (যাতে পড়ার সময় হুট করে পরের স্লাইডে চলে না যায়) ============
+        // হোভার করলে থেমে যায় (যাতে পড়ার সময় হুট করে পরের স্লাইডে চলে না যায়)।
+        // প্রোডাক্ট স্লাইড পরে (ডাটা আসার পর) ঢুকলে stzHeroRebuild() ডট/স্লাইড নতুন করে গুছিয়ে নেয় ============
+        let stzHeroRebuild = function () {};
         (function initHeroCarousel() {
             const slidesWrap = document.getElementById('heroSlides');
             const dotsWrap = document.getElementById('heroDots');
             if (!slidesWrap || !dotsWrap) return;
-            const slides = Array.from(slidesWrap.querySelectorAll('.hero-slide'));
-            if (slides.length === 0) return;
-
-            // type="button" স্পষ্টভাবে সেট করা হলো — কোনো <button> এর type না দিলে ব্রাউজার
-            // ডিফল্টভাবে "submit" ধরে নেয়, আর সেটা কোনো <form>-এর ভেতরে পড়ে গেলে ক্লিকে পেজ
-            // reload/submit হয়ে যেতে পারে (সব স্টেট রিসেট, ডট "হারিয়ে যাওয়ার" মতো দেখাতে পারে)।
-            slides.forEach((_, i) => {
-                const dot = document.createElement('button');
-                dot.type = 'button';
-                dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
-                dot.setAttribute('aria-label', `Slide ${i + 1}`);
-                dot.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    goToSlide(i);
-                });
-                dotsWrap.appendChild(dot);
-            });
-            const dots = Array.from(dotsWrap.querySelectorAll('.hero-dot'));
-
+            let slides = [];
+            let dots = [];
             let current = 0;
             let timer = null;
 
             function goToSlide(i) {
-                if (i === current) return;
-                slides[current].classList.remove('active');
-                dots[current].classList.remove('active');
+                if (i === current || !slides[i]) return;
+                if (slides[current]) slides[current].classList.remove('active');
+                if (dots[current]) dots[current].classList.remove('active');
                 current = i;
                 slides[current].classList.add('active');
-                dots[current].classList.add('active');
+                if (dots[current]) dots[current].classList.add('active');
+            }
+
+            // keepActive = এখন যে স্লাইড দেখা যাচ্ছে সেটাই ধরে রাখা (নতুন স্লাইড আগে ঢুকলেও যেন হঠাৎ লাফ না দেয়)
+            function build(keepActive) {
+                slides = Array.from(slidesWrap.querySelectorAll('.hero-slide'));
+                if (!slides.length) return;
+                let idx = keepActive ? slides.findIndex(sl => sl.classList.contains('active')) : 0;
+                if (idx < 0) idx = 0;
+                slides.forEach((sl, i) => sl.classList.toggle('active', i === idx));
+                current = idx;
+                dotsWrap.innerHTML = '';
+                dotsWrap.classList.toggle('many', slides.length > 8);
+                // type="button" স্পষ্টভাবে সেট করা হলো — কোনো <button> এর type না দিলে ব্রাউজার
+                // ডিফল্টভাবে "submit" ধরে নেয়, আর সেটা কোনো <form>-এর ভেতরে পড়ে গেলে ক্লিকে পেজ
+                // reload/submit হয়ে যেতে পারে (সব স্টেট রিসেট, ডট "হারিয়ে যাওয়ার" মতো দেখাতে পারে)।
+                slides.forEach((_, i) => {
+                    const dot = document.createElement('button');
+                    dot.type = 'button';
+                    dot.className = 'hero-dot' + (i === idx ? ' active' : '');
+                    dot.setAttribute('aria-label', `Slide ${i + 1}`);
+                    dot.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        goToSlide(i);
+                    });
+                    dotsWrap.appendChild(dot);
+                });
+                dots = Array.from(dotsWrap.querySelectorAll('.hero-dot'));
             }
 
             function next() { goToSlide((current + 1) % slides.length); }
-
-            function startAuto() {
-                stopAuto();
-                timer = setInterval(next, 4500);
-            }
+            function startAuto() { stopAuto(); timer = setInterval(next, 4500); }
             function stopAuto() { if (timer) clearInterval(timer); }
 
+            build(false);
             const carousel = document.getElementById('heroCarousel');
             carousel.addEventListener('mouseenter', stopAuto);
             carousel.addEventListener('mouseleave', startAuto);
             startAuto();
+            stzHeroRebuild = build;
         })();
+
+        // ============ Hero স্লাইডারে প্রোডাক্ট: আগে বাছাই করা রেয়ার প্রোডাক্ট (প্রতি স্লাইডে ১টা, Order Now সহ),
+        // তারপর সবচেয়ে দামি প্রোডাক্টের ক্যাটালগ (প্রতি স্লাইডে ৪টা পাশাপাশি)। দাম/ছবি/স্টক সবসময় লাইভ ডাটাবেজ থেকে আসে,
+        // তাই দাম বদলালে এখানে কিছু করতে হয় না। শেষবারের ডাটা ব্রাউজারে জমা থাকে, পরের ভিজিটে স্লাইড সাথে সাথে দেখায়। ============
+        // নতুন রেয়ার প্রোডাক্ট যোগ/বাদ দিতে শুধু এই তালিকা বদলান (প্রোডাক্ট লিংকের শেষের -i এর পরের অংশটাই ID)
+        const HERO_FEATURED_IDS = [
+            '6aaad12bc37adebfd8cfe048', // Infinix Note 40 Pro 4G X6850 Back Panel
+            '6acdea40310b2993f488aa07', // Infinix Note 40 Pro 4G Back Panel (Camera Lens)
+            '6aaad171c37adebfd8cff23e', // Huawei Nova 7 SE Back Panel
+            '6aaad171c37adebfd8cff2d5', // Tecno Camon 19 Neo Full Body Housing
+            '6aeac4dd003f26a917d2c372', // iPhone 16 Full Body Housing
+            '6aaad0afc37adebfd8cfb8ad', // iPhone 16 Pro Max Back Panel
+            '6aaad0fdc37adebfd8cfd0ba', // Tecno Camon 30 4G Full Body Housing
+            '6aaad0b4c37adebfd8cfbbb4'  // Tecno Camon 30 5G Side Frame Back Panel
+        ];
+        const HERO_PREMIUM_COUNT = 12;   // দামি প্রোডাক্টের ক্যাটালগে কয়টা (প্রতি স্লাইডে ৪টা)
+        const HERO_CACHE_KEY = 'stz_hero_products_v1';
+
+        // প্রোডাক্ট (বিস্তারিত বা সামারি) থেকে স্লাইডের জন্য দরকারি ছোট অবজেক্ট। ভ্যারিয়েন্ট থাকলে কার্ডের নিয়মেই
+        // সবচেয়ে কম দামের Active ভ্যারিয়েন্টের দাম; সব ভ্যারিয়েন্টের স্টক শূন্য হলে null (স্লাইডে দেখানো হয় না)
+        function heroNorm(p) {
+            if (!p || !p._id || !p.name) return null;
+            let price = Number(p.price) || 0, old = (p.originalPrice > p.price) ? p.originalPrice : 0, from = false;
+            const vs = (p.variants || []).filter(v => v && v.isActive !== false && Number(v.price) > 0);
+            if (vs.length) {
+                if (!vs.some(v => (Number(v.stock) || 0) > 0)) return null;
+                let best = vs[0];
+                vs.forEach(v => { if (v.price < best.price || (v.price === best.price && (v.originalPrice || 0) > (best.originalPrice || 0))) best = v; });
+                price = best.price;
+                old = (best.originalPrice > best.price) ? best.originalPrice : 0;
+                from = vs.some(v => v.price !== best.price);
+            }
+            if (!(price > 0)) return null;
+            return { id: p._id, name: p.name, img: (p.images && p.images[0]) || '', price, old, from };
+        }
+
+        function heroSlideHtmlFeatured(it) {
+            const href = buildProductPath(it.name, it.id);
+            const off = it.old ? Math.round((it.old - it.price) / it.old * 100) : 0;
+            const img = it.img ? resolveImg(it.img, 640) : 'https://via.placeholder.com/300';
+            return `<div class="hero-slide hp-slide hp-featured"><div class="hp-inner">
+                <div class="hp-text">
+                    <span class="hp-tag">Rare Find</span>
+                    <h2 class="hp-name">${esc(it.name)}</h2>
+                    <div class="hp-price">${it.from ? '<span class="hp-from">From</span>' : ''}<span class="hp-now">৳${it.price}</span>${it.old ? `<span class="hp-old">৳${it.old}</span>` : ''}${off > 0 ? `<span class="hp-off">-${off}%</span>` : ''}</div>
+                    <a href="${href}" class="hero-slide-btn" style="color:#0f172a;">Order Now →</a>
+                </div>
+                <a href="${href}" class="hp-img" aria-label="${esc(it.name)}"><img src="${img}" alt="${esc(it.name)}" decoding="async" onerror="this.src='https://via.placeholder.com/300'"></a>
+            </div></div>`;
+        }
+
+        function heroSlideHtmlCatalog(items) {
+            const cards = items.map(it => {
+                const href = buildProductPath(it.name, it.id);
+                const img = it.img ? resolveImg(it.img, 320) : 'https://via.placeholder.com/200';
+                return `<a class="hp-card" href="${href}"><div class="hp-card-img"><img src="${img}" alt="${esc(it.name)}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/200'"></div>
+                    <div class="hp-card-name">${esc(it.name)}</div><div class="hp-card-price">${it.from ? '<small>From</small>' : ''}৳${it.price}</div></a>`;
+            }).join('');
+            return `<div class="hero-slide hp-slide hp-catalog"><div class="hp-cat-inner">
+                <div class="hp-cat-head"><b>Premium Picks</b><span>Our highest-value products</span></div>
+                <div class="hp-cat-grid">${cards}</div></div></div>`;
+        }
+
+        // ডাটা দিয়ে স্লাইড গুছিয়ে স্লাইডারের শুরুতে বসানো (আগের প্রোডাক্ট স্লাইড থাকলে সরিয়ে)
+        function heroRenderProductSlides(data) {
+            const wrap = document.getElementById('heroSlides');
+            if (!wrap || !data) return;
+            // এখন চলা স্লাইডটা প্রোডাক্ট স্লাইড না, এবং প্রথম সাধারণ স্লাইডও না (ইউজার ইতোমধ্যে সামনে এগিয়ে গেছে) হলে সেটাই ধরে রাখা, নইলে প্রোডাক্ট স্লাইড দিয়ে শুরু
+            const prevActive = wrap.querySelector('.hero-slide.active');
+            const firstStatic = wrap.querySelector('.hero-slide:not(.hp-slide)');
+            const keep = (prevActive && !prevActive.classList.contains('hp-slide') && prevActive !== firstStatic) ? prevActive : null;
+            wrap.querySelectorAll('.hp-slide').forEach(el => el.remove());
+            let html = (data.featured || []).map(heroSlideHtmlFeatured).join('');
+            const prem = data.premium || [];
+            for (let i = 0; i < prem.length; i += 4) {
+                const chunk = prem.slice(i, i + 4);
+                if (chunk.length) html += heroSlideHtmlCatalog(chunk);
+            }
+            if (!html) return;
+            wrap.insertAdjacentHTML('afterbegin', html);
+            wrap.querySelectorAll('.hero-slide.active').forEach(el => el.classList.remove('active'));
+            (keep || wrap.querySelector('.hp-slide')).classList.add('active');
+            stzHeroRebuild(true);
+        }
+
+        async function heroLoadProducts() {
+            // ১) জমা করা ডাটা থাকলে সাথে সাথে দেখানো
+            let cached = null;
+            try { cached = JSON.parse(localStorage.getItem(HERO_CACHE_KEY) || 'null'); } catch (e) { cached = null; }
+            if (cached && (cached.featured || []).length) heroRenderProductSlides(cached);
+            // ২) লাইভ ডাটা: রেয়ার প্রোডাক্টগুলো আলাদাভাবে, দামিগুলো দাম অনুযায়ী সাজানো তালিকা থেকে
+            try {
+                const [featRes, listRes] = await Promise.all([
+                    Promise.all(HERO_FEATURED_IDS.map(id => fetch(`${API_BASE}/api/products/${id}`).then(r => r.ok ? r.json() : null).catch(() => null))),
+                    fetch(`${API_BASE}/api/products?status=published&fields=summary&sort=price_desc&page=1&limit=${HERO_PREMIUM_COUNT + HERO_FEATURED_IDS.length + 4}`).then(r => r.json()).catch(() => ({}))
+                ]);
+                const featured = featRes.map(heroNorm).filter(Boolean);
+                const skip = new Set(HERO_FEATURED_IDS);
+                const premium = ((listRes && listRes.products) || []).filter(p => !skip.has(String(p._id))).map(heroNorm).filter(Boolean).slice(0, HERO_PREMIUM_COUNT);
+                if (!featured.length && !premium.length) return;
+                const fresh = { featured, premium };
+                if (JSON.stringify(fresh) === JSON.stringify(cached)) return;
+                try { localStorage.setItem(HERO_CACHE_KEY, JSON.stringify(fresh)); } catch (e) { /* জমা রাখা না গেলে সমস্যা নেই */ }
+                heroRenderProductSlides(fresh);
+            } catch (err) {
+                console.error('Hero products load error:', err);
+            }
+        }
+        heroLoadProducts();
 
         // ============ Flash Sale — নির্দিষ্ট ক্যাটাগরির প্রোডাক্ট এনে discount-rules.js এর
         // নিয়ম দিয়ে ছাড়ের দাম হিসেব করে দেখায়। কোনো প্রোডাক্টের price/originalPrice ফিল্ড
