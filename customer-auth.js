@@ -1,4 +1,14 @@
 // ===== কাস্টমার লগইন সেশন — সব পেজে (নেভবার Login/অ্যাকাউন্ট লিংক দেখানো সহ) শেয়ার করা হয় =====
+// সাইনআপ/সোশ্যাল লগইনের সময় ব্যাকএন্ডে পাঠানোর ডিভাইস-হিন্ট (ব্রাউজার নিজে যা দেয়; Android Chrome এ মডেল পাওয়া যায়)
+window.STZ_DEVICE = {};
+try {
+    if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+        navigator.userAgentData.getHighEntropyValues(['model', 'platform']).then(function (v) {
+            window.STZ_DEVICE = { model: String(v.model || '').slice(0, 60), platform: String(v.platform || '').slice(0, 20) };
+        }).catch(function () { });
+    }
+} catch (e) { }
+
 const CUSTOMER_TOKEN_KEY = 'customerToken';
 const CUSTOMER_DATA_KEY = 'customerData';
 

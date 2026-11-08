@@ -34,7 +34,7 @@
         const response = await fetch(`${api}/api/customer-auth${path}`, {
             method: body === undefined ? 'GET' : 'POST',
             headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
-            body: body === undefined ? undefined : JSON.stringify(body),
+            body: body === undefined ? undefined : JSON.stringify(/^\/(register|google|facebook)$/.test(path) ? { ...body, device: window.STZ_DEVICE || {} } : body),
             // Render Free can take over 50 seconds to wake from inactivity.
             signal: AbortSignal.timeout(body === undefined ? 90000 : 30000), cache: 'no-store'
         });

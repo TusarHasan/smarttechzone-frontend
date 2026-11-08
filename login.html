@@ -260,7 +260,7 @@
                 const res = await fetch(`${API_BASE}/api/customer-auth/google`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ credential: response.credential })
+                    body: JSON.stringify({ credential: response.credential, device: window.STZ_DEVICE || {} })
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Google লগইন ব্যর্থ হয়েছে।');
@@ -300,7 +300,7 @@
                 const res = await fetch(`${API_BASE}/api/customer-auth/facebook`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ accessToken })
+                    body: JSON.stringify({ accessToken, device: window.STZ_DEVICE || {} })
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Facebook লগইন ব্যর্থ হয়েছে।');
