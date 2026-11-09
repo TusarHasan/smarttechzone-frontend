@@ -1253,18 +1253,11 @@
         // তারপর সবচেয়ে দামি প্রোডাক্টের ক্যাটালগ (প্রতি স্লাইডে ৪টা পাশাপাশি)। দাম/ছবি/স্টক সবসময় লাইভ ডাটাবেজ থেকে আসে,
         // তাই দাম বদলালে এখানে কিছু করতে হয় না। শেষবারের ডাটা ব্রাউজারে জমা থাকে, পরের ভিজিটে স্লাইড সাথে সাথে দেখায়। ============
         // নতুন রেয়ার প্রোডাক্ট যোগ/বাদ দিতে শুধু এই তালিকা বদলান (প্রোডাক্ট লিংকের শেষের -i এর পরের অংশটাই ID)
-        const HERO_FEATURED_IDS = [
-            '6aaad12bc37adebfd8cfe048', // Infinix Note 40 Pro 4G X6850 Back Panel
-            '6acdea40310b2993f488aa07', // Infinix Note 40 Pro 4G Back Panel (Camera Lens)
-            '6aaad171c37adebfd8cff23e', // Huawei Nova 7 SE Back Panel
-            '6aaad171c37adebfd8cff2d5', // Tecno Camon 19 Neo Full Body Housing
-            '6aeac4dd003f26a917d2c372', // iPhone 16 Full Body Housing
-            '6aaad0afc37adebfd8cfb8ad', // iPhone 16 Pro Max Back Panel
-            '6aaad0fdc37adebfd8cfd0ba', // Tecno Camon 30 4G Full Body Housing
-            '6aaad0b4c37adebfd8cfbbb4'  // Tecno Camon 30 5G Side Frame Back Panel
-        ];
+        // Rare Find প্রোডাক্ট এখন কোডে বসানো নেই: অ্যাডমিন প্যানেল > Settings > "Homepage slider: Rare Finds" থেকে Owner ৫টা পর্যন্ত লিংক দেন,
+        // এখানে API থেকে সেই ID-গুলো আসে (/api/site-settings/hero-picks)। তালিকা ফাঁকা থাকলে কোনো Rare Find স্লাইড দেখায় না।
+        const HERO_MAX_FEATURED = 5;
         const HERO_PREMIUM_COUNT = 12;   // দামি প্রোডাক্টের ক্যাটালগে কয়টা (প্রতি স্লাইডে ৪টা)
-        const HERO_CACHE_KEY = 'stz_hero_products_v1';
+        const HERO_CACHE_KEY = 'stz_hero_products_v2'; // v2: পুরনো ৮টা Rare Find এর জমা ডাটা যেন আর না দেখায়
 
         // প্রোডাক্ট (বিস্তারিত বা সামারি) থেকে স্লাইডের জন্য দরকারি ছোট অবজেক্ট। ভ্যারিয়েন্ট থাকলে কার্ডের নিয়মেই
         // সবচেয়ে কম দামের Active ভ্যারিয়েন্টের দাম; সব ভ্যারিয়েন্টের স্টক শূন্য হলে null (স্লাইডে দেখানো হয় না)
@@ -1337,15 +1330,23 @@
             // ১) জমা করা ডাটা থাকলে সাথে সাথে দেখানো
             let cached = null;
             try { cached = JSON.parse(localStorage.getItem(HERO_CACHE_KEY) || 'null'); } catch (e) { cached = null; }
-            if (cached && (cached.featured || []).length) heroRenderProductSlides(cached);
-            // ২) লাইভ ডাটা: রেয়ার প্রোডাক্টগুলো আলাদাভাবে, দামিগুলো দাম অনুযায়ী সাজানো তালিকা থেকে
+            if (cached && ((cached.featured || []).length || (cached.premium || []).length)) heroRenderProductSlides(cached);
+            // ২) লাইভ ডাটা: Owner এর বাছা Rare Find ID তালিকা + দামিগুলো দাম অনুযায়ী সাজানো তালিকা
             try {
-                const [featRes, listRes] = await Promise.all([
-                    Promise.all(HERO_FEATURED_IDS.map(id => fetch(`${API_BASE}/api/products/${id}`).then(r => r.ok ? r.json() : null).catch(() => null))),
-                    fetch(`${API_BASE}/api/products?status=published&fields=summary&sort=price_desc&page=1&limit=${HERO_PREMIUM_COUNT + HERO_FEATURED_IDS.length + 4}`).then(r => r.json()).catch(() => ({}))
+                const [picks, listRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/site-settings/hero-picks`).then(r => r.ok ? r.json() : null).catch(() => null),
+                    fetch(`${API_BASE}/api/products?status=published&fields=summary&sort=price_desc&page=1&limit=${HERO_PREMIUM_COUNT + HERO_MAX_FEATURED + 4}`).then(r => r.json()).catch(() => ({}))
                 ]);
-                const featured = featRes.map(heroNorm).filter(Boolean);
-                const skip = new Set(HERO_FEATURED_IDS);
+                // তালিকা আনা না গেলে (নেটওয়ার্ক/সার্ভার সমস্যা) আগের জমা করা Rare Find-ই থাকবে, মুছে ফেলা হবে না
+                const ids = (picks && Array.isArray(picks.ids)) ? picks.ids.slice(0, HERO_MAX_FEATURED).map(String) : null;
+                let featured;
+                if (ids) {
+                    const featRes = await Promise.all(ids.map(id => fetch(`${API_BASE}/api/products/${id}`).then(r => r.ok ? r.json() : null).catch(() => null)));
+                    featured = featRes.map(heroNorm).filter(Boolean);
+                } else {
+                    featured = (cached && cached.featured) || [];
+                }
+                const skip = new Set(ids || featured.map(f => String(f.id)));
                 const premium = ((listRes && listRes.products) || []).filter(p => !skip.has(String(p._id))).map(heroNorm).filter(Boolean).slice(0, HERO_PREMIUM_COUNT);
                 if (!featured.length && !premium.length) return;
                 const fresh = { featured, premium };
