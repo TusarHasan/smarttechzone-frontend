@@ -1,0 +1,18 @@
+# ===== সব পেজের নিরাপত্তা হেডার (Cloudflare Pages) =====
+# CSP এখন শুধু Report-Only: কিছু আটকায় না, ব্রাউজার কনসোলে জানায় কী ব্লক হতো। এক সপ্তাহ দেখে ঠিক করে তারপর কড়া (Content-Security-Policy) করা হবে।
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), payment=()
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.socket.io https://cdnjs.cloudflare.com https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms https://scripts.clarity.ms https://accounts.google.com https://apis.google.com https://www.youtube.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://accounts.google.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self' https://smarttechzone-backend.onrender.com wss://smarttechzone-backend.onrender.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://www.facebook.com https://connect.facebook.net https://*.clarity.ms https://accounts.google.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://accounts.google.com https://www.facebook.com https://web.facebook.com; media-src 'self' https: blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'
+
+# Cloudflare Pages হেডার (Netlify-র netlify.toml [[headers]] এর সমান) — Private Wholesale Portal
+/wholesale
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: no-store
+  Referrer-Policy: no-referrer
+/wholesale/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: no-store
+  Referrer-Policy: no-referrer

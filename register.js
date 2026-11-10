@@ -10,6 +10,8 @@
     $('loginLink').href = `login.html?redirect=${encodeURIComponent(redirectTo)}`;
     if (getCustomerToken() && getCustomerData()) location.assign(redirectTo);
 
+    // Cloudflare Turnstile (বট-যাচাই): টোকেন একবারই ব্যবহারযোগ্য, তাই প্রতিটা অনুরোধের পর রিসেট
+    const ts = window.stzTurnstile ? window.stzTurnstile.mount($('stzTs')) : null;
     let otpEnabled = false;
     let optionsReady = false;
     let sendingOtp = false;
@@ -97,7 +99,7 @@
         updateSendButton();
         $('otpStatus').textContent = 'ভেরিফিকেশন কোড পাঠানো হচ্ছে…';
         try {
-            const data = await request('/register/otp', { phone });
+            const data = await request('/register/otp', { phone, turnstileToken: ts ? await ts.waitToken(8000) : '' });
             if (version !== otpRequestVersion || normalizePhone($('regPhone').value) !== phone) return;
             sentPhone = phone;
             $('regOtp').value = '';
@@ -109,6 +111,7 @@
             $('otpStatus').textContent = error.message;
             if (error.retryAfter) startCooldown(error.retryAfter);
         } finally {
+            if (ts) ts.reset();
             sendingOtp = false;
             updateSendButton();
         }
@@ -178,6 +181,7 @@
             const data = await request('/register', {
                 name: $('regName').value.trim(), phone, password: $('regPassword').value,
                 email: $('regEmail').value.trim(), otp: otpEnabled ? $('regOtp').value.trim() : undefined,
+                turnstileToken: (!otpEnabled && ts) ? await ts.waitToken(8000) : undefined,
                 birthday, gender: $('regGender').value, marketingSms: $('regMarketingSms').checked
             });
             setCustomerSession(data.token, data.customer);
@@ -185,6 +189,7 @@
             location.assign(redirectTo);
         } catch (error) { message(error.message, true); }
         finally {
+            if (ts && !otpEnabled) ts.reset();
             sendingRegistration = false;
             $('registerBtn').disabled = false;
             $('registerBtn').textContent = 'SIGN UP';

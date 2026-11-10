@@ -15,7 +15,8 @@
     <script src="config.js"></script>
     <script src="visitor-track.js" defer></script>
     <script src="customer-auth.js"></script>
-    <script src="register.js?v=20261108-device" defer></script>
+    <script src="turnstile.js" defer></script>
+    <script src="register.js?v=20261110-ts" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -75,6 +76,7 @@
                 <div class="signup-column signup-details">
                     <div class="signup-field"><label for="regName">পুরো নাম<span aria-hidden="true">*</span></label><input type="text" id="regName" name="name" autocomplete="name" maxlength="100" placeholder="আপনার পুরো নাম" required></div>
                     <label class="promotion-option" for="regMarketingSms"><input type="checkbox" id="regMarketingSms" name="marketingSms"><span>SMS-এর মাধ্যমে বিশেষ অফার ও প্রমোশনের খবর পেতে চাই।</span></label>
+                    <div id="stzTs"></div>
                     <button type="submit" class="signup-submit" id="registerBtn">SIGN UP</button>
                     <p class="signup-terms">‘SIGN UP’ ক্লিক করার মাধ্যমে আমি <a href="terms-of-service.html" target="_blank" rel="noopener">ব্যবহারের শর্তাবলি</a> ও <a href="privacy-policy.html" target="_blank" rel="noopener">গোপনীয়তা নীতি</a> মেনে নিচ্ছি।</p>
                     <div id="authMsg" class="signup-message" role="status" aria-live="polite" aria-atomic="true"></div>
