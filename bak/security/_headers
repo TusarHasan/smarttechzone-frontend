@@ -1,0 +1,9 @@
+# Cloudflare Pages হেডার (Netlify-র netlify.toml [[headers]] এর সমান) — Private Wholesale Portal
+/wholesale
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: no-store
+  Referrer-Policy: no-referrer
+/wholesale/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: no-store
+  Referrer-Policy: no-referrer

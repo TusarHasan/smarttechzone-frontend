@@ -536,6 +536,8 @@
     .stz-toast a:hover { text-decoration: underline; }
     @media (max-width: 768px) { #stzToastBox { bottom: calc(84px + env(safe-area-inset-bottom)); } }
     body.stz-lock #stzToastBox { top: 20px; bottom: auto; } /* শেয়ার মডাল খোলা থাকলে টোস্ট উপরে, যাতে মডালের আইকন না ঢাকে */
+    /* প্রোডাক্ট গ্যালারির ছবি: ড্র্যাগ/লং-প্রেস সেভ বন্ধ (টেক্সট সিলেকশন ও ক্লিক/জুম আগের মতোই চালু) */
+    #mainImage, .thumb-row img, .swatch-zoom img, .variant-sheet-thumb, .zoom-result { -webkit-user-drag: none; user-drag: none; -webkit-touch-callout: none; }
 </style>
     <script src="config.js"></script>
     <script src="visitor-track.js" defer></script>
@@ -2288,5 +2290,16 @@
     <div id="siteFooter"></div>
 <script src="footer.js"></script>
 <script src="search.js"></script>
+<script>
+// প্রোডাক্ট ছবি সুরক্ষা (হালকা): শুধু গ্যালারির ছবিতে রাইট-ক্লিক ও ড্র্যাগ বন্ধ। টেক্সট কপি, ক্লিক, জুম, WhatsApp শেয়ার বাটন আগের মতোই কাজ করে।
+(function () {
+    try {
+        var SEL = '#mainImage, .thumb-row, .swatch-zoom, .variant-sheet-thumb, .zoom-lens, .zoom-result';
+        function inGallery(t) { return !!(t && t.closest && t.closest(SEL)); }
+        document.addEventListener('contextmenu', function (e) { if (inGallery(e.target)) e.preventDefault(); });
+        document.addEventListener('dragstart', function (e) { if (inGallery(e.target)) e.preventDefault(); });
+    } catch (err) { /* সুরক্ষা না চললেও পেজ চলবে */ }
+})();
+</script>
 </body>
 </html>
