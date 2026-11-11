@@ -32,17 +32,24 @@ function stzImg(abs, w, h) {
     return abs;
 }
 
-if (typeof document !== 'undefined' && STZ_IMG_MODE !== 'none') {
+if (typeof document !== 'undefined') {
     document.addEventListener('error', function (e) {
         var el = e.target;
-        if (!el || el.tagName !== 'IMG' || el.dataset.stzImgFb) return;
+        if (!el || el.tagName !== 'IMG') return;
         var src = el.getAttribute('src') || '';
-        var orig = null;
-        if (src.indexOf('/cdn-cgi/image/') === 0) {
-            orig = src.replace(/^\/cdn-cgi\/image\/[^/]*\//, '');
-        } else if (src.indexOf('/.netlify/images?') === 0) {
-            try { orig = new URLSearchParams(src.split('?')[1]).get('url'); } catch (err) {}
+        // ধাপ ১: রিসাইজড ছবি (cdn-cgi / netlify) লোড না হলে মূল ছবিতে ফেরা
+        if (!el.dataset.stzImgFb && STZ_IMG_MODE !== 'none') {
+            var orig = null;
+            if (src.indexOf('/cdn-cgi/image/') === 0) {
+                orig = src.replace(/^\/cdn-cgi\/image\/[^/]*\//, '');
+            } else if (src.indexOf('/.netlify/images?') === 0) {
+                try { orig = new URLSearchParams(src.split('?')[1]).get('url'); } catch (err) {}
+            }
+            if (orig) { el.dataset.stzImgFb = '1'; el.src = orig; e.stopImmediatePropagation(); return; }
         }
-        if (orig) { el.dataset.stzImgFb = '1'; el.src = orig; }
+        // ধাপ ২: মূল ছবি (pub-xxxx.r2.dev) লোড না হলে নিজের ডোমেইনের /img/ পথে একবার আবার চেষ্টা (functions/img)।
+        // stopImmediatePropagation: নইলে ছবির নিজের inline onerror সঙ্গে সঙ্গে "No Image" প্লেসহোল্ডার বসিয়ে দেয়।
+        var m = src.match(/^https:\/\/pub-[0-9a-f]+\.r2\.dev\/(uploads\/[^?#]+)/i);
+        if (m && !el.dataset.stzImgFb2) { el.dataset.stzImgFb2 = '1'; el.src = '/img/' + m[1]; e.stopImmediatePropagation(); }
     }, true);
 }
