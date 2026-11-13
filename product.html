@@ -68,6 +68,14 @@
     /* Daraz-এর মতো — গ্যালারির প্রথম থাম্বনেইলে ভিডিও থাকলে ক্লিক করলে মেইন এরিয়াতে এমবেড হয়ে প্লে হয় */
     .main-video-wrap { width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; border: 1px solid #eee; background: #000; }
     .main-video-wrap iframe { width: 100%; height: 100%; display: block; }
+    .main-video-wrap video { width: 100%; height: 100%; display: block; background: #000; }
+    /* অ্যাডমিন থেকে আপলোড করা mp4 ভিডিওর থাম্বনেইল (YouTube-এর মতো পোস্টার নেই, তাই ভিডিওর প্রথম ফ্রেম) */
+    .thumb-row .video-thumb-file { position: relative; width: 60px; height: 60px; border-radius: 4px; border: 1px solid #ddd; overflow: hidden; cursor: pointer; background: #000; }
+    .thumb-row .video-thumb-file video { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+    .thumb-row .video-thumb-file::after {
+        content: "▶"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        color: #fff; background: rgba(0,0,0,.35); font-size: 18px;
+    }
     .thumb-row .video-thumb { position: relative; cursor: pointer; }
     .thumb-row .video-thumb::after {
         content: "▶"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -351,6 +359,8 @@
         .m-slide.m-video-slide { background: #000; }
         .m-slide.m-video-slide img { object-fit: cover; opacity: .85; }
         .m-slide.m-video-slide iframe { width: 100%; height: 100%; border: 0; display: block; }
+        .m-slide.m-video-slide video { width: 100%; height: 100%; display: block; object-fit: contain; background: #000; }
+        .m-slide.m-video-slide video.m-video-preview { object-fit: cover; opacity: .85; }
         .m-video-play {
             position: absolute; inset: 0; margin: auto; width: 64px; height: 64px; border-radius: 50%;
             background: rgba(0,0,0,.6); color: #fff; border: 2px solid #fff; font-size: 26px; line-height: 1; cursor: pointer;
@@ -579,6 +589,7 @@
                 <div class="main-video-wrap" id="mainVideoWrap" style="display:none;">
                     <iframe id="mainVideoFrame" src="" title="Product Video" frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    <video id="mainVideoEl" controls playsinline preload="none" style="display:none;"></video>
                 </div>
                 <div class="thumb-row" id="thumbRow"></div>
             </div>
@@ -834,17 +845,41 @@
         return m ? m[1] : null;
     }
 
+    // অ্যাডমিনের Media Center/Upload Video থেকে আসা mp4/webm/mov ভিডিও ফাইলের লিংক (শুধু http/https)
+    function getProductVideoFile(url) {
+        if (!url) return null;
+        const u = String(url).trim();
+        return /^https?:\/\//i.test(u) && /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(u) ? u : null;
+    }
+
+    function stopMainVideoEl() {
+        const v = document.getElementById('mainVideoEl');
+        if (v) { v.pause(); v.removeAttribute('src'); v.load(); v.style.display = 'none'; }
+    }
+
     function showProductVideo() {
-        if (!window.productVideoEmbedUrl) return;
+        const file = window.productVideoFile;
+        if (!window.productVideoEmbedUrl && !file) return;
         document.getElementById('mainImage').style.display = 'none';
         const wrap = document.getElementById('mainVideoWrap');
-        document.getElementById('mainVideoFrame').src = window.productVideoEmbedUrl + '?autoplay=1';
+        const frame = document.getElementById('mainVideoFrame');
+        const vid = document.getElementById('mainVideoEl');
+        if (file) {
+            frame.src = ''; frame.style.display = 'none';
+            vid.style.display = 'block'; vid.src = file;
+            const pr = vid.play(); if (pr && pr.catch) pr.catch(() => { /* ব্রাউজার অটোপ্লে আটকালে কন্ট্রোল থেকে চালানো যাবে */ });
+        } else {
+            stopMainVideoEl();
+            frame.style.display = 'block';
+            frame.src = window.productVideoEmbedUrl + '?autoplay=1';
+        }
         wrap.style.display = 'block';
     }
 
     function showProductImage(src) {
         // ভিডিও চলতে থাকলে iframe src খালি করে বন্ধ করে দেওয়া হচ্ছে, নাহলে আড়ালেও অডিও চলতে থাকবে
         document.getElementById('mainVideoFrame').src = '';
+        stopMainVideoEl();
         document.getElementById('mainVideoWrap').style.display = 'none';
         document.getElementById('mainImage').style.display = 'block';
         document.getElementById('mainImage').src = src;
@@ -1064,10 +1099,12 @@
         // Daraz-এর মতো — YouTube ভিডিও থাকলে গ্যালারির প্রথম থাম্বনেইল হিসেবে দেখানো হয়, ক্লিক করলে
         // মেইন এরিয়াতে এমবেড হয়ে প্লে হয়; কোনো ছবি থাম্বনেইলে ক্লিক করলে আবার ছবিতে ফিরে যায়
         const youtubeId = getYoutubeEmbedId(product.videoUrl);
+        const videoFile = youtubeId ? null : getProductVideoFile(product.videoUrl);
         window.productVideoEmbedUrl = youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : null;
+        window.productVideoFile = videoFile;
         const videoThumbHtml = youtubeId
             ? `<img class="video-thumb" src="https://img.youtube.com/vi/${youtubeId}/default.jpg" alt="${escapeAttr(product.name)} - video" onclick="showProductVideo()">`
-            : '';
+            : (videoFile ? `<div class="video-thumb-file" role="button" aria-label="ভিডিও চালান" onclick="showProductVideo()"><video src="${escapeAttr(videoFile)}#t=0.5" preload="metadata" muted playsinline></video></div>` : '');
 
         const thumbRow = document.getElementById('thumbRow');
         // SEO: গ্যালারির থাম্বনেইলগুলোতে আগে কোনো alt টেক্সট ছিল না (এই এলিমেন্টগুলো সম্পূর্ণ JS দিয়ে
@@ -1663,9 +1700,14 @@
         if (!track) return;
         const slides = [];
         const ytId = getYoutubeEmbedId(product.videoUrl);
+        const ytFile = ytId ? null : getProductVideoFile(product.videoUrl);
         if (ytId) {
             slides.push(`<div class="m-slide m-video-slide" data-video="${ytId}">
                 <img src="https://img.youtube.com/vi/${ytId}/hqdefault.jpg" alt="${escapeAttr(product.name)} - video">
+                <button type="button" class="m-video-play" aria-label="ভিডিও চালান">&#9654;</button></div>`);
+        } else if (ytFile) {
+            slides.push(`<div class="m-slide m-video-slide" data-file="${escapeAttr(ytFile)}">
+                <video class="m-video-preview" src="${escapeAttr(ytFile)}#t=0.5" preload="metadata" muted playsinline></video>
                 <button type="button" class="m-video-play" aria-label="ভিডিও চালান">&#9654;</button></div>`);
         }
         const list = images.length ? images : ['https://via.placeholder.com/400?text=No+Image'];
@@ -1678,6 +1720,10 @@
 
         track.querySelectorAll('.m-video-play').forEach(btn => btn.addEventListener('click', () => {
             const slide = btn.closest('.m-slide');
+            if (slide.dataset.file) {
+                slide.innerHTML = `<video src="${escapeAttr(slide.dataset.file)}" controls autoplay playsinline></video>`;
+                return;
+            }
             slide.innerHTML = `<iframe src="https://www.youtube.com/embed/${slide.dataset.video}?autoplay=1&playsinline=1" title="Product Video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
         }));
         if (!track.dataset.bound) {
