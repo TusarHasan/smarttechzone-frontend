@@ -13,3 +13,6 @@
 /wholesale/register  /wholesale/register.html  200
 /wholesale/catalog  /wholesale/catalog.html  200
 /wholesale/orders  /wholesale/orders.html  200
+
+# ভেন্ডরের পাবলিক শপ পেজ (smarttechzone.com.bd/shop/stz-s0001) — ভেতরে ভেতরে shop.html সার্ভ হয় (Cloudflare-এ functions/shop/[[path]].js এটা করে)
+/shop/*  /shop.html  200
