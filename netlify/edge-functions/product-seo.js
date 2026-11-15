@@ -367,7 +367,7 @@ function buildSsrBlock(product, related, pageUrl) {
         `<li>${escapeHtml(v.label)} &ndash; ${formatBdt(v.price)} &ndash; ${(Number(v.stock) || 0) > 0 ? 'In stock' : 'Out of stock'}</li>`).join('') + '</ul>' : '';
 
     const descHtml = descriptionToSafeHtml(product.description);
-    const rel = (related && related.length) ? `<h3>More parts${product.model ? ' for ' + escapeHtml((brand ? brand + ' ' : '') + product.model) : ''}</h3><ul>` +
+    const rel = (related && related.length) ? `<h3>${related.kind === 'mixed' ? 'Related parts' : 'More parts' + (product.model ? ' for ' + escapeHtml((brand ? brand + ' ' : '') + product.model) : '')}</h3><ul>` +
         related.map(r => `<li><a href="${escapeAttr(buildProductPath(r.name, r._id))}">${escapeHtml(shortProductName(r.name, 110))}</a>${r.price ? ' &ndash; ' + formatBdt(r.price) : ''}</li>`).join('') + '</ul>' : '';
 
     return `<div id="ssrProduct" style="text-align:left;line-height:1.6;color:#222;">${nav}` +
@@ -441,20 +441,55 @@ async function fetchJson(url, timeoutMs) {
     }
 }
 
+// সম্পর্কিত পণ্যের লিংক (ইন্টারনাল লিংক): আগে শুধু একই মডেলের পণ্য আসতো, ব্র্যান্ড না থাকলে কিছুই না — ফলে যে মডেলে একটাই
+// প্রোডাক্ট (২,৬০৩টা মডেল) বা ব্র্যান্ড অচেনা (৬৫৩টা প্রোডাক্ট), সেগুলোর পেজে কোনো ইন্টারনাল লিংকই ছিল না, Google ক্রল করতে দেরি করছিল।
+// এখন একই মডেলের পণ্য ৬টার কম হলে একই ব্র্যান্ড + একই ধরনের পার্টস (category), তাও না পেলে শুধু একই ধরনের পার্টস দিয়ে ভরা হয়।
+// প্রোডাক্ট আইডি থেকে একটা স্থির পৃষ্ঠা বাছা হয়, যাতে সবার পেজে একই ১২টা পণ্যের লিংক না যায়, লিংক সব পণ্যে ছড়িয়ে পড়ে।
+const RELATED_MIN_FROM_MODEL = 6;
+const RELATED_MAX = 12;
+function stablePageFor(id, totalPages) {
+    let h = 0;
+    const str = String(id);
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    return (h % Math.max(1, totalPages)) + 1;
+}
+async function fetchProductList(q, page, limit) {
+    const r = await fetchJson(`${BACKEND_URL}/api/products?status=published&fields=summary&${q}&page=${page}&limit=${limit}`, RELATED_TIMEOUT_MS);
+    const list = Array.isArray(r.data) ? r.data : ((r.data && r.data.products) || []);
+    return { list, totalPages: Number(r.data && r.data.totalPages) || 1 };
+}
 async function fetchRelated(product) {
     const brand = linkableBrandOf(product);
-    if (!brand) return [];
-    const q = product.model
-        ? `phoneBrand=${encodeURIComponent(brand)}&model=${encodeURIComponent(product.model)}`
-        : (product.category ? `phoneBrand=${encodeURIComponent(brand)}&category=${encodeURIComponent(product.category)}` : '');
-    if (!q) return [];
+    const out = [];
+    const seen = new Set([String(product._id)]);
+    const add = (list) => {
+        for (const p of list) {
+            if (!p || !p._id || !p.name || seen.has(String(p._id))) continue;
+            seen.add(String(p._id));
+            out.push(p);
+            if (out.length >= RELATED_MAX) break;
+        }
+    };
+    let fromModel = 0;
     try {
-        const r = await fetchJson(`${BACKEND_URL}/api/products?status=published&fields=summary&${q}&page=1&limit=13`, RELATED_TIMEOUT_MS);
-        const list = Array.isArray(r.data) ? r.data : ((r.data && r.data.products) || []);
-        return list.filter(p => p && p._id && p.name && String(p._id) !== String(product._id)).slice(0, 12);
+        if (brand && product.model) {
+            const r = await fetchProductList(`phoneBrand=${encodeURIComponent(brand)}&model=${encodeURIComponent(product.model)}`, 1, 13);
+            add(r.list);
+            fromModel = out.length;
+        }
+        if (out.length < RELATED_MIN_FROM_MODEL && product.category) {
+            const cat = `category=${encodeURIComponent(product.category)}`;
+            const q = brand ? `phoneBrand=${encodeURIComponent(brand)}&${cat}` : cat;
+            const first = await fetchProductList(q, 1, RELATED_MAX + 1);
+            const page = stablePageFor(product._id, first.totalPages);
+            add(page === 1 ? first.list : (await fetchProductList(q, page, RELATED_MAX + 1)).list);
+            if (out.length < RELATED_MIN_FROM_MODEL) add(first.list);
+        }
     } catch (e) {
-        return []; // সম্পর্কিত লিংক না পেলেও পেজ ঠিকই যাবে
+        // সম্পর্কিত লিংক না পেলেও পেজ ঠিকই যাবে (যা পাওয়া গেছে তা-ই থাকবে)
     }
+    out.kind = fromModel >= RELATED_MIN_FROM_MODEL ? 'model' : 'mixed';
+    return out;
 }
 
 async function loadProductForSeo(productId) {
@@ -525,4 +560,4 @@ export default async (request, context) => {
 // রাউটিং netlify.toml-এ ([[edge_functions]] এন্ট্রি /product.html ও /product/*) — এখানে আলাদা config export নেই
 
 // টেস্টিং-এর জন্য (Node দিয়ে যাচাই) — Netlify শুধু default export ও config ব্যবহার করে
-export { injectSeoIntoHtml, computeSeoFields, stripHtml, escapeHtml, escapeAttr, setAttrById, setTagTextById, buildSeoTitle, buildMetaDescription, shortProductName, sanitizeDescriptionHtml, descriptionToSafeHtml, buildSsrBlock, buildProductJsonLd, buildBreadcrumbJsonLd, stockInfoOf };
+export { fetchRelated, injectSeoIntoHtml, computeSeoFields, stripHtml, escapeHtml, escapeAttr, setAttrById, setTagTextById, buildSeoTitle, buildMetaDescription, shortProductName, sanitizeDescriptionHtml, descriptionToSafeHtml, buildSsrBlock, buildProductJsonLd, buildBreadcrumbJsonLd, stockInfoOf };
