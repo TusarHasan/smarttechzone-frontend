@@ -103,7 +103,7 @@
             : (orderNumber ? `অর্ডার নাম্বার: ${orderNumber}` : 'অর্ডার সম্পন্ন হয়েছে');
         if (allNumbers.length > 1) {
             const note = document.getElementById('resultNote');
-            if (note) note.innerHTML = (note.innerHTML ? note.innerHTML + '<br>' : '') + 'আপনার কার্টে ' + allNumbers.length + 'টি আলাদা দোকানের পণ্য ছিল, তাই ' + allNumbers.length + 'টি অর্ডার ও ' + allNumbers.length + 'টি আলাদা পার্সেলে পাঠানো হবে। প্রতিটার ট্র্যাকিং আলাদা।';
+            if (note) note.innerHTML = (note.innerHTML ? note.innerHTML + '<br>' : '') + 'আপনার কার্টে ' + allNumbers.length + 'টি আলাদা দোকানের পণ্য ছিল, তাই ' + allNumbers.length + 'টি অর্ডার ও ' + allNumbers.length + 'টি আলাদা পার্সেলে পাঠানো হবে। প্রতিটার ট্র্যাকিং আলাদা।' + (params.get('pay') === 'mfs' ? '<br>আপনার পাঠানো একটাই পেমেন্ট এই সবগুলো অর্ডারের জন্য ধরা হবে, আলাদা করে আর পাঠাতে হবে না।' : '');
         }
 
         // Meta Pixel — Purchase এখান থেকে আর পাঠানো হয় না (২০২৬-১১-০৬)। এখন শুধু অর্ডার Delivered হলে সার্ভার থেকে
