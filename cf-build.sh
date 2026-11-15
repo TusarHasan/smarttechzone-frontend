@@ -15,6 +15,8 @@ tar --exclude=./cf-dist --exclude=./cf-dist.zip --exclude=./.git --exclude=./.gi
     --exclude='*.md' -cf - . | tar -xf - -C "$OUT"
 rm -f "$OUT/_redirects"   # Netlify-র প্রক্সি/রিরাইট রুল Cloudflare-এ দরকার নেই (functions/ ও pretty URL দেখে)
 ( cd "$TMP" && "$WRANGLER" pages functions build "$SRC/functions" --outdir "$TMP/w" --output-routes-path "$OUT/_routes.json" --output-config-path "$TMP/cfg.json" >/dev/null )
+# রুট ক্যাচ-অল (ভেন্ডরের Shop Link: functions/[[path]].js) থাকলে static ফাইলগুলো _routes.json-এ exclude করে দেয়
+node "$SRC/cf-lib/routes-exclude.js" "$OUT" "$SRC/functions"
 W="$TMP/w/index.js"
 [ -s "$W" ] || { echo "worker bundle পাওয়া যায়নি"; exit 1; }
 cp "$W" "$OUT/_worker.js"

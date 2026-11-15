@@ -27,6 +27,10 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .product-card { animation: fadeInUp 0.35s ease both; }
+        .shop-head { display: flex; align-items: center; gap: 16px; }
+        .shop-logo { width: 72px; height: 72px; border-radius: 14px; object-fit: contain; background: #fff; border: 1px solid #eee; flex: none; }
+        .shop-desc { max-width: 720px; color: #555; line-height: 1.6; margin-top: 6px; white-space: pre-line; }
+        @media (max-width: 576px) { .shop-logo { width: 56px; height: 56px; border-radius: 12px; } }
         .brand-product-grid {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
         }
@@ -60,8 +64,14 @@
         <div class="breadcrumb">
             <a href="/index.html">Home</a> / <span id="breadcrumbBrand">Shop</span>
         </div>
-        <h1 id="brandHeading">Shop</h1>
-        <p id="brandSub"><span id="shopCode"></span></p>
+        <div class="shop-head">
+            <img id="shopLogo" class="shop-logo" alt="" hidden>
+            <div>
+                <h1 id="brandHeading">Shop</h1>
+                <p id="brandSub"><span id="shopCode"></span></p>
+                <p id="shopDesc" class="shop-desc" hidden></p>
+            </div>
+        </div>
     </div>
 
     <section class="product-section">
@@ -102,8 +112,11 @@
         function buildProductPath(name, id) {
             return `/product/${slugifyProductName(name)}-i${id}`;
         }
-        // /shop/<seller-code> (যেমন /shop/stz-s0001) — ভেন্ডরের পাবলিক শপ: শুধু ওই ভেন্ডরের Published প্রোডাক্ট
-        const SHOP_CODE = (location.pathname.split('/').filter(Boolean)[1] || '').trim().toLowerCase();
+        // ভেন্ডরের পাবলিক শপ: শুধু ওই ভেন্ডরের Published প্রোডাক্ট। ঠিকানা দুই রকম:
+        //   /sharattelecom       (শপের নাম, নতুন Shop Link)
+        //   /shop/stz-s0001      (Seller Code, পুরনো লিংকও চলে)
+        const PATH_PARTS = location.pathname.split('/').filter(Boolean);
+        const SHOP_CODE = ((PATH_PARTS[0] === 'shop' ? PATH_PARTS[1] : PATH_PARTS[0]) || '').replace(/\.html$/, '').trim().toLowerCase();
         const TARGET_BRAND = SHOP_CODE; // লোড-মোর/গ্রিড কোড একই থাকে
         let SHOP_NAME = '';
 
@@ -117,13 +130,13 @@
         }
 
         async function loadShopInfo() {
-            if (!/^stz-s\d{4,}$/.test(SHOP_CODE)) { shopNotFound(); return false; }
+            if (!/^(stz-s\d{4,}|[a-z0-9]{3,40})$/.test(SHOP_CODE)) { shopNotFound(); return false; }
             try {
                 const res = await fetch(`${API_BASE}/api/shop/${encodeURIComponent(SHOP_CODE)}`);
                 if (!res.ok) { shopNotFound(); return false; }
                 const info = await res.json();
                 SHOP_NAME = info.name || '';
-                const url = `https://smarttechzone.com.bd/shop/${SHOP_CODE}`;
+                const url = 'https://smarttechzone.com.bd' + (info.shopPath || ('/shop/' + SHOP_CODE));
                 const title = `${SHOP_NAME} - Smart Tech Zone`;
                 const desc = `${SHOP_NAME} (Seller Code: ${info.sellerCode}) — Smart Tech Zone মার্কেটপ্লেসের ভেন্ডর শপ। ${info.productCount || 0}টি প্রোডাক্ট, সারা বাংলাদেশে হোম ডেলিভারি।`;
                 document.getElementById('pageTitle').textContent = title;
@@ -135,6 +148,11 @@
                 document.getElementById('breadcrumbBrand').textContent = SHOP_NAME;
                 document.getElementById('brandHeading').textContent = SHOP_NAME;
                 document.getElementById('shopCode').textContent = `Seller Code: ${info.sellerCode} · ${info.productCount || 0}টি প্রোডাক্ট`;
+                if (info.description) { const d = document.getElementById('shopDesc'); d.textContent = info.description; d.hidden = false; }
+                if (info.logoUrl && /^https:\/\//.test(info.logoUrl)) {
+                    const l = document.getElementById('shopLogo'); l.src = info.logoUrl; l.alt = SHOP_NAME; l.hidden = false;
+                    document.getElementById('ogImageTag').setAttribute('content', info.logoUrl);
+                }
                 return true;
             } catch (e) {
                 shopNotFound(); return false;
