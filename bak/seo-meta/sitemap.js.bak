@@ -1,0 +1,137 @@
+// ================= sitemap.xml (SEO) =================
+// Google/Bing কে আমাদের সব পাবলিশড প্রোডাক্ট পেজ ও স্ট্যাটিক পেজের লিংক জানানোর জন্য।
+// প্রতিবার রিকোয়েস্ট এলে DB থেকে লাইভ ডেটা দিয়ে জেনারেট হয় — নতুন প্রোডাক্ট যোগ করলে
+// আলাদা করে কিছু আপডেট করতে হয় না।
+
+const express = require('express');
+const router = express.Router();
+const Product = require('../models/product');
+
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://smarttechzone.com.bd';
+
+// SEO: brands/apple.html এর মতো পুরোনো ফাইলগুলো এখন শুধু একটা meta-refresh রিডাইরেক্ট
+// (brands/brand.html?name=Apple এ পাঠিয়ে দেয়) — sitemap-এ redirect-stub URL রাখলে Google-এর
+// ক্রল-বাজেট সেই খালি রিডাইরেক্ট পেজ ক্রল করতেই খরচ হয়ে যায়, আসল কনটেন্ট পেজ (brand.html?name=...)
+// পর্যন্ত পৌঁছাতে বাড়তি এক ধাপ লাগে। তাই এখন সরাসরি আসল, ইনডেক্সযোগ্য URL-টাই sitemap-এ রাখা হচ্ছে।
+const STATIC_PAGES = [
+    { path: '/index.html', priority: '1.0', changefreq: 'daily' },
+    // SEO: তথ্য/পলিসি পেজগুলো আগে সাইটম্যাপে ছিলই না — Google এগুলো থেকে সাইটের বিশ্বাসযোগ্যতার (E-E-A-T) সংকেত পায়
+    { path: '/about.html', priority: '0.5', changefreq: 'monthly' },
+    { path: '/how-to-order.html', priority: '0.5', changefreq: 'monthly' },
+    { path: '/why-choose-us.html', priority: '0.5', changefreq: 'monthly' },
+    { path: '/returns-refunds.html', priority: '0.5', changefreq: 'monthly' },
+    { path: '/help-center.html', priority: '0.5', changefreq: 'monthly' },
+    { path: '/privacy-policy.html', priority: '0.3', changefreq: 'yearly' },
+    { path: '/terms-of-service.html', priority: '0.3', changefreq: 'yearly' },
+    { path: '/brands/brand.html?name=Apple', priority: '0.7', changefreq: 'weekly' },
+    { path: '/brands/brand.html?name=Samsung', priority: '0.7', changefreq: 'weekly' },
+    { path: '/brands/brand.html?name=Xiaomi', priority: '0.7', changefreq: 'weekly' },
+    { path: '/brands/brand.html?name=Oppo', priority: '0.7', changefreq: 'weekly' },
+    { path: '/brands/brand.html?name=Vivo', priority: '0.7', changefreq: 'weekly' },
+    { path: '/brands/brand.html?name=Realme', priority: '0.7', changefreq: 'weekly' },
+    { path: '/brands/brand.html?name=Nokia', priority: '0.7', changefreq: 'weekly' },
+    { path: '/brands/brand.html?name=Symphony', priority: '0.7', changefreq: 'weekly' },
+];
+
+function xmlEscape(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// SEO: কিওয়ার্ডসহ পরিষ্কার প্রোডাক্ট URL — /product/<slug>-i<id>
+// *** হুবহু কপি আছে: product.html, index.html, search.html, brands/brand.html,
+// models/model.html, netlify/edge-functions/product-seo.js ও model-seo.js ***
+function slugifyProductName(name) {
+    let s = String(name || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    if (s.length > 70) {
+        const cut = s.slice(0, 70);
+        const lastDash = cut.lastIndexOf('-');
+        s = lastDash > 20 ? cut.slice(0, lastDash) : cut;
+    }
+    return s || 'product';
+}
+function buildProductPath(name, id) {
+    return `/product/${slugifyProductName(name)}-i${id}`;
+}
+
+// আগে প্রতিটা রিকোয়েস্টে সরাসরি DB থেকে (হাজার হাজার প্রোডাক্ট + aggregate) লাইভ জেনারেট হতো —
+// সাইট নরমাল থাকলেও এই কোয়েরিটা মাঝেমধ্যে ধীর হয়ে গেলে (DB-তে সাময়িক লোড/লেটেন্সি) Netlify প্রক্সি
+// বা Googlebot-এর টাইমআউটে গিয়ে ঠেকতো — Search Console-এ "Couldn't fetch" এভাবেই দেখা গিয়েছিল।
+// এখন জেনারেট করা XML মেমোরিতে ক্যাশ করে রাখা হচ্ছে (৩০ মিনিট পর্যন্ত) — বেশিরভাগ রিকোয়েস্টই সাথে
+// সাথে ক্যাশ থেকে সার্ভ হবে (কোনো DB কোয়েরিই লাগবে না), তাই স্পিড আর রিলায়েবিলিটি দুটোই অনেক বাড়বে।
+// sitemap-এর changefreq এমনিতেই daily/weekly, তাই ৩০ মিনিটের ক্যাশে কোনো তথ্য পুরনো হয়ে যাওয়ার ঝুঁকি নেই।
+let cachedSitemapXml = null;
+let cachedSitemapAt = 0;
+const SITEMAP_CACHE_TTL_MS = 30 * 60 * 1000; // ৩০ মিনিট
+
+router.get('/sitemap.xml', async (req, res) => {
+    const isFresh = cachedSitemapXml && (Date.now() - cachedSitemapAt < SITEMAP_CACHE_TTL_MS);
+    if (isFresh) {
+        res.header('Content-Type', 'application/xml');
+        return res.send(cachedSitemapXml);
+    }
+
+    try {
+        // isDeleted প্রোডাক্ট আগে বাদ পড়ছিল না — সেগুলোর লিংক sitemap-এ থেকে যাওয়ায় Google
+        // মৃত পেজ ক্রল করে সময়/ক্রল-বাজেট নষ্ট করতো, এখন বাদ দেওয়া হচ্ছে। slug বানাতে নামও লাগে,
+        // তাই select()-এ 'name' যোগ করা হলো (আগে শুধু _id/createdAt নেওয়া হতো)
+        const products = await Product.find({ status: 'published', isDeleted: { $ne: true }, isActive: { $ne: false } }).select('_id name createdAt').lean();
+
+        // SEO: brand+model অনুযায়ী পার্টসের লিস্ট পেজ (models/model.html) আগে sitemap-এ ছিলই না —
+        // Google শুধু ইন্টারনাল লিংক ক্রল করেই এগুলো খুঁজে পেতো (ধীরে, অনির্ভরযোগ্যভাবে)। এখন
+        // ডাটাবেজ থেকে distinct brand+model জোড়া বের করে সরাসরি sitemap-এ যোগ করা হচ্ছে — ঠিক
+        // এই পেজগুলোই "Samsung A54 display price" ধরনের নির্দিষ্ট সার্চে সবচেয়ে বেশি সম্ভাবনাময়।
+        //
+        // SEO ফিক্স: আগে এখানে 'brand' ফ্রি-টেক্সট ফিল্ড দিয়ে গ্রুপ করা হতো, যেটা বেশিরভাগ
+        // প্রোডাক্টেই খালি/"No Brand" থেকে যায়। ফলে sitemap-এর ৩,২২৫টা model page-এর মধ্যে ৯৭%-ই
+        // (৩,১৩৮টা) অর্থহীন "No Brand" bucket-এ জমা হয়ে যাচ্ছিলো, যা Google-এর কাছে পুরো সাইটটাকেই
+        // ভাঙাচোরা/কম-কোয়ালিটি মনে করানোর সম্ভাবনা তৈরি করছিলো (Search Console-এ ৮,০৮৭টা পেজ
+        // "Discovered - currently not indexed")। এখন brands/brand.html পেজের মতোই নির্ভরযোগ্য
+        // 'phoneBrand' ফিল্ড (detect.js দিয়ে নাম থেকে স্বয়ংক্রিয়ভাবে বসানো) দিয়ে গ্রুপ করা হচ্ছে —
+        // phoneBrand === 'Others' (অচেনা ব্র্যান্ড) বাদ দেওয়া হচ্ছে ঠিক যেভাবে আগে খালি brand বাদ
+        // যেতো, যাতে একটা অর্থহীন "Others" bucket-ও তৈরি না হয়।
+        const modelPairs = await Product.aggregate([
+            { $match: { status: 'published', isDeleted: { $ne: true }, isActive: { $ne: false }, phoneBrand: { $nin: [null, '', 'Others'] }, model: { $nin: [null, ''] } } },
+            { $group: { _id: { brand: '$phoneBrand', model: '$model' }, lastmod: { $max: '$createdAt' } } }
+        ]);
+
+        const urls = [];
+
+        STATIC_PAGES.forEach(p => {
+            urls.push(`<url><loc>${xmlEscape(FRONTEND_URL + p.path)}</loc><changefreq>${p.changefreq}</changefreq><priority>${p.priority}</priority></url>`);
+        });
+
+        products.forEach(p => {
+            const lastmod = new Date(p.createdAt || Date.now()).toISOString().split('T')[0];
+            urls.push(`<url><loc>${xmlEscape(FRONTEND_URL + buildProductPath(p.name, p._id))}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`);
+        });
+
+        modelPairs.forEach(m => {
+            const lastmod = new Date(m.lastmod || Date.now()).toISOString().split('T')[0];
+            const loc = `${FRONTEND_URL}/models/model.html?brand=${encodeURIComponent(m._id.brand)}&model=${encodeURIComponent(m._id.model)}`;
+            urls.push(`<url><loc>${xmlEscape(loc)}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>`);
+        });
+
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`;
+
+        cachedSitemapXml = xml;
+        cachedSitemapAt = Date.now();
+
+        res.header('Content-Type', 'application/xml');
+        res.send(xml);
+    } catch (error) {
+        // DB কোয়েরি ব্যর্থ হলেও, আগের ভ্যালিড ক্যাশ থাকলে (এমনকি পুরনো হলেও) সেটাই সার্ভ করা হচ্ছে —
+        // Google/ইউজারকে খালি হাতে ৫০০ এরর দেখানোর চেয়ে সামান্য পুরনো সাইটম্যাপ দেখানো অনেক ভালো
+        if (cachedSitemapXml) {
+            res.header('Content-Type', 'application/xml');
+            return res.send(cachedSitemapXml);
+        }
+        res.status(500).send('Sitemap generation error: ' + error.message);
+    }
+});
+
+module.exports = router;
+// seoPing সার্ভিস প্রোডাক্টের পাবলিক URL বানাতে এটা ব্যবহার করে (slug লজিকের আরেকটা কপি না রাখতে)
+module.exports.buildProductPath = buildProductPath;

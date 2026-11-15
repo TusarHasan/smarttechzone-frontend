@@ -197,7 +197,10 @@ function buildMetaDescription(product) {
     const short = cleanShortName(product.name, 80);
     const { inStock } = stockInfoOf(product);
     const brand = linkableBrandOf(product) || (product.brand && !/^no\s*brand$/i.test(product.brand) ? product.brand : '');
-    const compat = [brand, product.model].filter(Boolean).join(' ').trim();
+    // মডেলের নামে ব্র্যান্ড আগে থেকেই থাকলে (যেমন "Oppo A6x 4G") আবার না বসানো, নইলে "Oppo Oppo A6x 4G" হয়
+    const modelStr = String(product.model || '').trim();
+    const brandInModel = brand && modelStr.toLowerCase().startsWith(String(brand).toLowerCase());
+    const compat = [brandInModel ? '' : brand, modelStr].filter(Boolean).join(' ').trim();
     const parts = [`Buy ${short} in Bangladesh for ${formatBdt(product.price)}.`];
     parts.push(inStock ? 'In stock.' : 'Currently out of stock.');
     if (compat) parts.push(`${product.partType ? product.partType + ' replacement' : 'Replacement part'} for ${compat}.`);
@@ -287,7 +290,8 @@ function buildBreadcrumbJsonLd(product, pageUrl) {
 function buildProductJsonLd(product, images, pageUrl, desc) {
     const mainImage = images.length ? images[0] : `${SITE_URL}/images/logo.png`;
     const { inStock } = stockInfoOf(product);
-    const brandName = (product.brand && !/^no\s*brand$/i.test(product.brand)) ? product.brand : linkableBrandOf(product);
+    // "Others"/"Generic" আসল ব্র্যান্ড না, স্কিমায় বসালে Google-এ ভুল ব্র্যান্ড দেখায়
+    const brandName = (product.brand && !/^(no\s*brand|others?|generic|unknown)$/i.test(String(product.brand).trim())) ? product.brand : linkableBrandOf(product);
     const validUntil = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
     // Seller SKU কাস্টমারের দেখার মতো কোথাও (পেজ সোর্সসহ) যাবে না, তাই structured data-তে প্রোডাক্ট ID
     const sku = String(product._id);
@@ -308,6 +312,21 @@ function buildProductJsonLd(product, images, pageUrl, desc) {
             itemCondition: 'https://schema.org/NewCondition',
             availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             seller: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+            // ডেলিভারি চার্জ: ঢাকার ভেতরে ৳৮০, ঢাকার বাইরে ৳১১৫ (checkout-এর নিয়মের সাথে মেলে); Merchant listing-এ শিপিং খরচ দেখানোর জন্য
+            shippingDetails: [
+                {
+                    '@type': 'OfferShippingDetails',
+                    shippingRate: { '@type': 'MonetaryAmount', value: 80, currency: 'BDT' },
+                    shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'BD', addressRegion: 'Dhaka' },
+                    deliveryTime: { '@type': 'ShippingDeliveryTime', handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' }, transitTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 2, unitCode: 'DAY' } }
+                },
+                {
+                    '@type': 'OfferShippingDetails',
+                    shippingRate: { '@type': 'MonetaryAmount', value: 115, currency: 'BDT' },
+                    shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'BD' },
+                    deliveryTime: { '@type': 'ShippingDeliveryTime', handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' }, transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 4, unitCode: 'DAY' } }
+                }
+            ],
             hasMerchantReturnPolicy: {
                 '@type': 'MerchantReturnPolicy',
                 applicableCountry: 'BD',
