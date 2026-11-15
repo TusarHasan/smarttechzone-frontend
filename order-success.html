@@ -96,9 +96,15 @@
             wa.href = 'https://wa.me/8801718381066?text=' + encodeURIComponent(msg);
             wa.style.display = '';
         }
-        document.getElementById('orderNumberBox').textContent = orderNumber
-            ? `অর্ডার নাম্বার: ${orderNumber}`
-            : 'অর্ডার সম্পন্ন হয়েছে';
+        // একই কার্টে একাধিক দোকানের পণ্য থাকলে আলাদা অর্ডার হয় (আলাদা পার্সেল); সব নাম্বার দেখানো হয়
+        const allNumbers = (params.get('orders') || '').split(',').map(x => x.trim()).filter(x => /^[A-Za-z0-9-]{4,40}$/.test(x)).slice(0, 10);
+        document.getElementById('orderNumberBox').textContent = allNumbers.length > 1
+            ? `অর্ডার নাম্বার: ${allNumbers.join(', ')}`
+            : (orderNumber ? `অর্ডার নাম্বার: ${orderNumber}` : 'অর্ডার সম্পন্ন হয়েছে');
+        if (allNumbers.length > 1) {
+            const note = document.getElementById('resultNote');
+            if (note) note.innerHTML = (note.innerHTML ? note.innerHTML + '<br>' : '') + 'আপনার কার্টে ' + allNumbers.length + 'টি আলাদা দোকানের পণ্য ছিল, তাই ' + allNumbers.length + 'টি অর্ডার ও ' + allNumbers.length + 'টি আলাদা পার্সেলে পাঠানো হবে। প্রতিটার ট্র্যাকিং আলাদা।';
+        }
 
         // Meta Pixel — Purchase এখান থেকে আর পাঠানো হয় না (২০২৬-১১-০৬)। এখন শুধু অর্ডার Delivered হলে সার্ভার থেকে
         // Meta Conversions API দিয়ে যায় (backend/services/metaCapi.js), যাতে ক্যান্সেল/ফেরত/ভুয়া অর্ডার পিক্সেলে না ঢোকে।

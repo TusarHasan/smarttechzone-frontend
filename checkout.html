@@ -439,9 +439,37 @@
             return '';
         }
 
-        function estimateDelivery(area) {
-            return area === 'inside' ? 80 : 115; // 'outside' বা এখনো বাছাই না করা — দুটোতেই ১১৫ (আগেও district খালি থাকলে এটাই ডিফল্ট ছিল)
+        // প্রতি পার্সেলের চার্জ। 'outside' বা এখনো বাছাই না করা — দুটোতেই ১১৫ (আগেও district খালি থাকলে এটাই ডিফল্ট ছিল)
+        function perParcelDelivery(area) {
+            return area === 'inside' ? 80 : 115;
         }
+
+        // ===== একাধিক ভেন্ডরের পণ্য = আলাদা পার্সেল, প্রতি পার্সেলে আলাদা ডেলিভারি চার্জ =====
+        // সার্ভার (/checkout-quote) বলে দেয় কার্ট কয় ভেন্ডরের। ক্যাশ অন ডেলিভারিতে অর্ডার ভাগ হয়; অনলাইন পেমেন্টে একটাই অর্ডার।
+        let QUOTE_PARCELS = 1;
+        function parcelsNow() {
+            const cod = document.getElementById('payCod');
+            const online = cod && !cod.checked;
+            return (online && !isSameDaySelected()) ? 1 : QUOTE_PARCELS;
+        }
+        function estimateDelivery(area) {
+            return perParcelDelivery(area) * parcelsNow();
+        }
+        async function loadParcelQuote() {
+            try {
+                const items = getCheckoutItems().map(i => ({ productId: i.productId }));
+                if (!items.length) return;
+                const res = await fetch(`${API_BASE}/api/orders/checkout-quote`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items, city: AREA_LABEL[getSelectedArea()] || '', deliveryType: 'standard', paymentMethod: 'cod' })
+                });
+                if (!res.ok) return;
+                const q = await res.json();
+                const n = Math.max(1, parseInt(q.parcels) || 1);
+                if (n !== QUOTE_PARCELS) { QUOTE_PARCELS = n; updateSummaryTotals(); }
+            } catch (e) { /* পেলে ভালো, না পেলে একটা পার্সেল ধরে চলবে; সার্ভার আসল হিসাব করে */ }
+        }
+        window.addEventListener('load', loadParcelQuote);
 
         document.querySelectorAll('input[name="deliveryArea"]').forEach(radio => {
             radio.addEventListener('change', function () {
@@ -684,7 +712,7 @@
         // ডেলিভারি অপশন কার্ডে স্ট্যান্ডার্ড ডেলিভারির চার্জ (ঢাকার ভেতরে/বাইরে অনুযায়ী) দেখানো
         function updateShipFees() {
             const el = document.getElementById('feeStandard');
-            if (el) el.textContent = '৳ ' + formatPrice(estimateDelivery(getSelectedArea()));
+            if (el) el.textContent = '৳ ' + formatPrice(perParcelDelivery(getSelectedArea())) + (parcelsNow() > 1 ? ' × ' + parcelsNow() + 'টি পার্সেল' : '');
         }
 
         // ===== bKash / Nagad / Rocket Send Money প্যানেল =====
@@ -802,7 +830,8 @@
 
             document.getElementById('orderSummary').innerHTML = `
                 ${itemsRow}
-                <div class="order-summary-row"><span>ডেলিভারি চার্জ</span><span>৳ ${formatPrice(delivery)}</span></div>
+                <div class="order-summary-row"><span>ডেলিভারি চার্জ${parcelsNow() > 1 ? ` (${parcelsNow()}টি পার্সেল × ৳ ${formatPrice(perParcelDelivery(getSelectedArea()))})` : ''}</span><span>৳ ${formatPrice(delivery)}</span></div>
+                ${parcelsNow() > 1 ? '<div class="order-summary-row" style="font-size:12.5px;color:#888"><span>আলাদা আলাদা দোকানের পণ্য আলাদা পার্সেলে আসবে, তাই প্রতি পার্সেলে ডেলিভারি চার্জ।</span><span></span></div>' : ''}
                 ${discRow}
                 <div class="order-summary-row total"><span>মোট</span><span>৳ ${formatPrice(total)}</span></div>
                 ${wUse > 0 ? `
@@ -1037,7 +1066,7 @@
                 if (data.cod) {
                     // সার্ভার-যাচাইকৃত total-ও পাঠানো হচ্ছে (order-success.html এখান থেকে Meta Pixel
                     // Purchase ইভেন্ট পাঠাবে) — ক্লায়েন্টের নিজের হিসাব করা দাম না
-                    window.location.href = `order-success.html?order=${encodeURIComponent(data.orderNumber)}&value=${encodeURIComponent(data.total)}${data.mfs ? '&pay=mfs' : ''}`;
+                    window.location.href = `order-success.html?order=${encodeURIComponent(data.orderNumber)}&value=${encodeURIComponent(data.total)}${data.mfs ? '&pay=mfs' : ''}${data.split && data.orderNumbers ? '&orders=' + encodeURIComponent(data.orderNumbers.join(',')) : ''}`;
                 } else {
                     window.location.href = data.paymentUrl;
                 }
