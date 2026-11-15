@@ -605,7 +605,7 @@
                 <div class="meta">Brand: <a id="productBrand" href="#"></a> | Model: <a id="productModel" href="#"></a></div>
                 <div class="meta">Part Type: <span id="productPartType"></span></div>
                 <div class="sold-by-row">
-                    Sold by <strong>Smart Tech Zone</strong>
+                    Sold by <strong id="soldByName">Smart Tech Zone</strong>
                     <button class="chat-seller-btn" onclick="openVendorChat(productId, document.getElementById('productName').textContent)">💬 চ্যাট করুন</button>
                 </div>
                 <div class="price-block">
@@ -1031,6 +1031,14 @@
             modelEl.removeAttribute('href');
         }
         document.getElementById('productPartType').textContent = product.partType || '-';
+        // "Sold by": ভেন্ডরের প্রোডাক্ট হলে তার নাম (শপ লিংকসহ); ব্যাকএন্ড না পাঠালে "Smart Tech Zone" থেকে যায়
+        if (product.vendorName) {
+            const sb = document.getElementById('soldByName');
+            if (product.vendorPath && /^\/[a-z0-9\-\/]+$/.test(product.vendorPath)) {
+                const a = document.createElement('a'); a.href = product.vendorPath; a.textContent = product.vendorName; a.style.color = 'inherit';
+                sb.textContent = ''; sb.appendChild(a);
+            } else sb.textContent = product.vendorName;
+        }
         document.getElementById('productPrice').textContent = formatPrice(product.price);
         updatePriceDisplay(product.price, product.originalPrice);
 
