@@ -247,6 +247,11 @@
            যাতে search/brand/model পেজের শেয়ার্ড .product-card স্টাইল একদম অপরিবর্তিত থাকে।
            ব্র্যান্ড রং এক জায়গায় (--mp-accent) — সাইটের বর্তমান লাল (#e74c3c) অনুযায়ী। ===================== */
         :root { --mp-accent:#e74c3c; --mp-accent-soft:#fdf1f0; --mp-bg:#f5f5f5; --mp-line:#eee; --mp-muted:#777; }
+        /* Daraz-এর মতো ওপরের ছোট স্ট্রিপ: "Become a Seller" (সেলার আবেদন পেজ admin সাইটে, vendor.html#signup)। নেভবারের (sticky) ওপরে, স্ক্রল করলে সরে যায় */
+        .stz-topstrip { background:#f4f4f4; border-bottom:1px solid #e8e8e8; padding:6px 30px; display:flex; justify-content:flex-end; align-items:center; gap:18px; font-size:12px; line-height:1.4; }
+        .stz-topstrip a { color:#444; text-decoration:none; font-weight:600; letter-spacing:.2px; }
+        .stz-topstrip a:hover { color:#e74c3c; }
+        @media (max-width:768px) { .stz-topstrip { padding:5px 14px; font-size:11.5px; } }
         .mp-home .container { max-width:1280px; padding:0 20px; }
         .mp-home .promo-strip, .mp-home .flash-sale-section, .mp-home .part-categories-section, .mp-home .category-section { padding-left:0; padding-right:0; }
         .mp-home .category-section { padding-top:20px; padding-bottom:30px; }
@@ -446,6 +451,7 @@
 </head>
 <body class="mp-home">
 
+    <div class="stz-topstrip"><a href="https://admin.smarttechzone.com.bd/vendor.html#signup" target="_blank" rel="noopener">Become a Seller</a></div>
     <nav class="navbar">
         <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
         <div class="search-bar">
