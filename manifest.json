@@ -1,0 +1,14 @@
+{
+  "name": "Smart Tech Zone",
+  "short_name": "Smart Tech Zone",
+  "description": "মোবাইল রিপ্লেসমেন্ট পার্টস ও অ্যাক্সেসরিজ, ভিডিও প্রুফ ডেলিভারি, সারা বাংলাদেশে হোম ডেলিভারি।",
+  "lang": "bn",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#e74c3c",
+  "icons": [
+    { "src": "/images/favicon.png", "sizes": "192x192 512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

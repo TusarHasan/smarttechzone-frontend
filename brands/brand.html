@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <script src="../analytics.js" defer></script>
     <meta charset="UTF-8">
@@ -8,6 +8,7 @@
     <title id="pageTitle">Brand Parts - Smart Tech Zone</title>
     <meta id="metaDescription" name="description" content="সব ব্র্যান্ডের মোবাইল রিপ্লেসমেন্ট পার্টস — ডিসপ্লে, ব্যাটারি, চার্জিং পোর্ট ও আরও অনেক কিছু। Smart Tech Zone থেকে কিনুন, সারা বাংলাদেশে হোম ডেলিভারি।">
     <link id="canonicalTag" rel="canonical" href="https://smarttechzone.com.bd/brands/brand.html">
+    <script id="brandJsonLd" type="application/ld+json"></script>
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Smart Tech Zone">
     <meta id="ogTitleTag" property="og:title" content="Brand Parts - Smart Tech Zone">
@@ -32,6 +33,8 @@
         }
         @media (max-width: 992px) { .brand-product-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 576px) { .brand-product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+        /* ফুটার যেন প্রোডাক্ট আসার আগে স্ক্রিনে না ওঠে (CLS কমাতে) */
+        main { min-height: 100vh; }
     </style>
     <script src="../config.js"></script>
     <script src="../visitor-track.js" defer></script>
@@ -164,6 +167,41 @@
             await loadPage();
         }
 
+        // SEO: ব্র্যান্ড পেজের স্ট্রাকচার্ড ডাটা (CollectionPage + প্রোডাক্ট তালিকা + ব্রেডক্রাম্ব)
+        function updateBrandJsonLd(items) {
+            try {
+                const brandUrl = `https://smarttechzone.com.bd/brands/brand.html?name=${encodeURIComponent(TARGET_BRAND)}`;
+                const jsonLd = {
+                    '@context': 'https://schema.org',
+                    '@graph': [
+                        {
+                            '@type': 'CollectionPage',
+                            name: `${TARGET_BRAND} Replacement Parts`,
+                            url: brandUrl,
+                            inLanguage: 'bn',
+                            mainEntity: {
+                                '@type': 'ItemList',
+                                itemListElement: items.slice(0, 30).map((p, i) => ({
+                                    '@type': 'ListItem',
+                                    position: i + 1,
+                                    url: `https://smarttechzone.com.bd${buildProductPath(p.name, p._id)}`,
+                                    name: p.name
+                                }))
+                            }
+                        },
+                        {
+                            '@type': 'BreadcrumbList',
+                            itemListElement: [
+                                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://smarttechzone.com.bd/' },
+                                { '@type': 'ListItem', position: 2, name: `${TARGET_BRAND} Parts`, item: brandUrl }
+                            ]
+                        }
+                    ]
+                };
+                document.getElementById('brandJsonLd').textContent = JSON.stringify(jsonLd);
+            } catch (e) {}
+        }
+
         async function loadPage() {
             const grid = document.getElementById('brandProductGrid');
             try {
@@ -183,6 +221,7 @@
                 }
 
                 renderItems(items);
+                if (currentPage === 1) updateBrandJsonLd(items);
                 document.getElementById('loadMoreWrapper').style.display = currentPage < totalPages ? 'block' : 'none';
             } catch (err) {
                 grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999;">প্রোডাক্ট লোড করতে সমস্যা হয়েছে।</p>';
