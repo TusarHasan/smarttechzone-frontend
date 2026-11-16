@@ -1033,6 +1033,8 @@
                         deliveryType: sameDay ? 'sameday' : 'standard',
                         useWallet: walletUseAmount() > 0,
                         couponCode: couponState.code || undefined,
+                        // অর্ডার কোথা থেকে এসেছে (UTM/fbclid/রেফারার, config.js) — শুধু অ্যাডমিনের ব্যাজের জন্য
+                        attribution: (typeof window.STZ_getAttribution === 'function' ? window.STZ_getAttribution() : undefined),
                         // Meta Conversions API: Delivered হলে সার্ভার থেকে Purchase যাবে, তখন এই কুকি দিয়ে অর্ডারটা বিজ্ঞাপনের সাথে মেলে
                         metaTracking: (function () {
                             const ck = (n) => { const m = document.cookie.match(new RegExp('(?:^|; )' + n + '=([^;]*)')); return m ? decodeURIComponent(m[1]) : ''; };
