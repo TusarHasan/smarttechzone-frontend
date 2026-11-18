@@ -16,3 +16,7 @@
   X-Robots-Tag: noindex, nofollow, noarchive
   Cache-Control: no-store
   Referrer-Policy: no-referrer
+
+# হোমপেজে Link হেডার সরানো (103 Early Hints বন্ধ): পুরনো Chromium-এ ERR_SPDY_PROTOCOL_ERROR এড়াতে। ফেরাতে এই তিন লাইন মুছুন
+/
+  ! Link
