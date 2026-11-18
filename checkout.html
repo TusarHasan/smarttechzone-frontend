@@ -440,9 +440,22 @@
         }
 
         // প্রতি পার্সেলের চার্জ। 'outside' বা এখনো বাছাই না করা — দুটোতেই ১১৫ (আগেও district খালি থাকলে এটাই ডিফল্ট ছিল)
+        // বিজয়ের মাসের অফার: ৳৫৫০+ কার্টে ফ্রি ডেলিভারি। অফার চালু কিনা সার্ভার (/api/orders/promo) বলে; আসল হিসাব সার্ভারেই হয়
+        let PROMO = { bijoy: false, freeDeliveryMin: 550 };
+        function freeDeliveryNow() {
+            return !!PROMO.bijoy && !isSameDaySelected() && getCheckoutTotal() >= PROMO.freeDeliveryMin;
+        }
         function perParcelDelivery(area) {
+            if (freeDeliveryNow()) return 0;
             return area === 'inside' ? 80 : 115;
         }
+        window.addEventListener('load', function () {
+            try {
+                fetch(`${API_BASE}/api/orders/promo`).then(function (r) { return r.ok ? r.json() : null; }).then(function (p) {
+                    if (p && typeof p.bijoy === 'boolean') { PROMO = p; updateSummaryTotals(); updatePlaceOrderBtnText(); }
+                }).catch(function () {});
+            } catch (e) {}
+        });
 
         // ===== একাধিক ভেন্ডরের পণ্য = আলাদা পার্সেল, প্রতি পার্সেলে আলাদা ডেলিভারি চার্জ =====
         // সার্ভার (/checkout-quote) বলে দেয় কার্ট কয় ভেন্ডরের। ক্যাশ অন ডেলিভারি ও bKash/Nagad/Rocket দুটোতেই অর্ডার ভাগ হয়
@@ -721,7 +734,7 @@
         // ডেলিভারি অপশন কার্ডে স্ট্যান্ডার্ড ডেলিভারির চার্জ (ঢাকার ভেতরে/বাইরে অনুযায়ী) দেখানো
         function updateShipFees() {
             const el = document.getElementById('feeStandard');
-            if (el) el.textContent = '৳ ' + formatPrice(perParcelDelivery(getSelectedArea())) + (parcelsNow() > 1 ? ' × ' + parcelsNow() + 'টি পার্সেল' : '');
+            if (el) el.textContent = freeDeliveryNow() ? 'ফ্রি (বিজয়ের মাসের অফার)' : '৳ ' + formatPrice(perParcelDelivery(getSelectedArea())) + (parcelsNow() > 1 ? ' × ' + parcelsNow() + 'টি পার্সেল' : '');
         }
 
         // ===== bKash / Nagad / Rocket Send Money প্যানেল =====
@@ -839,8 +852,8 @@
 
             document.getElementById('orderSummary').innerHTML = `
                 ${itemsRow}
-                <div class="order-summary-row"><span>ডেলিভারি চার্জ${parcelsNow() > 1 ? ` (${parcelsNow()}টি পার্সেল × ৳ ${formatPrice(perParcelDelivery(getSelectedArea()))})` : ''}</span><span>৳ ${formatPrice(delivery)}</span></div>
-                ${parcelsNow() > 1 ? '<div class="order-summary-row" style="font-size:12.5px;color:#888"><span>আলাদা আলাদা দোকানের পণ্য আলাদা পার্সেলে আসবে, তাই প্রতি পার্সেলে ডেলিভারি চার্জ।</span><span></span></div>' : ''}
+                <div class="order-summary-row"><span>ডেলিভারি চার্জ${parcelsNow() > 1 && !freeDeliveryNow() ? ` (${parcelsNow()}টি পার্সেল × ৳ ${formatPrice(perParcelDelivery(getSelectedArea()))})` : ''}</span><span>${freeDeliveryNow() ? 'ফ্রি' : '৳ ' + formatPrice(delivery)}</span></div>
+                ${parcelsNow() > 1 && !freeDeliveryNow() ? '<div class="order-summary-row" style="font-size:12.5px;color:#888"><span>আলাদা আলাদা দোকানের পণ্য আলাদা পার্সেলে আসবে, তাই প্রতি পার্সেলে ডেলিভারি চার্জ।</span><span></span></div>' : ''}
                 ${discRow}
                 <div class="order-summary-row total"><span>মোট</span><span>৳ ${formatPrice(total)}</span></div>
                 ${wUse > 0 ? `
