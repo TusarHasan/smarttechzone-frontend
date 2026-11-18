@@ -25,8 +25,7 @@
         var css = document.createElement('style');
         css.id = 'bijoyCss';
         css.textContent =
-            '.bj-ribbon{position:relative;background:#006a4e;color:#fff;text-align:center;padding:8px 14px 11px;font:600 13px/1.6 "Segoe UI","Noto Sans Bengali",Arial,sans-serif}' +
-            '.bj-ribbon:after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:repeating-linear-gradient(90deg,#f42a41 0 18px,#006a4e 18px 36px)}' +
+            '.bj-ribbon{position:relative;background:#006a4e;color:#fff;text-align:center;padding:8px 14px;font:600 13px/1.6 "Segoe UI","Noto Sans Bengali",Arial,sans-serif}' +
             '.bj-ribbon a{color:inherit;text-decoration:none;display:inline-block}' +
             '.bj-ribbon .bj-flag{vertical-align:-3px;margin-right:6px;border-radius:2px}' +
             '.bj-ribbon .bj-code{display:inline-block;background:#f42a41;color:#fff;padding:0 8px;border-radius:4px;letter-spacing:.5px;margin:0 2px}' +
