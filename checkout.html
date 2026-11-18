@@ -49,6 +49,15 @@
         .wallet-box strong { display: block; font-size: 14px; color: #333; }
         .wallet-box span.wb-sub { display: block; font-size: 12.5px; color: #888; margin-top: 2px; }
         .wallet-box.disabled { opacity: .55; }
+        .coin-box { display: none; margin-top: 12px; border: 1.5px dashed #f39c12; border-radius: 6px; padding: 12px 14px; background: #fffaf0; }
+        .coin-box.show { display: block; }
+        .coin-box label { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; margin: 0; }
+        .coin-box input { width: auto; margin: 3px 0 0; }
+        .coin-box strong { display: block; font-size: 14px; color: #333; }
+        .coin-box span.wb-sub { display: block; font-size: 12.5px; color: #888; margin-top: 2px; }
+        .coin-box.disabled label { cursor: default; }
+        .coin-box.disabled strong { color: #777; }
+        .coin-box .coin-earn { margin-top: 8px; font-size: 12.5px; color: #b9770e; }
         .wallet-box.disabled label { cursor: not-allowed; }
         .order-summary-row.wallet-line span:last-child { color: #16a34a; font-weight: bold; }
         .coupon-box { margin: 4px 0 14px; padding: 12px 14px; border: 1.5px dashed #cbd5e1; border-radius: 6px; background: #fafafa; }
@@ -352,6 +361,16 @@
                     </div>
                 </label>
             </div>
+            <div class="coin-box" id="coinBox">
+                <label for="useCoins">
+                    <input type="checkbox" id="useCoins">
+                    <div>
+                        <strong id="coinTitle">STZ Coin</strong>
+                        <span class="wb-sub" id="coinHint"></span>
+                    </div>
+                </label>
+                <div class="coin-earn" id="coinEarn"></div>
+            </div>
         </div>
 
         </div>
@@ -572,6 +591,62 @@
             const use = walletUseAmount();
             return use > 0 && use >= getCheckoutTotal() - currentDiscount() + estimateDelivery(getSelectedArea());
         }
+
+        // ===== STZ Coin =====
+        // ব্যালেন্স/নিয়ম সার্ভার থেকে (GET /api/coins/me); কত কয়েন কাটবে তার চূড়ান্ত হিসাব অর্ডারের সময় সার্ভারেই হয়
+        let coinInfo = { enabled: false, balance: 0, minRedeem: 50, maxPct: 20, earnPct: 2, doubleActive: false };
+
+        function coinUsableNow() {
+            if (!coinInfo.enabled || coinInfo.balance < coinInfo.minRedeem) return 0;
+            const base = getCheckoutTotal() - couponDiscountOnly();
+            return Math.max(0, Math.min(coinInfo.balance, Math.floor(base * coinInfo.maxPct / 100 + 1e-9)));
+        }
+        function coinUseAmount() {
+            const cb = document.getElementById('useCoins');
+            if (!cb || !cb.checked) return 0;
+            return coinUsableNow();
+        }
+        function syncCoinBox() {
+            const box = document.getElementById('coinBox');
+            const cb = document.getElementById('useCoins');
+            if (!box || !cb) return;
+            if (!coinInfo.enabled) { box.classList.remove('show'); cb.checked = false; return; }
+            box.classList.add('show');
+            const usable = coinUsableNow();
+            const canUse = usable > 0;
+            cb.disabled = !canUse;
+            box.classList.toggle('disabled', !canUse);
+            if (!canUse) cb.checked = false;
+            document.getElementById('coinTitle').textContent = canUse
+                ? 'কয়েন ব্যবহার করুন (আপনার কয়েন: ' + coinInfo.balance + ')'
+                : 'আপনার কয়েন: ' + coinInfo.balance;
+            document.getElementById('coinHint').textContent = canUse
+                ? 'এই অর্ডারে ' + usable + ' কয়েন = ৳ ' + usable + ' ছাড় (১ কয়েন = ১ টাকা, সর্বোচ্চ ' + coinInfo.maxPct + '%)'
+                : (coinInfo.balance < coinInfo.minRedeem
+                    ? 'কমপক্ষে ' + coinInfo.minRedeem + ' কয়েন জমলে ছাড় হিসেবে ব্যবহার করা যাবে।'
+                    : 'এই অর্ডারে কয়েন ব্যবহার করা যাচ্ছে না।');
+            const pay = getCheckoutTotal() - currentDiscount();
+            const earn = Math.max(0, Math.floor(pay * coinInfo.earnPct / 100 + 1e-9));
+            document.getElementById('coinEarn').textContent = earn > 0
+                ? '🪙 এই অর্ডারে ডেলিভারির পর ~' + earn + ' কয়েন পাবেন' + (coinInfo.doubleActive ? ' (দ্বিগুণ কয়েন সপ্তাহ চলছে!)' : '')
+                : '';
+        }
+        async function loadCoins() {
+            try {
+                if (!getCustomerToken()) return;
+                const res = await customerAuthFetch(`${API_BASE}/api/coins/me`);
+                if (!res.ok) return;
+                const d = await res.json();
+                const c = d.config || {};
+                coinInfo = { enabled: !!c.enabled, balance: Number(d.balance) || 0, minRedeem: Number(c.minRedeem) || 0, maxPct: Number(c.redeemMaxPercent) || 0, earnPct: Number(c.earnPercent) || 0, doubleActive: !!(c.double && c.double.active) };
+                updateSummaryTotals();
+                updatePlaceOrderBtnText();
+            } catch (e) { /* কয়েন না এলে চেকআউট আগের মতোই চলে */ }
+        }
+        document.getElementById('useCoins').addEventListener('change', function () {
+            updatePlaceOrderBtnText();
+            updateSummaryTotals();
+        });
 
         function syncWalletBox() {
             const box = document.getElementById('walletBox');
@@ -827,20 +902,25 @@
         window.addEventListener('load', mfsDraftRestore);
 
         function updateSummaryTotals() {
+            syncCoinBox();
             updateShipFees();
             updateMfsPanel();
             const items = getCheckoutItems();
             const count = items.reduce((sum, item) => sum + item.quantity, 0);
             const subtotal = getCheckoutTotal();
             const disc = currentDiscount();
+            const cdisc = couponDiscountOnly();
+            const cn = coinUseAmount();
+            const coinRow = cn > 0 ? `<div class="order-summary-row coupon-line"><span>STZ Coin ছাড় (${cn} কয়েন)</span><span>− ৳ ${formatPrice(cn)}</span></div>` : '';
             const itemsRow = `<div class="order-summary-row"><span>আইটেম মোট (${count} টি)</span><span>৳ ${formatPrice(subtotal)}</span></div>`;
-            const discRow = `<div class="order-summary-row coupon-line${disc > 0 ? '' : ' zero'}"><span>${couponState.code === 'HELLOSTZ' ? 'Discount (10%)' : 'কুপন / ডিসকাউন্ট'}${disc > 0 ? ` (${escHtml(couponState.code)})` : ''}</span><span>${disc > 0 ? '− ' : ''}৳ ${formatPrice(disc)}</span></div>`;
+            const discRow = `<div class="order-summary-row coupon-line${cdisc > 0 ? '' : ' zero'}"><span>${couponState.code === 'HELLOSTZ' ? 'Discount (10%)' : 'কুপন / ডিসকাউন্ট'}${cdisc > 0 ? ` (${escHtml(couponState.code)})` : ''}</span><span>${cdisc > 0 ? '− ' : ''}৳ ${formatPrice(cdisc)}</span></div>`;
 
             if (isSameDaySelected()) {
                 document.getElementById('orderSummary').innerHTML = `
                     ${itemsRow}
                     <div class="order-summary-row"><span>ডেলিভারি চার্জ</span><span>অর্ডার কনফার্ম হওয়ার পর জানানো হবে</span></div>
                     ${discRow}
+${coinRow}
                     <div class="order-summary-row total"><span>মোট (ডেলিভারি চার্জ ছাড়া)</span><span>৳ ${formatPrice(subtotal - disc)}</span></div>
                 `;
                 return;
@@ -855,6 +935,7 @@
                 <div class="order-summary-row"><span>ডেলিভারি চার্জ${parcelsNow() > 1 && !freeDeliveryNow() ? ` (${parcelsNow()}টি পার্সেল × ৳ ${formatPrice(perParcelDelivery(getSelectedArea()))})` : ''}</span><span>${freeDeliveryNow() ? 'ফ্রি' : '৳ ' + formatPrice(delivery)}</span></div>
                 ${parcelsNow() > 1 && !freeDeliveryNow() ? '<div class="order-summary-row" style="font-size:12.5px;color:#888"><span>আলাদা আলাদা দোকানের পণ্য আলাদা পার্সেলে আসবে, তাই প্রতি পার্সেলে ডেলিভারি চার্জ।</span><span></span></div>' : ''}
                 ${discRow}
+${coinRow}
                 <div class="order-summary-row total"><span>মোট</span><span>৳ ${formatPrice(total)}</span></div>
                 ${wUse > 0 ? `
                 <div class="order-summary-row wallet-line"><span>STZ Wallet থেকে কাটা হবে</span><span>− ৳ ${formatPrice(wUse)}</span></div>
@@ -916,6 +997,7 @@
                 updateSameDayAvailability();
                 updateSummaryTotals();
                 updatePlaceOrderBtnText();
+                loadCoins();
                 addrHasSaved = !!(data.name && data.phone && data.address);
                 addrCollapsed = addrHasSaved && addrComplete();
                 renderAddrView();
@@ -1045,6 +1127,7 @@
                         mfs: mfsData || undefined,
                         deliveryType: sameDay ? 'sameday' : 'standard',
                         useWallet: walletUseAmount() > 0,
+                        useCoins: coinUseAmount() > 0,
                         couponCode: couponState.code || undefined,
                         // অর্ডার কোথা থেকে এসেছে (UTM/fbclid/রেফারার, config.js) — শুধু অ্যাডমিনের ব্যাজের জন্য
                         attribution: (typeof window.STZ_getAttribution === 'function' ? window.STZ_getAttribution() : undefined),
@@ -1116,7 +1199,9 @@
         // কার্ট বা ফোন নাম্বার বদলালে (নির্দিষ্ট কাস্টমারের কুপন ফোনের সাথে বাঁধা) নিঃশব্দে আবার যাচাই হয়।
         let couponState = { code: '', discount: 0 };
 
-        function currentDiscount() { return couponState.code ? Math.max(0, couponState.discount) : 0; }
+        function couponDiscountOnly() { return couponState.code ? Math.max(0, couponState.discount) : 0; }
+        // কুপন + STZ Coin ছাড় — মোট/Wallet/bKash পরিমাণ সব এটা থেকেই হিসাব হয়
+        function currentDiscount() { return couponDiscountOnly() + coinUseAmount(); }
 
         function setCouponMsg(text, isErr) {
             const el = document.getElementById('couponMsg');

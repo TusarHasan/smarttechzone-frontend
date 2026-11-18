@@ -236,6 +236,12 @@
         .order-steps .st.done { color: #16a34a; font-weight: 700; }
         .order-steps .st.done::before, .order-steps .st.done::after { background: #16a34a; }
         .order-logistics { margin-top: 10px; padding: 10px 12px; background: #fafafa; border-radius: 6px; font-size: 12.5px; color: #555; line-height: 1.6; }
+        /* STZ Coin */
+        .coin-hero { background: linear-gradient(135deg, #f39c12, #d68910); color: #fff; border-radius: 10px; padding: 22px 24px; margin-bottom: 16px; }
+        .coin-hero .wh-label { font-size: 13px; opacity: .9; }
+        .coin-hero .wh-amount { font-size: 34px; font-weight: 800; margin: 4px 0 6px; }
+        .coin-hero .wh-note { font-size: 12.5px; opacity: .92; line-height: 1.6; }
+        .coin-soon { background: #fff3cd; color: #8a6d00; border-radius: 6px; padding: 8px 12px; font-size: 12.5px; margin-bottom: 14px; }
         /* STZ Wallet */
         .wallet-hero { background: linear-gradient(135deg, #0f8b8d, #0b6e70); color: #fff; border-radius: 10px; padding: 22px 24px; margin-bottom: 16px; }
         .wallet-hero .wh-label { font-size: 13px; opacity: .85; }
@@ -435,6 +441,7 @@
                     <a class="ac-sub" href="#addressSection" data-route="address">Address Book</a>
                     <a class="ac-sub" href="#paymentSection" data-route="payment">My Payment Options</a>
                     <a class="ac-sub" href="#walletSection" data-route="wallet">STZ Wallet <span class="ac-wmini" id="acWalletMini"></span></a>
+                    <a class="ac-sub" href="#coinSection" data-route="coins" id="acCoinLink" style="display:none;">STZ Coin <span class="ac-wmini" id="acCoinMini"></span></a>
                 </div>
                 <div class="ac-group">
                     <div class="ac-gtitle">My Orders</div>
@@ -564,6 +571,20 @@
                 <div class="account-card">
                     <h3>লেনদেনের ইতিহাস</h3>
                     <div id="walletTxList"><div class="loading-hint">লোড হচ্ছে...</div></div>
+                </div>
+            </section>
+
+            <!-- ===== STZ Coin ===== -->
+            <section class="acv" id="view-coins" style="display:none;">
+                <div class="coin-hero">
+                    <div class="wh-label">আমার STZ Coin</div>
+                    <div class="wh-amount">🪙 <span id="coinBalanceBig">0</span></div>
+                    <div class="wh-note" id="coinRulesNote">অর্ডার ডেলিভারি হলে কয়েন যোগ হয়। ১ কয়েন = ১ টাকা ছাড়।</div>
+                </div>
+                <div class="coin-soon" id="coinSoon" style="display:none;"></div>
+                <div class="account-card">
+                    <h3>কয়েনের ইতিহাস</h3>
+                    <div id="coinTxList"><div class="loading-hint">লোড হচ্ছে...</div></div>
                 </div>
             </section>
 
@@ -714,13 +735,13 @@
         // ড্রপডাউন থেকে আসে, তাই একই নাম রেখে নতুন ভিউয়ে ম্যাপ করা হয়েছে। #order-<id> = একটি অর্ডারের বিস্তারিত (MANAGE)।
         const ROUTES = {
             '': 'overview', '#account': 'overview',
-            '#profileSection': 'profile', '#addressSection': 'address', '#paymentSection': 'payment', '#walletSection': 'wallet',
+            '#profileSection': 'profile', '#addressSection': 'address', '#paymentSection': 'payment', '#walletSection': 'wallet', '#coinSection': 'coins',
             '#ordersSection': 'orders', '#returnTrackingSection': 'returns', '#cancellationsSection': 'cancellations',
             '#reviewsSection': 'reviews', '#myReviews': 'reviews', '#wishlistSection': 'wishlist', '#sellSection': 'sell'
         };
         const ROUTE_TITLES = {
             overview: 'Manage My Account', profile: 'My Profile', address: 'Address Book', payment: 'My Payment Options',
-            wallet: 'STZ Wallet', orders: 'All Orders', order: 'Order Details', returns: 'My Returns',
+            wallet: 'STZ Wallet', coins: 'STZ Coin', orders: 'All Orders', order: 'Order Details', returns: 'My Returns',
             cancellations: 'My Cancellations', reviews: 'My Reviews', writereview: 'Write Review', wishlist: 'My Wishlist & Followed Stores', sell: 'Sell On STZ'
         };
         let currentView = 'overview';
@@ -1552,6 +1573,50 @@
             }
         }
 
+        // ===== STZ Coin: ব্যালেন্স + ইতিহাস =====
+        const coinTypeLabel = {
+            earn: 'অর্ডার ডেলিভারিতে কয়েন', spend: 'অর্ডারে ব্যবহার', refund: 'অর্ডার ক্যান্সেলে ফেরত',
+            reverse: 'অর্ডার ফেরত — কয়েন কাটা', expire: 'মেয়াদ শেষ', admin_credit: 'ক্রেডিট', admin_debit: 'ডেবিট'
+        };
+        async function loadCoins() {
+            const box = document.getElementById('coinTxList');
+            try {
+                const res = await customerAuthFetch(`${API_BASE}/api/coins/me`);
+                if (res.status === 401 || res.status === 403) return;
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'কয়েন লোড করা যায়নি।');
+                const c = data.config || {};
+                if (!c.enabled && !(data.balance > 0) && !(data.transactions || []).length) return; // প্রোগ্রাম বন্ধ ও কোনো ইতিহাস নেই — মেনুতে দেখানো হয় না
+                document.getElementById('acCoinLink').style.display = '';
+                document.getElementById('acCoinMini').textContent = data.balance > 0 ? String(data.balance) : '';
+                document.getElementById('coinBalanceBig').textContent = formatPrice(data.balance);
+                document.getElementById('coinRulesNote').textContent = (c.enabled
+                    ? 'প্রতি অর্ডার ডেলিভারি হলে পণ্যের দামের ' + c.earnPercent + '% কয়েন পাবেন' + (c.double && c.double.active ? ' (এখন দ্বিগুণ কয়েন সপ্তাহ!)' : '') + '। '
+                    : 'কয়েন প্রোগ্রাম এখন সাময়িক বন্ধ আছে। ')
+                    + '১ কয়েন = ১ টাকা ছাড়; চেকআউটে অর্ডারের সর্বোচ্চ ' + c.redeemMaxPercent + '% পর্যন্ত, কমপক্ষে ' + c.minRedeem + ' কয়েন জমলে। কয়েনের মেয়াদ ' + c.expiryDays + ' দিন।';
+                const soon = data.expiringSoon || {};
+                const soonEl = document.getElementById('coinSoon');
+                if (soon.coins > 0) { soonEl.style.display = ''; soonEl.textContent = '⏳ ' + soon.coins + ' কয়েনের মেয়াদ ' + fmtDate(soon.at) + '-এর মধ্যে শেষ হবে — তার আগে ব্যবহার করুন।'; }
+                else soonEl.style.display = 'none';
+                const txs = data.transactions || [];
+                if (!txs.length) { box.innerHTML = '<div class="no-orders">এখনো কোনো কয়েন নেই। অর্ডার ডেলিভারি হলে এখানে যোগ হবে।</div>'; return; }
+                box.innerHTML = txs.map(t => {
+                    const cr = (t.type === 'earn' || t.type === 'refund' || t.type === 'admin_credit');
+                    const sub = [t.orderNumber ? 'অর্ডার ' + t.orderNumber : '', fmtDate(t.createdAt)].filter(Boolean).join(' · ');
+                    return `
+                        <div class="wtx-row">
+                            <div>
+                                <div class="wtx-title">${coinTypeLabel[t.type] || 'কয়েন'}</div>
+                                <div class="wtx-sub">${sub}</div>
+                            </div>
+                            <div class="wtx-amt ${cr ? 'cr' : 'db'}">${cr ? '+' : '−'} ${t.amount}<div class="wtx-bal">ব্যালেন্স ${t.balanceAfter}</div></div>
+                        </div>`;
+                }).join('');
+            } catch (err) {
+                box.innerHTML = `<div class="no-orders">❌ ${err.message}</div>`;
+            }
+        }
+
         // Daraz-স্টাইল ক্যান্সেল: শুধু Pending + COD অর্ডারে সার্ভার canCancel দেয় (order-cancel.js পপআপ খোলে)
         function openCancelOrder(orderId) {
             const order = (lastOrders || []).find(o => String(o._id) === String(orderId));
@@ -2038,6 +2103,7 @@
         loadPaymentMethods();
         loadWishlist();
         loadWallet();
+        loadCoins();
         loadOrdersAndReturns();
     </script>
 </body>
