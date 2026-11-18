@@ -1,5 +1,5 @@
 /* বিজয়ের মাস (ডিসেম্বর) থিম: সব রিটেইল পেজে ব্যানার, হোমপেজে অফার সেকশন।
-   footer.js শুধু ডিসেম্বরে (বা ?bijoy=preview দিলে) এটা লোড করে। অফার সত্যিই চালু কিনা সার্ভার বলে (/api/orders/promo)।
+   footer.js শুধু নভেম্বর-ডিসেম্বরে (বা ?bijoy=preview দিলে) এটা লোড করে। অফার সত্যিই চালু কিনা সার্ভার বলে (/api/orders/promo)।
    ফেরাতে/বন্ধ করতে: footer.js-এর "বিজয়ের মাস" ব্লকটা মুছুন, বা ব্যাকএন্ডে BIJOY_PROMO_OFF=1 দিন। */
 (function () {
     'use strict';
@@ -9,11 +9,12 @@
     var CODE = 'BIJOY71', PERCENT = 16, MIN = 550;
     var preview = /[?&]bijoy=preview\b/.test(location.search);
 
-    function start(cfg) {
+    // mode: 'live' = অফার চলছে (ব্যানার + হোমপেজ সেকশন + হিরো স্লাইড); 'teaser' = ১ ডিসেম্বরের আগে শুধু হিরো স্লাইডে "১ ডিসেম্বর থেকে" প্রচারণা
+    function start(cfg, mode) {
         if (cfg) { CODE = cfg.couponCode || CODE; PERCENT = cfg.couponPercent || PERCENT; MIN = cfg.freeDeliveryMin || MIN; }
         injectCss();
-        addRibbon();
-        addHomeSection();
+        if (mode === 'live') { document.documentElement.className += ' bj-live'; addRibbon(); addHomeSection(); }
+        addHeroSlides(mode);
     }
 
     function flag(w) {
@@ -30,7 +31,7 @@
             '.bj-ribbon .bj-flag{vertical-align:-3px;margin-right:6px;border-radius:2px}' +
             '.bj-ribbon .bj-code{display:inline-block;background:#f42a41;color:#fff;padding:0 8px;border-radius:4px;letter-spacing:.5px;margin:0 2px}' +
             '.bj-ribbon .bj-sep{opacity:.55;margin:0 8px}' +
-            '.navbar{box-shadow:0 3px 0 0 #006a4e,0 6px 0 0 #f42a41 !important}' +
+            '.bj-live .navbar{box-shadow:0 3px 0 0 #006a4e,0 6px 0 0 #f42a41 !important}' +
             '.bj-offers{background:linear-gradient(180deg,#eefaf5 0%,#ffffff 100%);padding:26px 16px 30px;border-bottom:1px solid #d7efe6}' +
             '.bj-offers .bj-wrap{max-width:1200px;margin:0 auto}' +
             '.bj-offers h2{font:700 22px/1.4 "Poppins","Noto Sans Bengali",Arial,sans-serif;color:#064e3b;margin:0 0 4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}' +
@@ -46,6 +47,10 @@
             '.bj-card .bj-codebox{background:#fff;color:#064e3b;font:700 16px/1 "Poppins",Arial,sans-serif;letter-spacing:1px;padding:9px 14px;border-radius:6px;border:2px dashed #006a4e}' +
             '.bj-card button{border:none;cursor:pointer;background:#fff;color:#006a4e;font:700 13px/1 "Segoe UI","Noto Sans Bengali",Arial,sans-serif;padding:10px 14px;border-radius:6px}' +
             '.bj-card a.bj-btn{display:inline-block;background:#fff;color:#c81e36;font:700 13px/1 "Segoe UI","Noto Sans Bengali",Arial,sans-serif;padding:10px 14px;border-radius:6px;text-decoration:none}' +
+            '.bj-slide .bj-chip{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.55);color:#fff;font:700 12.5px/1 "Segoe UI","Noto Sans Bengali",Arial,sans-serif;padding:6px 12px;border-radius:999px;margin-bottom:12px}' +
+            '.bj-slide .bj-code{background:#fff;color:#c81e36;border-radius:5px;padding:1px 8px;letter-spacing:.5px;white-space:nowrap}' +
+            '.bj-slide .hero-slide-visual{background:transparent!important;box-shadow:none!important;border:none!important}' +
+            '.bj-slide .hero-slide-visual svg{width:100%;height:auto;display:block;border:3px solid #fff;box-sizing:border-box;border-radius:6px;box-shadow:0 8px 22px rgba(0,0,0,.28)}' +
             '@media (max-width:600px){.bj-offers h2{font-size:19px}.bj-card .bj-big{font-size:26px}}';
         document.head.appendChild(css);
     }
@@ -61,6 +66,32 @@
         if (banner && banner.parentNode) banner.parentNode.insertBefore(r, banner.nextSibling);
         else document.body.insertBefore(r, document.body.firstChild);
         if (!onHome) r.querySelector('a').setAttribute('href', '/index.html#bijoy-offers');
+    }
+
+    // হিরো স্লাইডারের শুরুতে ডিসেম্বর ক্যাম্পেইনের ২টা স্লাইড (শুধু হোমপেজে)
+    function addHeroSlides(mode) {
+        var wrap = document.getElementById('heroSlides');
+        if (!wrap || wrap.querySelector('.bj-slide')) return;
+        var live = mode === 'live';
+        var chip = live ? 'বিজয়ের মাসের অফার চলছে' : '১ ডিসেম্বর থেকে শুরু';
+        var s1 = '<div class="hero-slide bj-slide" style="background:linear-gradient(135deg,#064e3b 0%,#006a4e 55%,#0fa37a 100%);"><div class="hero-slide-inner"><div class="hero-slide-text">' +
+            '<span class="bj-chip">' + chip + '</span>' +
+            '<h2>বিজয়ের মাস ডিসেম্বরে ' + PERCENT + '% ছাড়!</h2>' +
+            '<p>' + (live ? 'চেকআউটে কোড' : 'সারা ডিসেম্বর কোড') + ' <strong class="bj-code">' + CODE + '</strong> দিন, পণ্যের দামে ' + PERCENT + '% ছাড় পান।</p>' +
+            '<a href="' + (live ? '#bijoy-offers' : 'shop.html') + '" class="hero-slide-btn" style="color:#006a4e;">' + (live ? 'অফার দেখুন →' : 'এখনই দেখে রাখুন →') + '</a>' +
+            '</div><div class="hero-slide-visual">' + flag(132) + '</div></div></div>';
+        var s2 = '<div class="hero-slide bj-slide" style="background:linear-gradient(135deg,#7f1224 0%,#c81e36 55%,#f42a41 100%);"><div class="hero-slide-inner"><div class="hero-slide-text">' +
+            '<span class="bj-chip">' + chip + '</span>' +
+            '<h2>৳' + MIN + '+ অর্ডারে ফ্রি ডেলিভারি</h2>' +
+            '<p>বিজয়ের মাসে সারা বাংলাদেশে ' + MIN + ' টাকা বা এর বেশি দামের পণ্য কিনলে ডেলিভারি চার্জ লাগবে না।</p>' +
+            '<a href="shop.html" class="hero-slide-btn" style="color:#c81e36;">কেনাকাটা করুন →</a>' +
+            '</div><div class="hero-slide-visual"><i class="fa-solid fa-truck-fast"></i></div></div></div>';
+        wrap.insertAdjacentHTML('afterbegin', s1 + s2);
+        wrap.querySelectorAll('.hero-slide.active').forEach(function (el) { el.classList.remove('active'); });
+        wrap.querySelector('.bj-slide').classList.add('active');
+        // index.html-এর হিরো স্ক্রিপ্ট stzHeroRebuild (global let) দেয়; ডট ও স্লাইড নতুন করে গোছানো
+        function rebuild() { try { if (typeof stzHeroRebuild === 'function') { stzHeroRebuild(true); return true; } } catch (e) {} return false; }
+        if (!rebuild()) window.addEventListener('load', rebuild);
     }
 
     function copyCode(btn) {
@@ -100,11 +131,15 @@
         if (location.hash === '#bijoy-offers') { try { s.scrollIntoView(); } catch (e) {} }
     }
 
-    if (preview) { start(null); return; }
+    if (preview) { start(null, 'live'); return; }
     try {
         fetch(((typeof BACKEND_URL !== 'undefined' && BACKEND_URL) || '') + '/api/orders/promo')
             .then(function (r) { return r.ok ? r.json() : null; })
-            .then(function (p) { if (p && p.bijoy === true) start(p); })
+            .then(function (p) {
+                if (!p) return;
+                if (p.bijoy === true) start(p, 'live');
+                else if (p.teaser === true) start(p, 'teaser');
+            })
             .catch(function () {});
     } catch (e) {}
 })();

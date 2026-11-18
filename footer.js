@@ -242,14 +242,14 @@
     }
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startWelcomeCampaign);else startWelcomeCampaign();
 })();
-// বিজয়ের মাস (ডিসেম্বর): থিম স্ক্রিপ্ট শুধু ডিসেম্বরে (বা ?bijoy=preview দিলে) লোড হয়; অফার সত্যিই চালু কিনা bijoy.js সার্ভার থেকে জেনে নেয়।
+// বিজয়ের মাস (ডিসেম্বর): থিম স্ক্রিপ্ট শুধু নভেম্বর-ডিসেম্বরে (বা ?bijoy=preview দিলে) লোড হয়; অফার সত্যিই চালু কিনা bijoy.js সার্ভার থেকে জেনে নেয়।
 // ফেরাতে/বন্ধ করতে এই ব্লকটা মুছে দিন।
 (function () {
     try {
         var d = new Date();
-        if (window.self !== window.top || (d.getMonth() !== 11 && !/[?&]bijoy=preview\b/.test(location.search))) return;
+        if (window.self !== window.top || (d.getMonth() < 10 && !/[?&]bijoy=preview\b/.test(location.search))) return;
         var s = document.createElement('script');
-        s.src = '/bijoy.js?v=1'; s.async = true;
+        s.src = '/bijoy.js?v=2'; s.async = true;
         document.head.appendChild(s);
     } catch (e) {}
 })();

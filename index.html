@@ -1364,10 +1364,13 @@
                 const chunk = prem.slice(i, i + 4);
                 if (chunk.length) html += heroSlideHtmlCatalog(chunk);
             }
-            if (!html) return;
-            wrap.insertAdjacentHTML('afterbegin', html);
+            if (!html) { stzHeroRebuild(true); return; }   // সব প্রোডাক্ট স্লাইড সরে গেলেও (যেমন Premium Picks OFF) ডট/স্লাইড ঠিক রাখা
+            // বিজয়ের মাসের ক্যাম্পেইন স্লাইড (bijoy.js, .bj-slide) থাকলে প্রোডাক্ট স্লাইড তার পরে বসবে, ক্যাম্পেইন আগে দেখা যাবে
+            const bjSlides = wrap.querySelectorAll('.bj-slide');
+            if (bjSlides.length) bjSlides[bjSlides.length - 1].insertAdjacentHTML('afterend', html);
+            else wrap.insertAdjacentHTML('afterbegin', html);
             wrap.querySelectorAll('.hero-slide.active').forEach(el => el.classList.remove('active'));
-            (keep || wrap.querySelector('.hp-slide')).classList.add('active');
+            (keep || wrap.querySelector('.bj-slide') || wrap.querySelector('.hp-slide')).classList.add('active');
             stzHeroRebuild(true);
         }
 
@@ -1392,8 +1395,10 @@
                     featured = (cached && cached.featured) || [];
                 }
                 const skip = new Set(ids || featured.map(f => String(f.id)));
-                const premium = ((listRes && listRes.products) || []).filter(p => !skip.has(String(p._id))).map(heroNorm).filter(Boolean).slice(0, HERO_PREMIUM_COUNT);
-                if (!featured.length && !premium.length) return;
+                // অ্যাডমিন Settings থেকে Premium Picks বন্ধ থাকলে (premiumEnabled === false) দামি প্রোডাক্টের স্লাইড দেখানো হয় না
+                const premiumOff = !!(picks && picks.premiumEnabled === false);
+                const premium = premiumOff ? [] : ((listRes && listRes.products) || []).filter(p => !skip.has(String(p._id))).map(heroNorm).filter(Boolean).slice(0, HERO_PREMIUM_COUNT);
+                if (!featured.length && !premium.length && !premiumOff) return;
                 const fresh = { featured, premium };
                 if (JSON.stringify(fresh) === JSON.stringify(cached)) return;
                 try { localStorage.setItem(HERO_CACHE_KEY, JSON.stringify(fresh)); } catch (e) { /* জমা রাখা না গেলে সমস্যা নেই */ }
