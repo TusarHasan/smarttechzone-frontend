@@ -30,7 +30,6 @@
             '.bj-ribbon .bj-flag{vertical-align:-3px;margin-right:6px;border-radius:2px}' +
             '.bj-ribbon .bj-code{display:inline-block;background:#f42a41;color:#fff;padding:0 8px;border-radius:4px;letter-spacing:.5px;margin:0 2px}' +
             '.bj-ribbon .bj-sep{opacity:.55;margin:0 8px}' +
-            '.bj-live .navbar{box-shadow:0 3px 0 0 #006a4e,0 6px 0 0 #f42a41 !important}' +
             '.bj-offers{background:linear-gradient(180deg,#eefaf5 0%,#ffffff 100%);padding:26px 16px 30px;border-bottom:1px solid #d7efe6}' +
             '.bj-offers .bj-wrap{max-width:1200px;margin:0 auto}' +
             '.bj-offers h2{font:700 22px/1.4 "Poppins","Noto Sans Bengali",Arial,sans-serif;color:#064e3b;margin:0 0 4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}' +
