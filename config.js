@@ -47,9 +47,9 @@ if (typeof document !== 'undefined') {
             }
             if (orig) { el.dataset.stzImgFb = '1'; el.src = orig; e.stopImmediatePropagation(); return; }
         }
-        // ধাপ ২: মূল ছবি (pub-xxxx.r2.dev) লোড না হলে নিজের ডোমেইনের /img/ পথে একবার আবার চেষ্টা (functions/img)।
+        // ধাপ ২: মূল ছবি (img.smarttechzone.com.bd বা পুরনো pub-xxxx.r2.dev) লোড না হলে নিজের ডোমেইনের /img/ পথে একবার আবার চেষ্টা (functions/img)।
         // stopImmediatePropagation: নইলে ছবির নিজের inline onerror সঙ্গে সঙ্গে "No Image" প্লেসহোল্ডার বসিয়ে দেয়।
-        var m = src.match(/^https:\/\/pub-[0-9a-f]+\.r2\.dev\/(uploads\/[^?#]+)/i);
+        var m = src.match(/^https:\/\/(?:pub-[0-9a-f]+\.r2\.dev|img\.smarttechzone\.com\.bd)\/(uploads\/[^?#]+)/i);
         if (m && !el.dataset.stzImgFb2) { el.dataset.stzImgFb2 = '1'; el.src = '/img/' + m[1]; e.stopImmediatePropagation(); }
     }, true);
 }
