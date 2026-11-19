@@ -249,7 +249,7 @@
         var d = new Date();
         if (window.self !== window.top || (d.getMonth() < 10 && !/[?&]bijoy=preview\b/.test(location.search))) return;
         var s = document.createElement('script');
-        s.src = '/bijoy.js?v=4'; s.async = true;
+        s.src = '/bijoy.js?v=6'; s.async = true;
         document.head.appendChild(s);
     } catch (e) {}
 })();

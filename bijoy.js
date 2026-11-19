@@ -56,16 +56,15 @@
     }
 
     function addRibbon() {
-        if (document.getElementById('bijoyRibbon')) return;
+        if (document.getElementById('bijoyRibbon') || /bijoy-offers/.test(location.pathname)) return;
         var r = document.createElement('aside');
         r.id = 'bijoyRibbon'; r.className = 'bj-ribbon'; r.setAttribute('aria-label', 'বিজয়ের মাসের অফার');
         var onHome = /^\/(index(\.html)?)?$/.test(location.pathname);
-        var href = (onHome ? '' : '/') + '#bijoy-offers';
+        var href = '/bijoy-offers.html';
         r.innerHTML = '<a href="' + href + '">' + flag(22) + 'বিজয়ের মাস ডিসেম্বর<span class="bj-sep">|</span>কোড <span class="bj-code">' + CODE + '</span> দিলে ' + PERCENT + '% ছাড়<span class="bj-sep">|</span>৳' + MIN + '+ অর্ডারে ফ্রি ডেলিভারি</a>';
         var banner = document.getElementById('stzWelcomeBanner');
         if (banner && banner.parentNode) banner.parentNode.insertBefore(r, banner.nextSibling);
         else document.body.insertBefore(r, document.body.firstChild);
-        if (!onHome) r.querySelector('a').setAttribute('href', '/index.html#bijoy-offers');
     }
 
     // হিরো স্লাইডারের শুরুতে ডিসেম্বর ক্যাম্পেইনের ৫টা স্লাইড (কুপন, ফ্রি ডেলিভারি, STZ Coin, ডাবল কয়েন সপ্তাহ, ট্রান্সপারেন্ট প্যাকেজিং) (শুধু হোমপেজে)
@@ -78,33 +77,33 @@
             '<span class="bj-chip">' + chip + '</span>' +
             '<h2>বিজয়ের মাস ডিসেম্বরে ' + PERCENT + '% ছাড়!</h2>' +
             '<p>' + (live ? 'চেকআউটে কোড' : 'সারা ডিসেম্বর কোড') + ' <strong class="bj-code">' + CODE + '</strong> দিন, পণ্যের দামে ' + PERCENT + '% ছাড় পান (সর্বোচ্চ ৳' + MAXOFF + ' পর্যন্ত)।</p>' +
-            '<a href="' + (live ? '#bijoy-offers' : 'shop.html') + '" class="hero-slide-btn" style="color:#006a4e;">' + (live ? 'অফার দেখুন →' : 'এখনই দেখে রাখুন →') + '</a>' +
+            '<a href="bijoy-offers.html#coupon" class="hero-slide-btn" style="color:#006a4e;">অফারের বিস্তারিত →</a>' +
             (live ? '<button type="button" class="bj-copybtn">কোড কপি করুন</button>' : '') +
             '</div><div class="hero-slide-visual">' + flag(132) + '</div></div></div>';
         var s2 = '<div class="hero-slide bj-slide" style="background:linear-gradient(135deg,#7f1224 0%,#c81e36 55%,#f42a41 100%);"><div class="hero-slide-inner"><div class="hero-slide-text">' +
             '<span class="bj-chip">' + chip + '</span>' +
             '<h2>৳' + MIN + '+ অর্ডারে ফ্রি ডেলিভারি</h2>' +
             '<p>বিজয়ের মাসে সারা বাংলাদেশে ' + MIN + ' টাকা বা এর বেশি দামের পণ্য কিনলে ডেলিভারি চার্জ লাগবে না।</p>' +
-            '<a href="shop.html" class="hero-slide-btn" style="color:#c81e36;">কেনাকাটা করুন →</a>' +
+            '<a href="bijoy-offers.html#free" class="hero-slide-btn" style="color:#c81e36;">বিস্তারিত দেখুন →</a>' +
             '</div><div class="hero-slide-visual"><i class="fa-solid fa-truck-fast"></i></div></div></div>';
         var s3 = '<div class="hero-slide bj-slide" style="background:linear-gradient(135deg,#052e22 0%,#006a4e 60%,#14a37a 100%);"><div class="hero-slide-inner"><div class="hero-slide-text">' +
             '<span class="bj-chip">' + chip + '</span>' +
             '<h2>STZ Coin: কিনুন, জমান, ছাড় নিন</h2>' +
             '<p>ডেলিভারি হলে পণ্যের দামের ২% কয়েন জমা হবে (১ কয়েন = ১ টাকা)। ৫০ কয়েন জমলে পরের অর্ডারে ২০% পর্যন্ত ছাড় নিন। কয়েনের মেয়াদ ৯০ দিন, কুপনের সাথেও চলবে।</p>' +
-            '<a href="shop.html" class="hero-slide-btn" style="color:#006a4e;">কেনাকাটা শুরু করুন →</a>' +
+            '<a href="bijoy-offers.html#coin" class="hero-slide-btn" style="color:#006a4e;">কীভাবে কাজ করে →</a>' +
             '</div><div class="hero-slide-visual"><i class="fa-solid fa-coins" style="color:#ffd54a;"></i></div></div></div>';
         var s4 = '<div class="hero-slide bj-slide" style="background:linear-gradient(135deg,#7f1224 0%,#c81e36 55%,#f42a41 100%);"><div class="hero-slide-inner"><div class="hero-slide-text">' +
             '<span class="bj-chip">১৬ থেকে ২২ ডিসেম্বর</span>' +
             '<h2>ডাবল কয়েন সপ্তাহ: ২% এর বদলে ৪%</h2>' +
             '<p>বিজয় দিবসের সপ্তাহে (১৬ থেকে ২২ ডিসেম্বর) অর্ডার করলে পাবেন দ্বিগুণ STZ Coin। পছন্দের পণ্য এখনই কার্টে রেখে দিন।</p>' +
-            '<a href="shop.html" class="hero-slide-btn" style="color:#c81e36;">পণ্য দেখুন →</a>' +
+            '<a href="bijoy-offers.html#double" class="hero-slide-btn" style="color:#c81e36;">বিস্তারিত দেখুন →</a>' +
             '</div><div class="hero-slide-visual"><i class="fa-solid fa-coins" style="color:#ffd54a;"></i></div></div></div>';
         var s5 = '<div class="hero-slide bj-slide" style="background:linear-gradient(135deg,#064e3b 0%,#0b6b52 50%,#7f1224 130%);"><div class="hero-slide-inner"><div class="hero-slide-text">' +
             '<span class="bj-chip">নিশ্চিন্তে কেনাকাটা</span>' +
             '<h2>১০০% ট্রান্সপারেন্ট প্যাকেজিং</h2>' +
             '<p>আপনার প্রতিটা অর্ডারের প্যাকিং ভিডিও রেকর্ড করা হয়। আপনি যা অর্ডার করেছেন, ঠিক সেটাই প্যাক হয়ে আপনার হাতে পৌঁছায়।</p>' +
             '<p class="bj-terms">প্রতি অর্ডারে ১টি কুপন প্রযোজ্য | কয়েন পেতে লগইন করে অর্ডার করুন | ডেলিভারির পর কয়েন যোগ হবে</p>' +
-            '<a href="shop.html" class="hero-slide-btn" style="color:#064e3b;">কেনাকাটা করুন →</a>' +
+            '<a href="bijoy-offers.html#packaging" class="hero-slide-btn" style="color:#064e3b;">বিস্তারিত দেখুন →</a>' +
             '</div><div class="hero-slide-visual"><i class="fa-solid fa-video"></i></div></div></div>';
         wrap.insertAdjacentHTML('afterbegin', s1 + s2 + s3 + s4 + s5);
         wrap.querySelectorAll('.bj-copybtn').forEach(function (b) { b.addEventListener('click', function (e) { e.preventDefault(); copyCode(b); }); });
@@ -139,12 +138,12 @@
         s.innerHTML =
             '<div class="bj-wrap">' +
             '<h2>' + flag(34) + 'বিজয়ের মাস ডিসেম্বরের অফার</h2>' +
-            '<p class="bj-sub">পুরো ডিসেম্বর জুড়ে চলবে। বিজয়ের মাসে আপনার জন্য বিশেষ সুবিধা।</p>' +
+            '<p class="bj-sub">পুরো ডিসেম্বর জুড়ে চলবে। বিজয়ের মাসে আপনার জন্য বিশেষ সুবিধা। <a href="bijoy-offers.html" style="color:#006a4e;font-weight:700;">সব অফারের বিস্তারিত →</a></p>' +
             '<div class="bj-cards">' +
             '<div class="bj-card c1"><div class="bj-big">' + PERCENT + '% ছাড়</div><p>চেকআউটে কুপন কোডটি দিন, পণ্যের দামে ছাড় পান (সর্বোচ্চ ৳' + MAXOFF + ' পর্যন্ত)।</p>' +
             '<div class="bj-row"><span class="bj-codebox">' + CODE + '</span><button type="button" id="bjCopy">কোড কপি করুন</button></div></div>' +
             '<div class="bj-card c2"><div class="bj-big">ফ্রি ডেলিভারি</div><p>৳' + MIN + ' বা এর বেশি দামের পণ্য কিনলে সারা বাংলাদেশে ডেলিভারি চার্জ লাগবে না।</p>' +
-            '<div class="bj-row"><a class="bj-btn" href="shop.html">এখনই কেনাকাটা করুন</a></div></div>' +
+            '<div class="bj-row"><a class="bj-btn" href="bijoy-offers.html#free">ডেলিভারি অফারের বিস্তারিত</a></div></div>' +
             '</div></div>';
         anchor.parentNode.insertBefore(s, anchor);
         var b = document.getElementById('bjCopy');

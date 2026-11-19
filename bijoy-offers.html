@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <script src="analytics.js" defer></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বিজয়ের মাস ডিসেম্বর অফার - Smart Tech Zone</title>
+    <meta name="description" content="বিজয়ের মাস ডিসেম্বরে Smart Tech Zone-এ ১৬% ছাড় (কোড BIJOY71), ৫৫০ টাকার অর্ডারে ফ্রি ডেলিভারি, STZ Coin এবং ১৬ থেকে ২২ ডিসেম্বর ডাবল কয়েন সপ্তাহ।">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* বিজয়ের মাসের অফার পেজ: লাল-সবুজ থিম, সব অ্যানিমেশন CSS দিয়ে; পুরনো ব্রাউজারের জন্য grid/gap ব্যবহার করা হয়নি */
+        .bo-page { color: #1f2d27; overflow-x: hidden; }
+        .bo-wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+        .bo-hero { position: relative; overflow: hidden; background: linear-gradient(135deg, #033d2e 0%, #006a4e 50%, #0b8f6a 100%); color: #fff; text-align: center; padding: 54px 16px 92px; }
+        .bo-sun { position: absolute; left: 50%; top: 46%; width: 400px; height: 400px; margin: -200px 0 0 -200px; border-radius: 50%; background: #e8283d; opacity: .92; box-shadow: 0 0 80px rgba(244,42,65,.55); -webkit-animation: boPulse 4.5s ease-in-out infinite; animation: boPulse 4.5s ease-in-out infinite; }
+        .bo-sun.s2 { width: 600px; height: 600px; margin: -300px 0 0 -300px; background: transparent; border: 2px solid rgba(255,255,255,.18); box-shadow: none; opacity: 1; -webkit-animation-delay: .8s; animation-delay: .8s; }
+        .bo-hero-in { position: relative; z-index: 2; max-width: 820px; margin: 0 auto; }
+        .bo-chip { display: inline-block; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.6); color: #fff; font-weight: 700; font-size: 13px; padding: 7px 16px; border-radius: 999px; margin-bottom: 16px; }
+        .bo-chip i { color: #ffd54a; margin-right: 6px; }
+        .bo-title { font-size: 46px; line-height: 1.25; font-weight: 800; margin: 0 0 12px; color: #fff; }
+        @supports (-webkit-background-clip: text) {
+            .bo-title { background: linear-gradient(100deg, #ffffff 0%, #ffe27a 30%, #ffffff 55%, #ffe27a 80%, #ffffff 100%); background-size: 220% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; -webkit-animation: boShine 5s linear infinite; animation: boShine 5s linear infinite; }
+        }
+        .bo-sub { font-size: 17px; line-height: 1.7; opacity: .95; margin: 0 auto 6px; max-width: 640px; }
+        .bo-hero-btns { margin-top: 22px; }
+        .bo-btn { display: inline-block; text-decoration: none; font-weight: 700; font-size: 15px; padding: 13px 26px; border-radius: 999px; margin: 6px 6px; border: 2px solid #fff; cursor: pointer; font-family: inherit; }
+        .bo-btn.solid { background: #fff; color: #006a4e; }
+        .bo-btn.ghost { background: transparent; color: #fff; }
+        .bo-btn.red { background: #f42a41; border-color: #f42a41; color: #fff; }
+        .bo-btn:hover { -webkit-transform: translateY(-2px); transform: translateY(-2px); }
+        .bo-cd-label { margin-top: 26px; font-size: 14px; opacity: .9; }
+        .bo-cd { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; margin-top: 10px; }
+        .bo-cd div { margin: 0 6px; min-width: 72px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.4); border-radius: 12px; padding: 10px 6px; }
+        .bo-cd b { display: block; font-size: 30px; line-height: 1.1; }
+        .bo-cd span { font-size: 12px; opacity: .85; }
+        .bo-conf { position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; z-index: 1; }
+        .bo-conf i { position: absolute; top: -24px; width: 8px; height: 14px; opacity: .9; border-radius: 2px; -webkit-animation: boFall linear infinite; animation: boFall linear infinite; }
+
+        .bo-stats { position: relative; z-index: 3; margin-top: -58px; background: -webkit-linear-gradient(top, transparent 58px, #eefaf5 58px); background: linear-gradient(180deg, transparent 58px, #eefaf5 58px); }
+        .bo-stat-row { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; margin: 0 -7px; }
+        .bo-stat { -webkit-flex: 1 1 210px; flex: 1 1 210px; margin: 7px; background: #fff; border-radius: 16px; padding: 18px 16px; text-align: center; box-shadow: 0 10px 28px rgba(0,60,40,.16); border-top: 5px solid #006a4e; text-decoration: none; color: inherit; }
+        .bo-stat:nth-child(2) { border-top-color: #f42a41; }
+        .bo-stat:nth-child(3) { border-top-color: #e0a400; }
+        .bo-stat:nth-child(4) { border-top-color: #f42a41; }
+        .bo-stat big { display: block; font-size: 32px; font-weight: 800; color: #006a4e; line-height: 1.2; }
+        .bo-stat:nth-child(2) big, .bo-stat:nth-child(4) big { color: #d81f37; }
+        .bo-stat:nth-child(3) big { color: #b07d00; }
+        .bo-stat span { font-size: 13.5px; color: #55645d; }
+
+        .bo-sec { padding: 56px 0 30px; background: #fff; }
+        .bo-sec.alt { background: linear-gradient(180deg, #eefaf5 0%, #ffffff 100%); }
+        .bo-sec.warm { background: linear-gradient(180deg, #fff3f4 0%, #ffffff 100%); }
+        .bo-sec.gold { background: linear-gradient(180deg, #fff9e6 0%, #ffffff 100%); }
+        .bo-num { display: inline-block; width: 42px; height: 42px; line-height: 42px; border-radius: 50%; background: #006a4e; color: #fff; text-align: center; font-weight: 800; font-size: 18px; margin-right: 10px; vertical-align: middle; }
+        .bo-sec.warm .bo-num { background: #d81f37; }
+        .bo-sec.gold .bo-num { background: #c28a00; }
+        .bo-h2 { font-size: 30px; font-weight: 800; margin: 0 0 8px; color: #064e3b; line-height: 1.35; }
+        .bo-sec.warm .bo-h2 { color: #8f1427; }
+        .bo-sec.gold .bo-h2 { color: #7a5600; }
+        .bo-lead { font-size: 16px; line-height: 1.75; color: #44544c; margin: 0 0 20px; max-width: 720px; }
+        .bo-row { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-items: center; align-items: center; margin: 0 -12px; }
+        .bo-col { -webkit-flex: 1 1 340px; flex: 1 1 340px; padding: 12px; box-sizing: border-box; min-width: 0; }
+        .bo-list { list-style: none; margin: 0; padding: 0; }
+        .bo-list li { position: relative; padding: 7px 0 7px 30px; font-size: 15px; line-height: 1.65; color: #33423b; }
+        .bo-list li:before { content: "\2713"; position: absolute; left: 0; top: 7px; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; background: #d9f3e9; color: #006a4e; font-weight: 800; font-size: 13px; }
+        .bo-sec.warm .bo-list li:before { background: #ffe0e4; color: #d81f37; }
+        .bo-sec.gold .bo-list li:before { background: #fff0bf; color: #9a6c00; }
+
+        .bo-ticket { position: relative; background: #fff; border: 2px dashed #006a4e; border-radius: 18px; padding: 26px 22px; text-align: center; box-shadow: 0 12px 30px rgba(0,60,40,.14); }
+        .bo-ticket:before, .bo-ticket:after { content: ""; position: absolute; top: 50%; width: 26px; height: 26px; margin-top: -13px; border-radius: 50%; background: #f1faf6; border: 2px dashed #006a4e; }
+        .bo-ticket:before { left: -15px; } .bo-ticket:after { right: -15px; }
+        .bo-off { font-size: 54px; font-weight: 800; color: #d81f37; line-height: 1.1; }
+        .bo-off small { display: block; font-size: 15px; color: #55645d; font-weight: 600; margin-top: 4px; }
+        .bo-code { display: inline-block; margin: 16px 8px 4px 0; font: 800 24px/1 "Poppins", Arial, sans-serif; letter-spacing: 2px; color: #064e3b; background: #e8f8f1; border: 2px solid #006a4e; border-radius: 10px; padding: 12px 18px; -webkit-animation: boGlow 2.4s ease-in-out infinite; animation: boGlow 2.4s ease-in-out infinite; }
+        .bo-copy { border: none; cursor: pointer; background: #006a4e; color: #fff; font-weight: 700; font-size: 14px; padding: 13px 18px; border-radius: 10px; font-family: inherit; }
+        .bo-note { font-size: 12.5px; color: #66756e; margin-top: 10px; line-height: 1.6; }
+
+        .bo-calc { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,.08); border: 1px solid #e3efe9; }
+        .bo-calc h3 { margin: 0 0 10px; font-size: 17px; color: #064e3b; }
+        .bo-calc label { font-size: 13.5px; color: #44544c; display: block; margin-bottom: 6px; }
+        .bo-calc input[type=number] { width: 100%; box-sizing: border-box; padding: 12px; font-size: 18px; border: 2px solid #cfe5db; border-radius: 10px; font-family: inherit; }
+        .bo-calc .chk { margin-top: 10px; font-size: 13.5px; }
+        .bo-calc .chk input { margin-right: 6px; }
+        .bo-res { margin-top: 14px; }
+        .bo-res div { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #d9e7e0; font-size: 14.5px; }
+        .bo-res div:last-child { border-bottom: none; }
+        .bo-res b { color: #064e3b; }
+        .bo-res .g b { color: #d81f37; }
+        .bo-res .big { font-size: 16.5px; }
+
+        .bo-road { position: relative; height: 86px; border-radius: 16px; background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.08); overflow: hidden; }
+        .bo-road:after { content: ""; position: absolute; left: 0; right: 0; bottom: 16px; height: 0; border-top: 4px dashed #c9d4cf; }
+        .bo-truck { position: absolute; bottom: 22px; left: -70px; font-size: 44px; color: #d81f37; -webkit-animation: boDrive 6s linear infinite; animation: boDrive 6s linear infinite; }
+        .bo-free-badge { margin-top: 14px; display: inline-block; background: #d81f37; color: #fff; font-weight: 800; font-size: 20px; padding: 10px 20px; border-radius: 12px; -webkit-animation: boPulseS 2s ease-in-out infinite; animation: boPulseS 2s ease-in-out infinite; }
+
+        .bo-steps { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; margin: 0 -8px; }
+        .bo-step { -webkit-flex: 1 1 230px; flex: 1 1 230px; margin: 8px; background: #fff; border-radius: 16px; padding: 20px 18px; text-align: center; box-shadow: 0 8px 22px rgba(0,0,0,.07); position: relative; }
+        .bo-step i { display: block; font-size: 34px; margin-bottom: 8px; color: #c28a00; }
+        .bo-step h4 { margin: 0 0 6px; font-size: 16.5px; color: #4f3a00; }
+        .bo-step p { margin: 0; font-size: 14px; line-height: 1.65; color: #55645d; }
+        .bo-step .n { position: absolute; top: -12px; left: 14px; width: 30px; height: 30px; line-height: 30px; border-radius: 50%; background: #c28a00; color: #fff; font-weight: 800; font-size: 14px; }
+        .bo-coin { color: #f2b705; display: inline-block; -webkit-animation: boSpin 3.2s linear infinite; animation: boSpin 3.2s linear infinite; }
+        .bo-rules { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; margin: 16px -6px 0; }
+        .bo-rule { -webkit-flex: 1 1 150px; flex: 1 1 150px; margin: 6px; background: #fff; border: 1px solid #f1dfa3; border-radius: 12px; padding: 12px 10px; text-align: center; }
+        .bo-rule b { display: block; font-size: 22px; color: #9a6c00; }
+        .bo-rule span { font-size: 12.5px; color: #66756e; }
+
+        .bo-days { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-justify-content: center; justify-content: center; margin: 18px 0 8px; }
+        .bo-day { width: 64px; height: 64px; margin: 6px; border-radius: 50%; background: #d81f37; color: #fff; text-align: center; font-weight: 800; font-size: 22px; line-height: 64px; box-shadow: 0 0 0 0 rgba(216,31,55,.5); -webkit-animation: boRing 2.2s infinite; animation: boRing 2.2s infinite; }
+        .bo-day:nth-child(2) { -webkit-animation-delay: .25s; animation-delay: .25s; } .bo-day:nth-child(3) { -webkit-animation-delay: .5s; animation-delay: .5s; }
+        .bo-day:nth-child(4) { -webkit-animation-delay: .75s; animation-delay: .75s; } .bo-day:nth-child(5) { -webkit-animation-delay: 1s; animation-delay: 1s; }
+        .bo-day:nth-child(6) { -webkit-animation-delay: 1.25s; animation-delay: 1.25s; } .bo-day:nth-child(7) { -webkit-animation-delay: 1.5s; animation-delay: 1.5s; }
+        .bo-day:first-child { background: #006a4e; }
+        .bo-vs { text-align: center; margin-top: 8px; font-size: 22px; font-weight: 800; color: #8f1427; }
+        .bo-vs s { color: #99a39e; margin-right: 8px; } .bo-vs em { font-style: normal; color: #d81f37; font-size: 30px; }
+        .bo-status { display: inline-block; font-size: 12.5px; font-weight: 700; padding: 5px 12px; border-radius: 999px; background: #ffe0e4; color: #8f1427; margin-bottom: 10px; }
+
+        .bo-cam { text-align: center; }
+        .bo-cam i { font-size: 74px; color: #006a4e; -webkit-animation: boPulseS 2.4s ease-in-out infinite; animation: boPulseS 2.4s ease-in-out infinite; }
+        .bo-rec { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #f42a41; margin-right: 6px; -webkit-animation: boBlink 1.2s steps(2, start) infinite; animation: boBlink 1.2s steps(2, start) infinite; }
+
+        .bo-faq details { background: #fff; border: 1px solid #dbe9e2; border-radius: 12px; margin-bottom: 10px; padding: 0 16px; }
+        .bo-faq summary { cursor: pointer; font-weight: 700; padding: 14px 0; color: #064e3b; font-size: 15.5px; }
+        .bo-faq p { margin: 0 0 14px; font-size: 14.5px; line-height: 1.75; color: #44544c; }
+
+        .bo-final { margin-top: 40px; position: relative; overflow: hidden; background: linear-gradient(135deg, #7f1224 0%, #c81e36 55%, #f42a41 100%); color: #fff; text-align: center; padding: 54px 16px; }
+        .bo-final h2 { font-size: 32px; margin: 0 0 10px; font-weight: 800; }
+        .bo-final p { max-width: 640px; margin: 0 auto 18px; font-size: 16px; line-height: 1.7; opacity: .95; }
+        .bo-flag { display: inline-block; width: 120px; height: 72px; background: #006a4e; border: 3px solid #fff; border-radius: 6px; position: relative; margin-bottom: 18px; -webkit-animation: boWave 3s ease-in-out infinite; animation: boWave 3s ease-in-out infinite; }
+        .bo-flag:after { content: ""; position: absolute; left: 44px; top: 16px; width: 36px; height: 36px; border-radius: 50%; background: #f42a41; }
+        .bo-greet { font-size: 13px; opacity: .85; margin-top: 18px; }
+
+        .bo-anim .rv { opacity: 0; -webkit-transform: translateY(26px); transform: translateY(26px); -webkit-transition: opacity .7s ease, -webkit-transform .7s ease; transition: opacity .7s ease, transform .7s ease; }
+        .bo-anim .rv.in { opacity: 1; -webkit-transform: none; transform: none; }
+        .bo-sec, .bo-final { scroll-margin-top: 70px; }
+
+        @-webkit-keyframes boPulse { 0%,100% { -webkit-transform: scale(1); } 50% { -webkit-transform: scale(1.06); } }
+        @keyframes boPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+        @-webkit-keyframes boShine { to { background-position: 220% center; } }
+        @keyframes boShine { to { background-position: 220% center; } }
+        @-webkit-keyframes boFall { 0% { -webkit-transform: translateY(0) rotate(0deg); opacity: 0; } 8% { opacity: .95; } 100% { -webkit-transform: translateY(560px) rotate(540deg); opacity: .2; } }
+        @keyframes boFall { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 8% { opacity: .95; } 100% { transform: translateY(560px) rotate(540deg); opacity: .2; } }
+        @-webkit-keyframes boGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(0,106,78,.35); } 50% { box-shadow: 0 0 0 10px rgba(0,106,78,0); } }
+        @keyframes boGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(0,106,78,.35); } 50% { box-shadow: 0 0 0 10px rgba(0,106,78,0); } }
+        @-webkit-keyframes boDrive { 0% { left: -70px; } 100% { left: 100%; } }
+        @keyframes boDrive { 0% { left: -70px; } 100% { left: 100%; } }
+        @-webkit-keyframes boPulseS { 0%,100% { -webkit-transform: scale(1); } 50% { -webkit-transform: scale(1.07); } }
+        @keyframes boPulseS { 0%,100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+        @-webkit-keyframes boSpin { 0% { -webkit-transform: rotateY(0deg); } 100% { -webkit-transform: rotateY(360deg); } }
+        @keyframes boSpin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+        @-webkit-keyframes boRing { 0% { box-shadow: 0 0 0 0 rgba(216,31,55,.55); } 70% { box-shadow: 0 0 0 14px rgba(216,31,55,0); } 100% { box-shadow: 0 0 0 0 rgba(216,31,55,0); } }
+        @keyframes boRing { 0% { box-shadow: 0 0 0 0 rgba(216,31,55,.55); } 70% { box-shadow: 0 0 0 14px rgba(216,31,55,0); } 100% { box-shadow: 0 0 0 0 rgba(216,31,55,0); } }
+        @-webkit-keyframes boBlink { to { visibility: hidden; } }
+        @keyframes boBlink { to { visibility: hidden; } }
+        @-webkit-keyframes boWave { 0%,100% { -webkit-transform: rotate(-3deg) skewY(0deg); } 50% { -webkit-transform: rotate(3deg) skewY(3deg); } }
+        @keyframes boWave { 0%,100% { transform: rotate(-3deg) skewY(0deg); } 50% { transform: rotate(3deg) skewY(3deg); } }
+        @media (prefers-reduced-motion: reduce) {
+            .bo-page *, .bo-page *:before, .bo-page *:after { -webkit-animation: none !important; animation: none !important; -webkit-transition: none !important; transition: none !important; }
+            .bo-anim .rv { opacity: 1; -webkit-transform: none; transform: none; }
+        }
+        @media (max-width: 640px) {
+            .bo-title { font-size: 32px; } .bo-h2 { font-size: 24px; } .bo-off { font-size: 44px; }
+            .bo-sun { width: 280px; height: 280px; margin: -140px 0 0 -140px; } .bo-sun.s2 { width: 420px; height: 420px; margin: -210px 0 0 -210px; }
+            .bo-cd div { min-width: 58px; margin: 0 4px; } .bo-cd b { font-size: 24px; }
+            .bo-code { font-size: 20px; } .bo-final h2 { font-size: 26px; }
+        }
+    </style>
+    <script src="config.js"></script>
+    <script src="visitor-track.js" defer></script>
+    <script src="customer-auth.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="Smart Tech Zone"></a>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for parts...">
+            <button>Search</button>
+        </div>
+        <div class="nav-icons">
+            <span id="navAuthArea"><a href="login.html">Login</a></span>
+            <a href="cart.html" class="stz-cart-link" title="কার্ট"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="stz-cart-icon-svg" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span id="cartCount" class="stz-cart-badge">0</span></a>
+        </div>
+    </nav>
+    <main class="bo-page" id="boTop">
+
+        <header class="bo-hero">
+            <div class="bo-sun"></div><div class="bo-sun s2"></div>
+            <div class="bo-conf" id="boConf" aria-hidden="true"></div>
+            <div class="bo-hero-in">
+                <div class="bo-chip" id="boChip"><i class="fa-solid fa-flag"></i><span id="boChipTx">১ থেকে ৩১ ডিসেম্বর</span></div>
+                <h1 class="bo-title">বিজয়ের মাস ডিসেম্বর<br>মেগা অফার</h1>
+                <p class="bo-sub">মহান বিজয়ের মাসে Smart Tech Zone-এর পক্ষ থেকে আপনার জন্য কুপন ছাড়, ফ্রি ডেলিভারি, STZ Coin আর ডাবল কয়েন সপ্তাহ।</p>
+                <div class="bo-hero-btns">
+                    <a class="bo-btn solid" href="#coupon">অফারগুলো দেখুন</a>
+                    <a class="bo-btn ghost" href="index.html#productsSectionTitle">কেনাকাটা শুরু করুন</a>
+                </div>
+                <div class="bo-cd-label" id="boCdLabel">অফার শুরু হতে বাকি</div>
+                <div class="bo-cd" id="boCd">
+                    <div><b id="cdD">০০</b><span>দিন</span></div>
+                    <div><b id="cdH">০০</b><span>ঘণ্টা</span></div>
+                    <div><b id="cdM">০০</b><span>মিনিট</span></div>
+                    <div><b id="cdS">০০</b><span>সেকেন্ড</span></div>
+                </div>
+            </div>
+        </header>
+
+        <section class="bo-stats">
+            <div class="bo-wrap"><div class="bo-stat-row">
+                <a class="bo-stat rv" href="#coupon"><big>১৬% ছাড়</big><span>কোড BIJOY71, সর্বোচ্চ ৳১,০০০</span></a>
+                <a class="bo-stat rv" href="#free"><big>ফ্রি ডেলিভারি</big><span>৫৫০ টাকার পণ্য কিনলে</span></a>
+                <a class="bo-stat rv" href="#coin"><big>২% কয়েন</big><span>প্রতিটা ডেলিভারিতে STZ Coin</span></a>
+                <a class="bo-stat rv" href="#double"><big>৪% কয়েন</big><span>১৬ থেকে ২২ ডিসেম্বর</span></a>
+            </div></div>
+        </section>
+
+        <!-- ১. কুপন -->
+        <section class="bo-sec alt" id="coupon">
+            <div class="bo-wrap">
+                <h2 class="bo-h2 rv"><span class="bo-num">১</span>বিজয় দিবস কুপন: ১৬% ছাড়</h2>
+                <p class="bo-lead rv">পুরো ডিসেম্বর মাস জুড়ে যেকোনো প্রোডাক্টে ১৬% ছাড়, সর্বোচ্চ ১,০০০ টাকা পর্যন্ত। চেকআউটে কুপন কোডের ঘরে নিচের কোডটা বসালেই ছাড় কেটে যাবে।</p>
+                <div class="bo-row">
+                    <div class="bo-col rv">
+                        <div class="bo-ticket">
+                            <div class="bo-off">১৬% ছাড়<small>সর্বোচ্চ ৳১,০০০ পর্যন্ত</small></div>
+                            <div><span class="bo-code" id="boCode">BIJOY71</span><button type="button" class="bo-copy" id="boCopy">কোড কপি করুন</button></div>
+                            <div class="bo-note" id="boCouponNote">মেয়াদ: ১ ডিসেম্বর থেকে ৩১ ডিসেম্বর ২০২৬</div>
+                        </div>
+                        <ul class="bo-list" style="margin-top:16px;">
+                            <li>ছাড় শুধু পণ্যের দামের উপর, ডেলিভারি চার্জের উপর নয়।</li>
+                            <li>৬,২৫০ টাকা পর্যন্ত অর্ডারে পুরো ১৬% ছাড়। এর বেশি হলে ছাড় ১,০০০ টাকায় থাকবে।</li>
+                            <li>প্রতি অর্ডারে একটা কুপন ব্যবহার করা যায়।</li>
+                            <li>কুপনের সাথে STZ Coin-এর ছাড়ও একসাথে নেওয়া যায়।</li>
+                        </ul>
+                    </div>
+                    <div class="bo-col rv">
+                        <div class="bo-calc">
+                            <h3><i class="fa-solid fa-calculator"></i> নিজে হিসাব করে দেখুন</h3>
+                            <label for="boSub">আপনার পণ্যের মোট দাম (টাকা)</label>
+                            <input type="number" id="boSub" min="0" step="1" value="2000" inputmode="numeric">
+                            <div class="chk"><label style="display:block;margin:0;"><input type="checkbox" id="boDbl"> ডাবল কয়েন সপ্তাহে অর্ডার করলে (১৬ থেকে ২২ ডিসেম্বর)</label></div>
+                            <div class="bo-res">
+                                <div><span>কুপন ছাড়</span><b id="rDisc">৳ ০</b></div>
+                                <div><span>ছাড়ের পর পণ্যের দাম</span><b id="rAfter">৳ ০</b></div>
+                                <div><span>ডেলিভারি চার্জ</span><b id="rDel">-</b></div>
+                                <div class="g big"><span>ডেলিভারির পর পাবেন</span><b id="rCoin">০ কয়েন</b></div>
+                            </div>
+                            <div class="bo-note">এটা শুধু আনুমানিক হিসাব। চূড়ান্ত অঙ্ক চেকআউটে দেখা যাবে।</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ২. ফ্রি ডেলিভারি -->
+        <section class="bo-sec warm" id="free">
+            <div class="bo-wrap">
+                <h2 class="bo-h2 rv"><span class="bo-num">২</span>৫৫০ টাকার অর্ডারে ফ্রি ডেলিভারি</h2>
+                <p class="bo-lead rv">বিজয়ের আনন্দে ডেলিভারি চার্জ আমাদের। পুরো ডিসেম্বর সারা বাংলাদেশে ৫৫০ টাকা বা তার বেশি দামের পণ্য কিনলে ডেলিভারি চার্জ লাগবে না।</p>
+                <div class="bo-row">
+                    <div class="bo-col rv">
+                        <div class="bo-road" aria-hidden="true"><i class="fa-solid fa-truck-fast bo-truck"></i></div>
+                        <div style="text-align:center;"><span class="bo-free-badge">ডেলিভারি চার্জ ৳০</span></div>
+                    </div>
+                    <div class="bo-col rv">
+                        <ul class="bo-list">
+                            <li>পণ্যের মোট দাম ৫৫০ টাকা বা তার বেশি হলে চেকআউটে ডেলিভারি লাইনে "ফ্রি" দেখাবে।</li>
+                            <li>আলাদা কোনো কোড লাগবে না, নিজে থেকেই প্রযোজ্য।</li>
+                            <li>ফ্রি ডেলিভারির সাথেও কুপন আর কয়েনের ছাড় নেওয়া যাবে।</li>
+                            <li>অফার চলবে ১ ডিসেম্বর থেকে ৩১ ডিসেম্বর পর্যন্ত।</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ৩. STZ Coin -->
+        <section class="bo-sec gold" id="coin">
+            <div class="bo-wrap">
+                <h2 class="bo-h2 rv"><span class="bo-num">৩</span>STZ Coin: কিনুন, জমান, ছাড় নিন</h2>
+                <p class="bo-lead rv">প্রতিটা অর্ডার ডেলিভারি হলে পণ্যের দামের ২% কয়েন আপনার অ্যাকাউন্টে জমা হবে। ১ কয়েন মানে ১ টাকা। জমানো কয়েন দিয়ে পরের অর্ডারেই ছাড় নিন।</p>
+                <div class="bo-steps">
+                    <div class="bo-step rv"><span class="n">১</span><i class="fa-solid fa-cart-shopping"></i><h4>অর্ডার করুন</h4><p>অ্যাকাউন্টে লগইন করে পছন্দের পণ্য অর্ডার করুন।</p></div>
+                    <div class="bo-step rv"><span class="n">২</span><i class="fa-solid fa-coins bo-coin"></i><h4>কয়েন জমা হবে</h4><p>অর্ডার ডেলিভারি হলে পণ্যের দামের (ছাড়ের পর) ২% কয়েন অ্যাকাউন্টে যোগ হবে।</p></div>
+                    <div class="bo-step rv"><span class="n">৩</span><i class="fa-solid fa-tags"></i><h4>পরের অর্ডারে ছাড়</h4><p>চেকআউটে "কয়েন ব্যবহার করুন" চিহ্ন দিলেই কয়েনের সমান টাকা ছাড় পাবেন।</p></div>
+                </div>
+                <div class="bo-rules">
+                    <div class="bo-rule rv"><b>১ = ১</b><span>১ কয়েন সমান ১ টাকা</span></div>
+                    <div class="bo-rule rv"><b>২%</b><span>প্রতি ডেলিভারিতে আয়</span></div>
+                    <div class="bo-rule rv"><b>২০%</b><span>এক অর্ডারে সর্বোচ্চ ব্যবহার</span></div>
+                    <div class="bo-rule rv"><b>৫০</b><span>ব্যবহারে ন্যূনতম কয়েন</span></div>
+                    <div class="bo-rule rv"><b>৯০ দিন</b><span>কয়েনের মেয়াদ</span></div>
+                </div>
+                <ul class="bo-list rv" style="margin-top:18px;">
+                    <li>কয়েন পাওয়া যায় ডেলিভারি সফল হওয়ার পর। অর্ডার ক্যান্সেল বা রিটার্ন হলে সেই অর্ডারের কয়েন পাওয়া যাবে না।</li>
+                    <li>ক্যান্সেল করা অর্ডারে যে কয়েন ব্যবহার করেছিলেন, সেটা অ্যাকাউন্টে ফেরত আসবে।</li>
+                    <li>কয়েনের ব্যালেন্স ও ইতিহাস দেখবেন My Account-এর "STZ Coin" অংশে।</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ৪. ডাবল কয়েন -->
+        <section class="bo-sec warm" id="double">
+            <div class="bo-wrap" style="text-align:center;">
+                <div class="bo-status rv" id="boDblStatus">আসছে</div>
+                <h2 class="bo-h2 rv"><span class="bo-num">৪</span>ডাবল কয়েন সপ্তাহ</h2>
+                <p class="bo-lead rv" style="margin-left:auto;margin-right:auto;">১৬ ডিসেম্বর মহান বিজয় দিবস থেকে ২২ ডিসেম্বর, এই ৭ দিনে অর্ডার করলে ২% এর বদলে পাবেন ৪% STZ Coin। একই কেনাকাটায় কয়েন দ্বিগুণ।</p>
+                <div class="bo-days rv"><div class="bo-day">১৬</div><div class="bo-day">১৭</div><div class="bo-day">১৮</div><div class="bo-day">১৯</div><div class="bo-day">২০</div><div class="bo-day">২১</div><div class="bo-day">২২</div></div>
+                <div class="bo-vs rv"><s>২%</s> <em>৪% কয়েন</em></div>
+                <p class="bo-note rv">ডিসেম্বর ২০২৬। ১৬ ডিসেম্বর রাত ১২টা থেকে ২২ ডিসেম্বর রাত ১১:৫৯ পর্যন্ত দেওয়া অর্ডারে প্রযোজ্য। কয়েন যোগ হবে ডেলিভারির পর।</p>
+            </div>
+        </section>
+
+        <!-- ৫. ট্রান্সপারেন্ট প্যাকেজিং -->
+        <section class="bo-sec alt" id="packaging">
+            <div class="bo-wrap">
+                <h2 class="bo-h2 rv"><span class="bo-num">৫</span>১০০% ট্রান্সপারেন্ট প্যাকেজিং</h2>
+                <div class="bo-row">
+                    <div class="bo-col rv bo-cam"><i class="fa-solid fa-video"></i><div style="margin-top:10px;font-weight:700;color:#8f1427;"><span class="bo-rec"></span>প্যাকিং চলছে, রেকর্ড হচ্ছে</div></div>
+                    <div class="bo-col rv">
+                        <p class="bo-lead" style="margin-bottom:12px;">আপনার প্রতিটা অর্ডারের প্যাকিং ভিডিও রেকর্ড করা হয়। আপনি যা অর্ডার করেছেন, ঠিক সেটাই প্যাক হয়ে আপনার হাতে পৌঁছায়।</p>
+                        <ul class="bo-list">
+                            <li>রিটার্ন আসা পার্সেলও ক্যামেরার সামনে খোলা হয়, তাই কোনো বিতর্কের সুযোগ থাকে না।</li>
+                            <li>ডিসেম্বরের সব অফারের অর্ডারেও একই নিয়ম।</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- কীভাবে নেবেন -->
+        <section class="bo-sec" id="how">
+            <div class="bo-wrap">
+                <h2 class="bo-h2 rv">কীভাবে অফার নেবেন?</h2>
+                <div class="bo-steps">
+                    <div class="bo-step rv"><span class="n" style="background:#006a4e;">১</span><i class="fa-solid fa-user-plus" style="color:#006a4e;"></i><h4 style="color:#064e3b;">অ্যাকাউন্টে লগইন</h4><p>অ্যাকাউন্ট না থাকলে এক মিনিটে খুলে নিন। কয়েন পেতে লগইন করে অর্ডার করতে হয়।</p></div>
+                    <div class="bo-step rv"><span class="n" style="background:#006a4e;">২</span><i class="fa-solid fa-bag-shopping" style="color:#006a4e;"></i><h4 style="color:#064e3b;">কার্টে পণ্য নিন</h4><p>পছন্দের পণ্য কার্টে রাখুন। ৫৫০ টাকার বেশি হলে ডেলিভারি ফ্রি।</p></div>
+                    <div class="bo-step rv"><span class="n" style="background:#006a4e;">৩</span><i class="fa-solid fa-ticket" style="color:#006a4e;"></i><h4 style="color:#064e3b;">কোড ও কয়েন দিন</h4><p>চেকআউটে BIJOY71 কোড বসান, কয়েন থাকলে "কয়েন ব্যবহার করুন" চিহ্ন দিন।</p></div>
+                </div>
+                <div style="text-align:center;margin-top:18px;"><a class="bo-btn red" href="index.html#productsSectionTitle">এখনই কেনাকাটা শুরু করুন</a></div>
+            </div>
+        </section>
+
+        <!-- প্রশ্নোত্তর -->
+        <section class="bo-sec alt" id="faq">
+            <div class="bo-wrap bo-faq">
+                <h2 class="bo-h2 rv">সাধারণ প্রশ্ন ও শর্ত</h2>
+                <details class="rv"><summary>একই অর্ডারে কি একাধিক কুপন দেওয়া যায়?</summary><p>না, প্রতি অর্ডারে একটা কুপন কোড ব্যবহার করা যায়। তবে কুপনের সাথে STZ Coin-এর ছাড় একসাথে নেওয়া যায়।</p></details>
+                <details class="rv"><summary>কুপনে ছাড় সর্বোচ্চ কত টাকা?</summary><p>BIJOY71 কুপনে ১৬% ছাড়, তবে এক অর্ডারে সর্বোচ্চ ১,০০০ টাকা পর্যন্ত। ৬,২৫০ টাকার বেশি দামের অর্ডারে ছাড় ১,০০০ টাকাতেই থাকবে।</p></details>
+                <details class="rv"><summary>ফ্রি ডেলিভারির জন্য কি কুপনের ছাড় বাদ যাবে?</summary><p>ফ্রি ডেলিভারির শর্ত পণ্যের মোট দামে (৫৫০ টাকা বা তার বেশি)। সঠিক হিসাব চেকআউটের সামারিতে দেখতে পাবেন।</p></details>
+                <details class="rv"><summary>কয়েন কখন অ্যাকাউন্টে যোগ হয়?</summary><p>অর্ডার ডেলিভারি সফল হওয়ার পর। অর্ডার দেওয়ার সময় চেকআউটে আনুমানিক কত কয়েন পাবেন তা দেখানো হয়।</p></details>
+                <details class="rv"><summary>কয়েনের মেয়াদ কতদিন?</summary><p>প্রতিবার যে কয়েন জমা হয়, তার মেয়াদ ৯০ দিন। মেয়াদ শেষ হওয়ার আগে ব্যবহার করুন। মেয়াদ শেষ হতে যাওয়া কয়েনের কথা My Account-এ দেখানো হয়।</p></details>
+                <details class="rv"><summary>অর্ডার ক্যান্সেল বা রিটার্ন করলে কয়েনের কী হবে?</summary><p>ক্যান্সেল করা অর্ডারে ব্যবহার করা কয়েন ফেরত আসে। অর্ডার রিটার্ন বা ক্যান্সেল হলে সেই অর্ডারে আয় হওয়া কয়েন বাতিল হয়ে যায়।</p></details>
+                <details class="rv"><summary>ডাবল কয়েন সপ্তাহে কোন অর্ডার ৪% কয়েন পাবে?</summary><p>১৬ ডিসেম্বর রাত ১২টা থেকে ২২ ডিসেম্বর রাত ১১:৫৯ পর্যন্ত যে অর্ডার দেওয়া হবে, সেটা ডেলিভারি হলে ৪% কয়েন পাবে। ডেলিভারি ২২ তারিখের পরে হলেও চলবে।</p></details>
+            </div>
+        </section>
+
+        <section class="bo-final">
+            <div class="bo-flag" aria-hidden="true"></div>
+            <h2>বিজয়ের মাসে আমাদের সাথে থাকুন</h2>
+            <p>কুপন, ফ্রি ডেলিভারি আর কয়েন, তিনটাই এখন আপনার জন্য। অফার শেষ হওয়ার আগেই অর্ডার করে ফেলুন।</p>
+            <a class="bo-btn solid" href="index.html#productsSectionTitle" style="color:#c81e36;">কেনাকাটা শুরু করুন</a>
+            <div class="bo-greet">মহান বিজয় দিবসের শুভেচ্ছা। ১৯৭১-এর মুক্তিযুদ্ধের শহীদদের প্রতি বিনম্র শ্রদ্ধা।</div>
+        </section>
+
+    </main>
+
+    <div id="siteFooter"></div>
+    <script src="footer.js"></script>
+    <script src="search.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        function $(id) { return document.getElementById(id); }
+        var BN = '০১২৩৪৫৬৭৮৯';
+        function bn(n) { return String(n).replace(/\d/g, function (d) { return BN.charAt(d); }); }
+        function money(n) { return '৳ ' + bn(Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')); }
+        function pad2(n) { return bn(n < 10 ? '0' + n : String(n)); }
+
+        // বাংলাদেশ সময় (UTC+6): অফার ১ ডিসেম্বর রাত ১২টা থেকে ৩১ ডিসেম্বর রাত ১২টা পর্যন্ত
+        var H6 = 6 * 3600 * 1000;
+        var FROM = Date.UTC(2026, 11, 1) - H6, TO = Date.UTC(2027, 0, 1) - H6;
+        var DFROM = Date.UTC(2026, 11, 16) - H6, DTO = Date.UTC(2026, 11, 23) - H6;
+        var preview = /[?&]bijoy=preview\b/.test(location.search);
+
+        // স্ক্রল করলে সেকশন ভেসে ওঠা (IntersectionObserver না থাকলে সবকিছু সরাসরি দেখায়)
+        var rvs = document.querySelectorAll('.rv');
+        if ('IntersectionObserver' in window) {
+            document.documentElement.className += ' bo-anim';
+            var io = new IntersectionObserver(function (es) {
+                for (var i = 0; i < es.length; i++) { if (es[i].isIntersecting) { es[i].target.className += ' in'; io.unobserve(es[i].target); } }
+            }, { threshold: 0.12 });
+            for (var i = 0; i < rvs.length; i++) io.observe(rvs[i]);
+        }
+
+        // কনফেটি (লাল, সোনালি, সাদা, সবুজ)
+        var conf = $('boConf'), cols = ['#f42a41', '#ffd54a', '#ffffff', '#2fd6a0'];
+        if (conf && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+            for (var c = 0; c < 28; c++) {
+                var el = document.createElement('i');
+                el.style.left = (Math.random() * 100) + '%';
+                el.style.background = cols[c % cols.length];
+                var dur = (5 + Math.random() * 6).toFixed(1) + 's', del = (Math.random() * 8).toFixed(1) + 's';
+                el.style.webkitAnimationDuration = el.style.animationDuration = dur;
+                el.style.webkitAnimationDelay = el.style.animationDelay = del;
+                conf.appendChild(el);
+            }
+        }
+
+        // কাউন্টডাউন
+        function tick() {
+            var now = Date.now(), target, label;
+            if (preview || (now >= FROM && now < TO)) { target = TO; label = 'অফার শেষ হতে বাকি'; $('boChipTx').textContent = 'অফার এখন চলছে'; $('boCouponNote').textContent = 'মেয়াদ: ৩১ ডিসেম্বর ২০২৬ পর্যন্ত'; }
+            else if (now < FROM) { target = FROM; label = 'অফার শুরু হতে বাকি'; $('boChipTx').textContent = '১ ডিসেম্বর থেকে শুরু'; $('boCouponNote').textContent = 'কোডটা ১ ডিসেম্বর থেকে ৩১ ডিসেম্বর ২০২৬ পর্যন্ত ব্যবহার করা যাবে'; }
+            else { $('boCdLabel').textContent = 'এই অফার শেষ হয়েছে। পরের অফারের জন্য আমাদের সাথে থাকুন।'; $('boCd').style.display = 'none'; $('boChipTx').textContent = 'অফার শেষ'; $('boCouponNote').textContent = 'এই কুপনের মেয়াদ শেষ হয়ে গেছে'; return; }
+            $('boCdLabel').textContent = label;
+            var s = Math.max(0, Math.floor((target - now) / 1000));
+            $('cdD').textContent = pad2(Math.floor(s / 86400));
+            $('cdH').textContent = pad2(Math.floor(s % 86400 / 3600));
+            $('cdM').textContent = pad2(Math.floor(s % 3600 / 60));
+            $('cdS').textContent = pad2(s % 60);
+        }
+        tick(); setInterval(tick, 1000);
+
+        // ডাবল কয়েন সপ্তাহের অবস্থা
+        (function () {
+            var n = Date.now(), el = $('boDblStatus');
+            if (n >= DTO) el.textContent = 'শেষ হয়েছে';
+            else if (n >= DFROM) el.textContent = 'এখন চলছে';
+            else el.textContent = '১৬ ডিসেম্বর থেকে';
+        })();
+
+        // কুপন কোড কপি
+        $('boCopy').addEventListener('click', function () {
+            var btn = this, code = $('boCode').textContent;
+            function done() { btn.textContent = 'কপি হয়েছে'; setTimeout(function () { btn.textContent = 'কোড কপি করুন'; }, 2000); }
+            function fb() {
+                try { var t = document.createElement('textarea'); t.value = code; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); done(); }
+                catch (e) { btn.textContent = code; }
+            }
+            try { if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(code).then(done, fb); return; } } catch (e) {}
+            fb();
+        });
+
+        // আনুমানিক হিসাব
+        function calc() {
+            var sub = Math.max(0, parseFloat($('boSub').value) || 0);
+            var d = Math.min(Math.round(sub * 0.16), 1000);
+            var after = sub - d;
+            var rate = $('boDbl').checked ? 4 : 2;
+            $('rDisc').textContent = (d > 0 ? '− ' : '') + money(d);
+            $('rAfter').textContent = money(after);
+            $('rDel').textContent = sub >= 550 ? 'ফ্রি' : (sub > 0 ? 'চার্জ প্রযোজ্য' : '-');
+            $('rCoin').textContent = bn(Math.floor(after * rate / 100 + 1e-9)) + ' কয়েন';
+        }
+        $('boSub').addEventListener('input', calc);
+        $('boDbl').addEventListener('change', calc);
+        calc();
+    })();
+    </script>
+</body>
+</html>
