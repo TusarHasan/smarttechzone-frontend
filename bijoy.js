@@ -84,7 +84,7 @@
             '<span class="bj-chip">' + chip + '</span>' +
             '<h2>৳' + MIN + '+ অর্ডারে ফ্রি ডেলিভারি</h2>' +
             '<p>বিজয়ের মাসে সারা বাংলাদেশে ' + MIN + ' টাকা বা এর বেশি দামের পণ্য কিনলে ডেলিভারি চার্জ লাগবে না।</p>' +
-            '<a href="bijoy-offers.html#free" class="hero-slide-btn" style="color:#c81e36;">বিস্তারিত দেখুন →</a>' +
+            '<a href="#productsSectionTitle" class="hero-slide-btn" style="color:#c81e36;">কেনাকাটা করুন →</a>' +
             '</div><div class="hero-slide-visual"><i class="fa-solid fa-truck-fast"></i></div></div></div>';
         var s3 = '<div class="hero-slide bj-slide" style="background:linear-gradient(135deg,#052e22 0%,#006a4e 60%,#14a37a 100%);"><div class="hero-slide-inner"><div class="hero-slide-text">' +
             '<span class="bj-chip">' + chip + '</span>' +
