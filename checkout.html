@@ -164,21 +164,22 @@
         .ck-field.has-error .ck-phone { border-color: #e74c3c; box-shadow: 0 0 0 2px rgba(231,76,60,0.15); }
         .ck-err { color: #e74c3c; font-size: 12.5px; margin: 5px 0 0; min-height: 0; }
         .ck-err:empty { display: none; }
-        /* ডেলিভারি লোকেশন — compact inline design */
-        .ck-loc { margin-top: 10px; padding: 8px 10px; border: 1px dashed #c5d5da; border-radius: 7px; background: #f8fbfc; }
-        .ck-loc.ck-loc-strong { border: 1.5px solid #1a9cb7; background: #eef9fc; }
-        .ck-loc.ck-loc-strong .ck-loc-btn { background: #1a9cb7; color: #fff; border-color: #1a9cb7; }
-        .ck-loc-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .ck-loc-title { font-size: 11.5px; font-weight: 600; color: #4a6572; margin: 0; letter-spacing: .01em; }
-        .ck-loc-sub { font-size: 11px; color: #8899a0; margin: 2px 0 7px; line-height: 1.4; }
-        .ck-loc-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border: 1px solid #1a9cb7; background: #fff; color: #137f96; border-radius: 5px; font-size: 11.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        /* ডেলিভারি লোকেশন — ছোট, এক সারির কমপ্যাক্ট বক্স; ম্যাপ লিংকের ঘর "অন্য জায়গা?" চাপলে খোলে */
+        .ck-loc { margin-top: 10px; padding: 8px 10px; border: 1px solid #dde7ec; border-radius: 8px; background: #fafcfd; font-size: 12.5px; color: #4a5560; }
+        .ck-loc-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+        .ck-loc-title { font-size: 13px; font-weight: 600; color: #26343f; margin-right: auto; }
+        .ck-loc-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 11px; border: 1px solid #1a9cb7; background: #fff; color: #137f96; border-radius: 999px; font-size: 12.5px; font-weight: 600; cursor: pointer; line-height: 1.5; }
         .ck-loc-btn:disabled { opacity: .6; cursor: wait; }
-        .ck-loc-note { font-size: 11px; color: #8899a0; margin: 5px 0 0; line-height: 1.4; }
-        .ck-loc-ok { color: #1e7e34; font-size: 11px; margin: 4px 0 0; }
-        .ck-loc-bad { color: #b4541a; font-size: 11px; margin: 4px 0 0; }
-        .ck-loc-or { font-size: 11px; color: #8899a0; margin: 7px 0 3px; }
-        .ck-loc input[type="text"] { width: 100%; box-sizing: border-box; margin: 0; font-size: 11.5px; padding: 5px 8px; }
-        .ck-loc-clear { background: none; border: none; color: #137f96; font-size: 11px; text-decoration: underline; cursor: pointer; padding: 0 0 0 4px; }
+        .ck-loc-alt, .ck-loc-clear { background: none; border: none; color: #137f96; font-size: 12px; text-decoration: underline; cursor: pointer; padding: 0 2px; }
+        .ck-loc-sub { font-size: 12px; color: #7a8791; margin: 3px 0 0; line-height: 1.5; }
+        .ck-loc-ok { color: #1e7e34; font-size: 12px; margin: 5px 0 0; }
+        .ck-loc-bad { color: #b4541a; font-size: 12px; margin: 5px 0 0; line-height: 1.5; }
+        .ck-loc-link { margin-top: 7px; }
+        .ck-loc-link input[type="text"] { width: 100%; box-sizing: border-box; margin: 0; padding: 6px 9px; font-size: 12.5px; }
+        .ck-loc-note { font-size: 11px; color: #98a3ab; margin: 6px 0 0; line-height: 1.5; }
+        .ck-loc.ck-loc-strong { border-color: #1a9cb7; background: #eef9fc; }
+        .ck-loc.ck-loc-strong .ck-loc-btn { background: #1a9cb7; color: #fff; }
+        /* ডেলিভারি লোকেশন — compact inline design */
         .checkout-card label.area-option { display: flex; margin-top: 0; font-weight: normal; }
         .checkout-card label.payment-option { display: flex; margin-top: 10px; font-weight: normal; }
         .ck-addr { padding: 2px 0 4px; }
@@ -302,15 +303,20 @@
                 </form>
 
                 <div class="ck-loc" id="locBox">
-                    <p class="ck-loc-title">📍 ডেলিভারি লোকেশন (ঐচ্ছিক)</p>
-                    <p class="ck-loc-sub">লোকেশন দিলে রাইডার সহজে আপনার ঠিকানা খুঁজে পাবে। না দিলেও অর্ডার করা যাবে।</p>
-                    <button type="button" class="ck-loc-btn" id="locShareBtn" onclick="shareMyLocation()">📍 আমার বর্তমান লোকেশনে ডেলিভারি নিন</button>
-                    <span id="locClearWrap" style="display:none;"><button type="button" class="ck-loc-clear" onclick="clearMyLocation()">সরিয়ে ফেলুন</button></span>
+                    <div class="ck-loc-row">
+                        <span class="ck-loc-title">📍 ডেলিভারি লোকেশন (ঐচ্ছিক)</span>
+                        <button type="button" class="ck-loc-btn" id="locShareBtn" onclick="shareMyLocation()">📍 লোকেশন দিন</button>
+                        <span id="locClearWrap" style="display:none;"><button type="button" class="ck-loc-clear" onclick="clearMyLocation()">সরান</button></span>
+                        <button type="button" class="ck-loc-alt" id="locAltBtn" onclick="toggleMapLink()">অন্য জায়গা?</button>
+                    </div>
+                    <p class="ck-loc-sub">রাইডার সহজে ঠিকানা পাবে। না দিলেও অর্ডার করা যাবে।</p>
                     <p class="ck-loc-ok" id="locOk" style="display:none;"></p>
                     <p class="ck-loc-bad" id="locBad" style="display:none;"></p>
-                    <p class="ck-loc-or">অথবা অন্য জায়গা থেকে পণ্য নিতে চাইলে সেই জায়গার Google Maps লিংক দিন:</p>
-                    <input type="text" id="mapLinkInput" inputmode="url" autocomplete="off" placeholder="https://maps.app.goo.gl/..." oninput="checkMapLinkField()">
-                    <p class="ck-loc-sub" style="margin:6px 0 0;" id="mapLinkHint">Google Maps অ্যাপে জায়গাটা খুলে Share চেপে "Copy link" করে এখানে পেস্ট করুন।</p>
+                    <div class="ck-loc-link" id="locLinkWrap" style="display:none;">
+                        <input type="text" id="mapLinkInput" inputmode="url" autocomplete="off" placeholder="অন্য জায়গার Google Maps লিংক (https://maps.app.goo.gl/...)" oninput="checkMapLinkField()">
+                        <p class="ck-loc-sub" id="mapLinkHint">Google Maps অ্যাপে জায়গাটা খুলে Share চেপে "Copy link" করে পেস্ট করুন।</p>
+                    </div>
+                    <p class="ck-loc-note">লোকেশন শেয়ার করলে আপনি সম্মতি দিচ্ছেন যে এটা ডেলিভারি এবং আপনার এলাকার প্রাসঙ্গিক অফার ও বিজ্ঞাপন দেখাতে ব্যবহার হতে পারে।</p>
                 </div>
             </div>
 
@@ -1110,11 +1116,16 @@ ${coinRow}
                 btn.disabled = false; btn.textContent = oldText;
             }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
         }
+        function toggleMapLink() {
+            const w = document.getElementById('locLinkWrap'), inp = document.getElementById('mapLinkInput');
+            if (w.style.display === 'none') { w.style.display = 'block'; inp.focus(); }
+            else if (!inp.value.trim()) { w.style.display = 'none'; } // লিংক লেখা থাকলে লুকানো হয় না, যাতে ভুলে হারিয়ে না যায়
+        }
         function clearMyLocation() {
             liveGeo = null;
             document.getElementById('locOk').style.display = 'none';
             document.getElementById('locClearWrap').style.display = 'none';
-            document.getElementById('locShareBtn').textContent = '📍 আমার বর্তমান লোকেশনে ডেলিভারি নিন';
+            document.getElementById('locShareBtn').textContent = '📍 লোকেশন দিন';
         }
         function looksLikeMapInput(t) {
             return /^(-?\d{1,2}\.\d+)\s*[, ]\s*(-?\d{1,3}\.\d+)$/.test(t) || /(maps\.app\.goo\.gl|goo\.gl\/maps|google\.com(\.bd)?\/maps|maps\.google\.com)/i.test(t);
@@ -1143,8 +1154,8 @@ ${coinRow}
                 const box = document.getElementById('locBox');
                 if (!box) return;
                 box.classList.add('ck-loc-strong');
-                box.querySelector('.ck-loc-title').textContent = '📍 ডেলিভারি লোকেশন শেয়ার করুন (প্রস্তাবিত)';
-                box.querySelector('.ck-loc-sub').textContent = 'আপনার লোকেশন দিলে রাইডার ঠিক জায়গায় দ্রুত পৌঁছাতে পারবে এবং ডেলিভারি নিশ্চিত হবে। এক ক্লিকেই হয়ে যায়।';
+                box.querySelector('.ck-loc-title').textContent = '📍 লোকেশন শেয়ার করুন (প্রস্তাবিত)';
+                box.querySelector('.ck-loc-sub').textContent = 'লোকেশন দিলে রাইডার ঠিক জায়গায় দ্রুত পৌঁছাবে এবং ডেলিভারি নিশ্চিত হবে।';
             } catch (e) { /* হিন্ট না এলে বক্স সাধারণ থাকে */ }
         })();
 
