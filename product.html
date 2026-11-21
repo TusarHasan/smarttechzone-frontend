@@ -966,6 +966,7 @@
             const product = await res.json();
             currentProduct = product;
             renderProduct(product);
+            restorePendingCart();
             loadReviews();
             loadQuestions();
             initReviewForm();
@@ -1510,6 +1511,22 @@
         return { price: v.price, variantLabel: v.label && v.label !== 'Default' ? v.label : '', image };
     }
 
+    // লগইন পপ-আপ থেকে ফিরে (পেজ রিলোড হওয়ার পর) আগের "Add to Cart" চাপটা সম্পন্ন করা: একই প্রোডাক্ট, ৫ মিনিটের মধ্যে, আর এখন লগইন থাকলে তবেই
+    function restorePendingCart() {
+        try {
+            const raw = sessionStorage.getItem('stz_pending_cart');
+            if (!raw) return;
+            sessionStorage.removeItem('stz_pending_cart'); // লগইন না হলেও একবারই কাজে লাগে
+            if (typeof getCustomerToken !== 'function' || !getCustomerToken()) return;
+            const rec = JSON.parse(raw);
+            const item = rec && rec.item;
+            if (!item || !currentProduct || item.productId !== currentProduct._id) return;
+            if (!rec.t || Date.now() - rec.t > 5 * 60 * 1000) return;
+            addToCart(item);
+            flyToCart(item.image, item.name, (window.innerWidth <= 768 && document.querySelector('#mGalleryTrack .m-slide img')) || document.getElementById('mainImage'));
+        } catch (e) { /* ঐচ্ছিক সুবিধা — ব্যর্থ হলে চুপচাপ */ }
+    }
+
     function addCurrentToCart() {
         if (!currentProduct) return;
         // UI তে বাটন disable করা থাকলেও, সরাসরি ফাংশন কল হয়ে গেলে (যেমন কনসোল থেকে) যাতে অর্ডার না হয়ে
@@ -1517,6 +1534,17 @@
         if (isOutOfStock) { alert('❌ এই প্রোডাক্টটি বর্তমানে স্টকে নেই।'); return; }
         const info = getSelectedVariantInfo();
         const imageUrl = resolveImageUrl(info.image);
+        // লগইন না থাকলে Daraz-এর মতো লগইন পপ-আপ; আইটেমটা মনে রাখা হয়, লগইনের পর এই পেজ রিলোড হলে নিজে থেকে কার্টে যোগ হয়
+        if (typeof getCustomerToken === 'function' && !getCustomerToken() && typeof stzOpenLogin === 'function') {
+            try {
+                sessionStorage.setItem('stz_pending_cart', JSON.stringify({
+                    t: Date.now(),
+                    item: { productId: currentProduct._id, name: currentProduct.name, price: info.price, variantLabel: info.variantLabel, image: imageUrl, quantity: quantity }
+                }));
+            } catch (e) { /* sessionStorage বন্ধ থাকলে শুধু পপ-আপ, নিজে থেকে যোগ হবে না */ }
+            stzOpenLogin({ message: 'কার্টে যোগ করতে আগে লগইন করুন।' });
+            return;
+        }
         addToCart({
             productId: currentProduct._id,
             name: currentProduct.name,
