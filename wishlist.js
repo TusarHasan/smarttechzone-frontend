@@ -82,6 +82,8 @@ async function stzSetWishlisted(productId, shouldAdd) {
 // UI আপডেট করে সার্ভারে পাঠায়, ব্যর্থ হলে আগের অবস্থায় ফিরিয়ে দেয়
 async function stzToggleWishlist(productId, btnEl) {
     if (!getCustomerToken()) {
+        // লগইন পপ-আপ একই পেজের ওপর খোলে; পপ-আপ না থাকলে (পুরনো পেজ) আগের মতো confirm + লগইন পেজ
+        if (typeof stzOpenLogin === 'function') { stzOpenLogin({ message: 'উইশলিস্টে যোগ করতে আগে লগইন করুন।' }); return; }
         if (confirm('উইশলিস্টে যোগ করতে আগে লগইন করতে হবে। এখন লগইন পেজে যেতে চান?')) {
             const base = (typeof getAuthBasePath === 'function') ? getAuthBasePath() : '';
             window.location.href = `${base}login.html?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;

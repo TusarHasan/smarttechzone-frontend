@@ -36,6 +36,8 @@
     }
 
     function goToLogin() {
+        // লগইন পপ-আপ একই পেজের ওপর খোলে (চ্যাট খোলা অবস্থাতেই); না থাকলে আগের মতো লগইন পেজ
+        if (typeof stzOpenLogin === 'function') { stzOpenLogin({ message: 'চ্যাট করতে আগে লগইন করুন।' }); return; }
         const redirect = encodeURIComponent(window.location.pathname.split('/').pop() || 'index.html');
         window.location.href = `${BASE_PATH}login.html?redirect=${redirect}`;
     }

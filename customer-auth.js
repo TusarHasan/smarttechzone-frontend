@@ -32,6 +32,11 @@ async function customerLogout() {
             await Promise.race([window.stzChatBeforeLogout(), new Promise(function (r) { setTimeout(r, 1500); })]);
         }
     } catch (e) { /* লগআউট কখনো আটকাবে না */ }
+    // Google One Tap লগআউটের পরপর আবার নিজে থেকে ঢুকিয়ে না দেয়: ব্রাউজারের অটো-সাইন-ইন বন্ধ করা +
+    // পরের পেজে (যেখানে Google লাইব্রেরি লোড হবে) disableAutoSelect চালানোর জন্য চিহ্ন রাখা
+    try { localStorage.setItem('stzNoAutoSelect', '1'); } catch (e) { }
+    try { if (navigator.credentials && navigator.credentials.preventSilentAccess) await navigator.credentials.preventSilentAccess(); } catch (e) { }
+    try { if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect(); } catch (e) { }
     localStorage.removeItem(CUSTOMER_TOKEN_KEY);
     localStorage.removeItem(CUSTOMER_DATA_KEY);
     window.location.href = getAuthBasePath() + 'index.html';
@@ -151,4 +156,171 @@ function renderNavAuth() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', renderNavAuth);
+// ===== লগইন পপ-আপ (দারাজ-স্টাইল) + Google One Tap অটো লগইন =====
+// • যেকোনো পেজে login.html-এর লিংকে ক্লিক করলে আলাদা পেজে না গিয়ে একই পেজের ওপর পপ-আপ খোলে
+//   (login-popup.js/css দরকার হলে লোড হয়; না এলে আগের login.html পেজেই যায়)।
+// • লগআউট অবস্থায় Google নিজে "Sign in as ..." বক্স দেখায়; আগে যে অ্যাকাউন্টে ঢোকা হয়েছে সেটা
+//   Google-এর নিয়মে (১০ মিনিটে একবার, লগআউটের পর বন্ধ) নিজে থেকেও ঢুকিয়ে দিতে পারে।
+const STZ_GOOGLE_CLIENT_ID = '558401107682-uh42vi22bqerhsn08j7obr6cq0n480r1.apps.googleusercontent.com';
+const STZ_NO_AUTOSELECT_KEY = 'stzNoAutoSelect';
+
+// এই পেজগুলোর নিজস্ব লগইন/রেজিস্টার ফর্ম আছে — এখানে পপ-আপ বা One Tap দরকার নেই
+function stzOnAuthPage() {
+    return /(^|\/)(login|register|forgot-password|reset-password)\.html$/.test(location.pathname);
+}
+
+function stzBackendUrl() { return (typeof BACKEND_URL !== 'undefined') ? BACKEND_URL : ''; }
+
+// ---- পপ-আপের ফাইল লোড ----
+let stzPopupAssetsPromise = null;
+function stzLoadPopupAssets() {
+    if (window.stzLoginPopup) return Promise.resolve();
+    if (stzPopupAssetsPromise) return stzPopupAssetsPromise;
+    const base = getAuthBasePath();
+    const cssReady = new Promise(function (resolve) {
+        if (document.querySelector('link[data-stzlp]')) return resolve();
+        const l = document.createElement('link');
+        l.rel = 'stylesheet'; l.href = base + 'login-popup.css'; l.setAttribute('data-stzlp', '1');
+        l.onload = resolve; l.onerror = resolve; // CSS না এলেও JS চলুক; ফলব্যাক ওপেনের সময় ধরা পড়বে
+        document.head.appendChild(l);
+    });
+    const jsReady = new Promise(function (resolve, reject) {
+        const s = document.createElement('script');
+        s.src = base + 'login-popup.js'; s.async = true;
+        s.onload = function () { window.stzLoginPopup ? resolve() : reject(new Error('popup')); };
+        s.onerror = function () { reject(new Error('popup load')); };
+        document.head.appendChild(s);
+    });
+    stzPopupAssetsPromise = Promise.all([cssReady, jsReady]).then(function () { }).catch(function (e) {
+        stzPopupAssetsPromise = null; throw e;
+    });
+    return stzPopupAssetsPromise;
+}
+
+// opts.redirect: লগইনের পর যাওয়ার পূর্ণ URL (না দিলে এই পেজেই থাকবে); opts.message: ওপরের ছোট কারণ-বার্তা
+function stzOpenLogin(opts) {
+    opts = opts || {};
+    return stzLoadPopupAssets().then(function () {
+        window.stzLoginPopup.open(opts);
+    }).catch(function () {
+        // পপ-আপ আনা যায়নি — আগের মতো আলাদা লগইন পেজ
+        const here = (location.pathname.split('/').pop() || 'index.html') + location.search;
+        location.href = opts.fallbackHref || (getAuthBasePath() + 'login.html?redirect=' + encodeURIComponent(here));
+    });
+}
+
+// লগইন সফল হলে: নির্দিষ্ট redirect থাকলে ও সেটা অন্য পেজ হলে সেখানে, নইলে এই পেজই রিলোড (হেডার/কার্ট নতুন করে লোড হয়)
+function stzAfterLogin(redirect) {
+    const r = (redirect === undefined) ? window.__stzLoginRedirect : redirect;
+    if (r) {
+        try {
+            const u = new URL(r, location.href);
+            if (u.origin === location.origin && (u.pathname + u.search) !== (location.pathname + location.search)) {
+                location.href = u.href;
+                return;
+            }
+        } catch (e) { }
+    }
+    location.reload();
+}
+
+// ---- "Login" লিংকে ক্লিক ধরা ----
+document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (stzOnAuthPage()) return;
+    const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a || (a.target && a.target !== '_self') || a.hasAttribute('download')) return;
+    let url;
+    try { url = new URL(a.getAttribute('href'), location.href); } catch (err) { return; }
+    if (url.origin !== location.origin || !/(^|\/)login\.html$/.test(url.pathname)) return;
+    e.preventDefault();
+    const r = url.searchParams.get('redirect');
+    let redirect = null;
+    if (r) { try { redirect = new URL(r, url).href; } catch (err) { redirect = null; } }
+    stzOpenLogin({ redirect: redirect, fallbackHref: url.href });
+}, true);
+
+// ---- Google লাইব্রেরি (পপ-আপের বাটন ও One Tap দুটোই এটা ব্যবহার করে) ----
+let stzGsiPromise = null;
+function stzLoadGsi() {
+    if (window.google && google.accounts && google.accounts.id) return Promise.resolve();
+    if (stzGsiPromise) return stzGsiPromise;
+    stzGsiPromise = new Promise(function (resolve, reject) {
+        const s = document.createElement('script');
+        s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.defer = true;
+        s.onload = function () { resolve(); };
+        s.onerror = function () { stzGsiPromise = null; reject(new Error('gsi')); };
+        document.head.appendChild(s);
+    });
+    return stzGsiPromise;
+}
+
+let stzGoogleInited = false;
+function stzInitGoogle() {
+    if (stzGoogleInited || !(window.google && google.accounts && google.accounts.id)) return;
+    google.accounts.id.initialize({
+        client_id: STZ_GOOGLE_CLIENT_ID,
+        callback: stzHandleGoogleCredential,
+        auto_select: true,
+        cancel_on_tap_outside: false
+    });
+    stzGoogleInited = true;
+    // আগের পেজে লগআউট করা হয়ে থাকলে অটো সাইন-ইন বন্ধ রাখা (লগআউটের সময় Google লাইব্রেরি লোড ছিল না)
+    try {
+        if (localStorage.getItem(STZ_NO_AUTOSELECT_KEY)) {
+            google.accounts.id.disableAutoSelect();
+            localStorage.removeItem(STZ_NO_AUTOSELECT_KEY);
+        }
+    } catch (e) { }
+}
+
+// Google-এর ফল (ID টোকেন) ব্যাকএন্ডে পাঠিয়ে লগইন/অ্যাকাউন্ট তৈরি — পপ-আপের বাটন ও One Tap দুটোর কলব্যাক এটাই
+async function stzHandleGoogleCredential(response) {
+    const pop = window.stzLoginPopup;
+    const popupOpen = !!(pop && pop.isOpen());
+    if (popupOpen) pop.setBusy(true);
+    try {
+        const res = await fetch(stzBackendUrl() + '/api/customer-auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ credential: response.credential, device: window.STZ_DEVICE || {} })
+        });
+        const data = await res.json().catch(function () { return {}; });
+        if (!res.ok) throw new Error(data.error || 'Google লগইন ব্যর্থ হয়েছে।');
+        setCustomerSession(data.token, data.customer);
+        if (popupOpen) pop.showMessage('লগইন হয়েছে। একটু অপেক্ষা করুন...', 'ok');
+        stzAfterLogin(popupOpen ? undefined : null);
+    } catch (err) {
+        const text = (err instanceof TypeError) ? 'সংযোগে সমস্যা হয়েছে, একটু পর আবার চেষ্টা করুন।' : err.message;
+        if (popupOpen) pop.showMessage('❌ ' + text);
+        else if (response && response.select_by !== 'auto') stzOpenLogin({ message: '❌ ' + text });
+    }
+}
+
+// ---- One Tap: লগআউট অবস্থায় Google-এর "Sign in" বক্স ----
+function stzStartOneTap() {
+    if (getCustomerToken() || stzOnAuthPage() || window.top !== window.self) return;
+    stzLoadGsi().then(function () {
+        stzInitGoogle();
+        try { google.accounts.id.prompt(); } catch (e) { }
+    }).catch(function () { });
+}
+
+function stzSetupGuestExtras() {
+    if (getCustomerToken() && getCustomerData()) return;
+    if (stzOnAuthPage()) return;
+    // পেজ দেখানোর গতি না কমানোর জন্য পুরো লোডের একটু পরে
+    const go = function () {
+        setTimeout(function () {
+            stzLoadPopupAssets().catch(function () { });
+            stzStartOneTap();
+        }, 1200);
+    };
+    if (document.readyState === 'complete') go();
+    else window.addEventListener('load', go);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    renderNavAuth();
+    stzSetupGuestExtras();
+});
