@@ -1678,6 +1678,14 @@
         }
         // "কতজন Cart-এ যোগ করেছে" ও Meta AddToCart ট্র্যাকিং আগের মতোই (addToCart() যা করত)
         try { trackCartAdd(item.productId); trackMetaAddToCart(item); } catch (e) { /* ট্র্যাকিং ঐচ্ছিক */ }
+        // লগইন না থাকলে Daraz-এর মতো একই পেজের ওপর লগইন পপ-আপ; লগইনের পর নির্বাচিত আইটেমসহ সরাসরি চেকআউটে যায়
+        if (typeof getCustomerToken === 'function' && !getCustomerToken() && typeof stzOpenLogin === 'function') {
+            stzOpenLogin({
+                message: 'অর্ডার করতে আগে লগইন করুন।',
+                redirect: new URL('checkout.html?buynow=1', location.href).href
+            });
+            return;
+        }
         window.location.href = 'checkout.html?buynow=1';
     }
 
@@ -2140,7 +2148,10 @@
     var wishBusy = false;
     wishBtn.addEventListener('click', async function () {
         if (typeof productId === 'undefined' || !productId || typeof stzSetWishlisted !== 'function') return;
-        if (!getCustomerToken()) { toast('Please log in to save items to your wishlist', { label: 'Log in', href: loginHref() }); return; }
+        if (!getCustomerToken()) {
+            if (typeof stzOpenLogin === 'function') { stzOpenLogin({ message: 'উইশলিস্টে যোগ করতে আগে লগইন করুন।' }); return; }
+            toast('Please log in to save items to your wishlist', { label: 'Log in', href: loginHref() }); return;
+        }
         if (wishBusy) return; wishBusy = true;
         var was = stzIsWishlisted(productId);
         setHeart(!was, true);
