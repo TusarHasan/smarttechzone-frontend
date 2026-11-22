@@ -907,3 +907,55 @@ body {
 .stz-ss-all { padding: 11px 16px; font-size: 13.5px; font-weight: 600; color: #e74c3c; cursor: pointer; text-align: center; border-top: 1px solid #f0f0f0; }
 .stz-ss-all:hover { background: #fdf1f0; }
 .stz-search-history-dropdown { max-height: 70vh; }
+
+/* ===== স্মার্ট প্রোডাক্ট কার্ড (.dzc) — হোমপেজ, সার্চ ও শপ পেজের কার্ড; HTML আসে product-card.js থেকে =====
+   লেআউট ও মাপ দারাজের সার্চ পেজের কার্ড থেকে (বর্গাকার ছবির জায়গা ৮৬%, নাম ১৩px/১৬px ২ লাইন, দাম ১৮px,
+   "N% Off" ছোট লেখা, নিচের লাইনে "N sold | তারা (সংখ্যা)") — কিন্তু রং দারাজের না, নিজের ব্র্যান্ডের:
+   লোগোর কালো (#1d2030 ইঙ্ক) + সাইটের লাল (#e74c3c / গাঢ় #c0392b), আর রঙিন ছায়া (shadow) দিয়ে গভীরতা —
+   সাধারণ অবস্থায় হালকা নীলচে-কালো ছায়া, হোভারে লালচে glow। */
+.dzc, .product-card.dzc {
+    --dz-ink: #1d2030; --dz-red: #e74c3c; --dz-red-dark: #c0392b; --dz-tint: #fdf1f0;
+    position: relative; display: flex; flex-direction: column; min-width: 0; padding: 0; text-align: left;
+    background: #fff; border: 1px solid rgba(29, 32, 48, .06); border-radius: 10px; cursor: pointer; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(29, 32, 48, .05), 0 6px 18px rgba(29, 32, 48, .07);
+    transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
+}
+.dzc:hover, .product-card.dzc:hover {
+    transform: translateY(-3px); border-color: rgba(231, 76, 60, .22);
+    box-shadow: 0 2px 6px rgba(29, 32, 48, .08), 0 14px 30px rgba(231, 76, 60, .17);
+}
+.dzc:focus-visible { outline: 2px solid var(--dz-red); outline-offset: 2px; }
+.dzc .dzc-img { position: relative; width: 100%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #fff 0%, #f8f9fb 100%); }
+.dzc .dzc-img img { width: 86%; height: 86%; max-width: none; margin: 0; object-fit: contain; display: block; }
+.dzc .wishlist-heart-btn { top: 8px; right: 8px; }
+.dzc .dzc-body { display: flex; flex-direction: column; flex: 1; padding: 8px 10px 12px; }
+.dzc .dzc-name {
+    margin: 0; min-height: 0; height: 32px; font-size: 13px; font-weight: 400; line-height: 16px; color: #2a2d3a;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
+    overflow-wrap: anywhere; word-break: break-word;
+}
+.dzc .dzc-name mark { background: #fff1c2; color: inherit; padding: 0 1px; border-radius: 2px; }
+.dzc .dzc-price { margin: 6px 0 0; font-size: 18px; line-height: 20px; font-weight: 700; color: var(--dz-red); }
+.dzc .dzc-off { display: flex; align-items: center; gap: 6px; height: 16px; line-height: 16px; margin-top: 2px; font-size: 10px; color: #6b7280; }
+.dzc .dzc-off del { color: #9aa0ab; text-decoration: line-through; }
+.dzc .dzc-off span { background: var(--dz-tint); color: var(--dz-red-dark); font-weight: 700; padding: 0 6px; border-radius: 8px; line-height: 14px; }
+.dzc .dzc-meta { display: flex; align-items: center; align-content: flex-start; flex: 1 1 auto; flex-wrap: wrap; margin-top: 3px; min-height: 20px; font-size: 13px; line-height: 20px; color: var(--dz-ink); }
+.dzc .dzc-sold { white-space: nowrap; }
+.dzc .dzc-sep { width: 1px; height: 10px; background: #dcdfe6; margin: 0 6px; flex: none; }
+.dzc .dzc-rate { display: inline-flex; align-items: center; gap: 3px; }
+.dzc .dzc-stars { position: relative; display: inline-block; color: #cfd3dc; font-size: 12px; line-height: 12px; letter-spacing: 1px; }
+.dzc .dzc-stars-fill { position: absolute; left: 0; top: 0; overflow: hidden; white-space: nowrap; color: #f5a623; }
+.dzc .dzc-cnt { font-size: 10px; color: #8b91a0; }
+.dzc .dzc-vendor { flex: 0 0 100%; margin-top: 2px; max-width: 100%; font-size: 10px; line-height: 14px; color: #8b91a0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dzc .dzc-add {
+    margin: 8px 0 0; width: 100%; height: 34px; padding: 0; background: #fff; color: var(--dz-red-dark);
+    border: 1.5px solid var(--dz-red); border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background .15s, color .15s, box-shadow .15s;
+}
+.dzc .dzc-add:hover { background: linear-gradient(180deg, var(--dz-red) 0%, var(--dz-red-dark) 100%); color: #fff; box-shadow: 0 6px 14px rgba(231, 76, 60, .32); }
+.dzc .dzc-add:disabled { opacity: .6; cursor: progress; }
+@media (max-width: 576px) {
+    .dzc .dzc-price { font-size: 16px; }
+    .dzc .dzc-body { padding: 6px 8px 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .dzc, .dzc:hover { transition: none; transform: none; } }

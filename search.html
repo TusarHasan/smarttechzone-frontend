@@ -64,6 +64,7 @@
     <script src="visitor-track.js" defer></script>
     <script src="customer-auth.js"></script>
     <script src="wishlist.js"></script>
+    <script src="product-card.js"></script>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" defer></script>
     <script src="chat-widget.js" defer></script>
     <script src="cart.js"></script>
@@ -427,17 +428,14 @@
             items.forEach(p => {
                 const imgUrl = (p.images && p.images.length > 0) ? resolveImg(p.images[0], 200, 200) : 'https://via.placeholder.com/200';
                 const card = document.createElement('div');
-                card.className = 'product-card';
+                card.className = 'product-card dzc';
                 card.style.cursor = 'pointer';
                 card.onclick = () => window.location.href = buildProductPath(p.name, p._id);
-                card.innerHTML = `
-                    ${typeof stzWishlistHeartHtml === 'function' ? stzWishlistHeartHtml(p._id) : ''}
-                    <img src="${imgUrl}" alt="${(p.name || '').replace(/"/g, '&quot;')}" onerror="this.src='https://via.placeholder.com/200'">
-                    <h3>${hl(p.name, (lastMeta && lastMeta.corrected && lastMeta.didYouMean) ? lastMeta.didYouMean : QUERY)}</h3>
-                    ${priceBlockHtml(p)}
-                    ${metaBlockHtml(p)}
-                    <button onclick="event.stopPropagation(); quickAddToCart('${p._id}', '${(p.name || '').replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}', this)" style="width:100%; background:#F57224; color:#fff; border:none; padding:8px; border-radius:2px; cursor:pointer; font-size:13px; font-weight:500; margin-top:6px; transition:opacity .2s;" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">Add to Cart</button>
-                `;
+                card.innerHTML = stzCardHtml(p, {
+                    img: imgUrl,
+                    nameHtml: hl(p.name, (lastMeta && lastMeta.corrected && lastMeta.didYouMean) ? lastMeta.didYouMean : QUERY),
+                    extraHtml: `<button class="dzc-add" onclick="event.stopPropagation(); quickAddToCart('${p._id}', '${(p.name || '').replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}', this)">Add to Cart</button>`
+                });
                 grid.appendChild(card);
             });
         }
