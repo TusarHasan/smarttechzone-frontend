@@ -18,8 +18,14 @@ var STZ_IMG_MODE = (typeof window !== 'undefined' && window.STZ_IMG_MODE) || (fu
     return STZ_DEFAULT_IMG_MODE;
 })();
 
+// খরচ কমানো: Cloudflare প্রতিটা আলাদা (ছবি × সাইজ) জুটির জন্য আলাদা ট্রান্সফর্মেশন গোনে (মাসে ৫ হাজার ফ্রি, তারপর প্রতি হাজারে $0.50)।
+// তাই পণ্যের কার্ড/থাম্বনেইলের পুরনো সাইজগুলো (হোম ৩৬০, শপ-সার্চ-ব্র্যান্ড ২০০, কার্ট ১৪০) একটাই সাইজে (৩২০ বর্গ) মেলানো হলো —
+// একটা পণ্যের ছবি এখন এক সাইজে বানানো হয়, আর পেজ বদলালেও ব্রাউজার ক্যাশের একই ছবি পায়। ক্যাটাগরি/ব্র্যান্ড আইকন (১২৮/৮০) ও ব্যানার (৬৪০/৩২০, h ছাড়া) আগের মতোই।
+var STZ_CARD_IMG = 320;
+var STZ_CARD_SIZES = { 360: 1, 200: 1, 140: 1 };
 function stzImg(abs, w, h) {
     if (!w) return abs;
+    if (h && STZ_CARD_SIZES[w]) { w = STZ_CARD_IMG; h = STZ_CARD_IMG; }
     if (STZ_IMG_MODE === 'cloudflare') {
         var opt = 'width=' + w + (h ? ',height=' + h : '') + ',fit=cover,quality=75,format=auto';
         return '/cdn-cgi/image/' + opt + '/' + abs;

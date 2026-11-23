@@ -41,7 +41,7 @@
     function imgUrl(u) {
         if (!u) return 'https://via.placeholder.com/60';
         const abs = u.startsWith('http') ? u : API + u;
-        return (typeof stzImg === 'function') ? stzImg(abs, 80, 80) : abs;
+        return (typeof stzImg === 'function') ? stzImg(abs, 360, 360) : abs;
     }
 
     function initSearchBar() {
