@@ -12,17 +12,49 @@ try {
 const CUSTOMER_TOKEN_KEY = 'customerToken';
 const CUSTOMER_DATA_KEY = 'customerData';
 
+// ব্রাউজার সাইট-ডেটা আটকে রাখলে (কুকি/সাইট ডেটা ব্লক, কিছু ইন-অ্যাপ বা প্রাইভেসি ব্রাউজার) localStorage-এ হাত দিলেই
+// "Access is denied for this document" (SecurityError) আসে। আগে সেশন সেভ করতে গিয়ে এটাই লগইন ভেঙে দিত।
+// এখন localStorage না চললে sessionStorage-এ রাখা হয়; দুটোই বন্ধ হলে পরিষ্কার বাংলা মেসেজ দিয়ে থামানো হয়।
+function stzStores() {
+    var list = [];
+    try { list.push(window.localStorage); } catch (e) { }
+    try { list.push(window.sessionStorage); } catch (e) { }
+    return list;
+}
+
+function stzReadStored(key) {
+    var list = stzStores();
+    for (var i = 0; i < list.length; i++) {
+        try { var v = list[i].getItem(key); if (v != null) return v; } catch (e) { }
+    }
+    return null;
+}
+
+function stzRemoveStored(key) {
+    var list = stzStores();
+    for (var i = 0; i < list.length; i++) {
+        try { list[i].removeItem(key); } catch (e) { }
+    }
+}
+
 function getCustomerToken() {
-    try { return localStorage.getItem(CUSTOMER_TOKEN_KEY); } catch (e) { return null; }
+    return stzReadStored(CUSTOMER_TOKEN_KEY);
 }
 
 function getCustomerData() {
-    try { return JSON.parse(localStorage.getItem(CUSTOMER_DATA_KEY) || 'null'); } catch (e) { return null; }
+    try { return JSON.parse(stzReadStored(CUSTOMER_DATA_KEY) || 'null'); } catch (e) { return null; }
 }
 
 function setCustomerSession(token, customer) {
-    localStorage.setItem(CUSTOMER_TOKEN_KEY, token);
-    localStorage.setItem(CUSTOMER_DATA_KEY, JSON.stringify(customer));
+    var list = stzStores();
+    for (var i = 0; i < list.length; i++) {
+        try {
+            list[i].setItem(CUSTOMER_TOKEN_KEY, token);
+            list[i].setItem(CUSTOMER_DATA_KEY, JSON.stringify(customer));
+            return;
+        } catch (e) { /* এই স্টোরেজ বন্ধ, পরেরটা চেষ্টা */ }
+    }
+    throw new Error('আপনার ব্রাউজার সাইট ডেটা সংরক্ষণ করতে দিচ্ছে না, তাই লগইন ধরে রাখা যাচ্ছে না। সাইটটা Chrome বা অন্য ব্রাউজারে খুলুন, অথবা ব্রাউজারের সেটিংসে এই সাইটের কুকি/সাইট ডেটা চালু করুন।');
 }
 
 async function customerLogout() {
@@ -37,8 +69,8 @@ async function customerLogout() {
     try { localStorage.setItem('stzNoAutoSelect', '1'); } catch (e) { }
     try { if (navigator.credentials && navigator.credentials.preventSilentAccess) await navigator.credentials.preventSilentAccess(); } catch (e) { }
     try { if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect(); } catch (e) { }
-    localStorage.removeItem(CUSTOMER_TOKEN_KEY);
-    localStorage.removeItem(CUSTOMER_DATA_KEY);
+    stzRemoveStored(CUSTOMER_TOKEN_KEY);
+    stzRemoveStored(CUSTOMER_DATA_KEY);
     window.location.href = getAuthBasePath() + 'index.html';
 }
 
