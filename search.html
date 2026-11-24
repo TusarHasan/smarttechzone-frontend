@@ -434,7 +434,7 @@
                 card.innerHTML = stzCardHtml(p, {
                     img: imgUrl,
                     nameHtml: hl(p.name, (lastMeta && lastMeta.corrected && lastMeta.didYouMean) ? lastMeta.didYouMean : QUERY),
-                    extraHtml: `<button class="dzc-add" onclick="event.stopPropagation(); quickAddToCart('${p._id}', '${(p.name || '').replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}', this)">Add to Cart</button>`
+                    hideEmptyRating: true
                 });
                 grid.appendChild(card);
             });

@@ -3,7 +3,7 @@
 // "N sold | ★★★★★ (রিভিউ সংখ্যা)"। স্টাইল style.css-এর .dzc রুলে। কার্ডের ভেতরের HTML এখান থেকেই আসে, যাতে
 // তিন পেজে আলাদা আলাদা কোড রাখতে না হয়।
 // opts: img (ছবির URL), nameHtml (হাইলাইটসহ নাম, ইতিমধ্যে escape করা), price/old (ফ্ল্যাশ দামের জন্য),
-//       vendor (ডান পাশের ছোট লেখা), extraHtml (কার্ডের নিচের বাটন ইত্যাদি)
+//       vendor (ডান পাশের ছোট লেখা), extraHtml (কার্ডের নিচের বাটন ইত্যাদি), hideEmptyRating (রিভিউ ০ হলে তারা লুকানো)
 (function () {
     function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
     function fmtSold(n) {
@@ -27,7 +27,8 @@
         var img = opts.img || 'https://via.placeholder.com/200';
         var sold = fmtSold(p.soldCount);
         var cnt = Number(p.reviewCount) || 0;
-        var rate = '<span class="dzc-rate">' + stars(cnt > 0 ? p.ratingAvg : 0) + '<span class="dzc-cnt">(' + cnt + ')</span></span>';
+        // hideEmptyRating: রিভিউ না থাকলে তারা ও (0) দেখানো হয় না (দারাজের মতো); সার্চ পেজ এটা চালু করে
+        var rate = (opts.hideEmptyRating && cnt <= 0) ? '' : '<span class="dzc-rate">' + stars(cnt > 0 ? p.ratingAvg : 0) + '<span class="dzc-cnt">(' + cnt + ')</span></span>';
         var vendor = opts.vendor ? '<span class="dzc-vendor">' + esc(opts.vendor) + '</span>' : '';
         return '<div class="dzc-img">' + heart +
             '<img src="' + esc(img) + '" alt="' + esc(p.name) + '" loading="lazy" decoding="async" onerror="this.src=\'https://via.placeholder.com/200\'"></div>' +
@@ -35,7 +36,7 @@
             '<h3 class="dzc-name">' + (opts.nameHtml != null ? opts.nameHtml : esc(p.name)) + '</h3>' +
             '<div class="dzc-price">৳ ' + price + '</div>' +
             (pct > 0 ? '<div class="dzc-off"><del>৳ ' + old + '</del><span>' + pct + '% Off</span></div>' : '') +
-            '<div class="dzc-meta">' + (sold ? '<span class="dzc-sold">' + sold + '</span><span class="dzc-sep"></span>' : '') + rate + vendor + '</div>' +
+            '<div class="dzc-meta">' + (sold ? '<span class="dzc-sold">' + sold + '</span>' + (rate ? '<span class="dzc-sep"></span>' : '') : '') + rate + vendor + '</div>' +
             (opts.extraHtml || '') +
             '</div>';
     };
