@@ -6,8 +6,14 @@
     var DATA_KEY = 'customerData';
     var API = (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : '') + '/api/wholesale';
 
-    function token() { try { return localStorage.getItem(TOKEN_KEY); } catch (e) { return null; } }
-    function customer() { try { return JSON.parse(localStorage.getItem(DATA_KEY) || 'null'); } catch (e) { return null; } }
+    // লগইন সেশন localStorage-এ না থাকলে (সাইট ডেটা আটকানো ব্রাউজারে) sessionStorage-এ থাকতে পারে
+    function readStored(k) {
+        try { var v = window.localStorage.getItem(k); if (v != null) return v; } catch (e) { }
+        try { var w = window.sessionStorage.getItem(k); if (w != null) return w; } catch (e) { }
+        return null;
+    }
+    function token() { return readStored(TOKEN_KEY); }
+    function customer() { try { return JSON.parse(readStored(DATA_KEY) || 'null'); } catch (e) { return null; } }
     function loginUrl() { return '/login.html?redirect=' + encodeURIComponent(location.pathname); }
     function esc(s) {
         return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {

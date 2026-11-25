@@ -5,17 +5,39 @@
 
 const CART_KEY = 'stz_cart';
 
+// ব্রাউজার সাইট ডেটা আটকে রাখলে localStorage-এ হাত দিলেই SecurityError আসে ("Access is denied for this document")।
+// তখন কার্ট sessionStorage-এ, তাও না হলে শুধু এই পেজের মেমরিতে থাকে, যাতে "Add to Cart" ভেঙে না যায়।
+let stzCartMemory = null;
+
+function stzCartStores() {
+    const list = [];
+    try { list.push(window.localStorage); } catch (err) { }
+    try { list.push(window.sessionStorage); } catch (err) { }
+    return list;
+}
+
 function getCart() {
-    try {
-        const raw = localStorage.getItem(CART_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch (err) {
-        return [];
+    const list = stzCartStores();
+    for (let i = 0; i < list.length; i++) {
+        try {
+            const raw = list[i].getItem(CART_KEY);
+            if (raw != null) return JSON.parse(raw) || [];
+        } catch (err) { /* এই স্টোরেজ পড়া যায়নি, পরেরটা */ }
     }
+    return stzCartMemory ? JSON.parse(JSON.stringify(stzCartMemory)) : [];
 }
 
 function saveCart(cart) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    stzCartMemory = cart;
+    const list = stzCartStores();
+    for (let i = 0; i < list.length; i++) {
+        try {
+            list[i].setItem(CART_KEY, JSON.stringify(cart));
+            // আগের স্টোরেজে (যেটা লেখা যায়নি) পুরনো কার্ট থেকে গেলে সেটা যেন আবার না পড়া হয়
+            for (let j = 0; j < i; j++) { try { list[j].removeItem(CART_KEY); } catch (err) { } }
+            break;
+        } catch (err) { /* লেখা যায়নি, পরেরটা */ }
+    }
     updateCartBadge();
 }
 
@@ -118,7 +140,8 @@ function updateCartQty(productId, variantLabel, quantity) {
 }
 
 function clearCart() {
-    localStorage.removeItem(CART_KEY);
+    stzCartMemory = null;
+    stzCartStores().forEach(function (st) { try { st.removeItem(CART_KEY); } catch (err) { } });
     updateCartBadge();
 }
 

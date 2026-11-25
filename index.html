@@ -1174,7 +1174,7 @@
         // index.html-এ cart.js লোড হয় না, তাই নেভবারের ব্যাজ আগে এখানে সবসময় ০ থাকত — এখন localStorage থেকে পড়া হয়।
         function mpUpdateCartBadges() {
             let n = 0;
-            try { n = (JSON.parse(localStorage.getItem('stz_cart') || '[]') || []).reduce((s, i) => s + (Number(i.quantity) || 0), 0); } catch (e) { n = 0; }
+            try { let raw = null; try { raw = localStorage.getItem('stz_cart'); } catch (e) { } if (raw == null) { try { raw = sessionStorage.getItem('stz_cart'); } catch (e) { } } n = (JSON.parse(raw || '[]') || []).reduce((s, i) => s + (Number(i.quantity) || 0), 0); } catch (e) { n = 0; }
             const nav = document.getElementById('cartCount');
             if (nav) nav.textContent = n;
             const b = document.getElementById('mpNavCartCount');
