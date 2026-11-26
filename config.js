@@ -62,7 +62,7 @@ if (typeof document !== 'undefined') {
 
 
 // ============================================================================
-// অর্ডার কোথা থেকে এসেছে (UTM / Meta fbclid / রেফারার) — ল্যান্ডিং URL থেকে ৩০ দিনের জন্য ব্রাউজারে রাখা হয়,
+// অর্ডার কোথা থেকে এসেছে (UTM / Meta fbclid / Google gclid / রেফারার) — ল্যান্ডিং URL থেকে ৩০ দিনের জন্য ব্রাউজারে রাখা হয়,
 // চেকআউটে অর্ডারের সাথে যায় (backend/utils/attribution.js), অ্যাডমিন Orders-এ ব্যাজ হিসেবে দেখায়।
 //   - URL-এ UTM/fbclid থাকলে সেটাই নতুন "সূত্র" (পরের বিজ্ঞাপন-ক্লিক আগেরটা বদলে দেয়)।
 //   - পরে অন্য পেজ ঘুরলে বা আবার সরাসরি এলেও ৩০ দিন পর্যন্ত আগের সূত্র থাকে, তাই অর্ডার দিলেও বিজ্ঞাপন চেনা যায়।
@@ -84,9 +84,11 @@ if (typeof document !== 'undefined') {
         var cur = null;
         try { cur = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { cur = null; }
         if (cur && now - (cur.ts || 0) > TTL) cur = null;
-        var hasParam = g('utm_source') || g('utm_medium') || g('utm_campaign') || g('fbclid');
+        // Google Ads অটো-ট্যাগিংয়ের ক্লিক আইডি (gclid/gbraid/wbraid): ডেলিভারড অর্ডার Google Ads-এ ফেরত পাঠাতে লাগে
+        var gid = function (n) { var v = (q.get(n) || '').trim(); return /^[A-Za-z0-9_\-]{10,200}$/.test(v) ? v : ''; };
+        var hasParam = g('utm_source') || g('utm_medium') || g('utm_campaign') || g('fbclid') || gid('gclid') || gid('gbraid') || gid('wbraid');
         if (hasParam) {
-            cur = { source: g('utm_source'), medium: g('utm_medium'), campaign: g('utm_campaign'), content: g('utm_content'), term: g('utm_term'), fbclid: !!g('fbclid'), ref: refHost(), landing: location.pathname, ts: now };
+            cur = { source: g('utm_source'), medium: g('utm_medium'), campaign: g('utm_campaign'), content: g('utm_content'), term: g('utm_term'), fbclid: !!g('fbclid'), gclid: gid('gclid'), gbraid: gid('gbraid'), wbraid: gid('wbraid'), ref: refHost(), landing: location.pathname, ts: now };
         } else if (!cur) {
             var r = refHost();
             if (r) cur = { ref: r, landing: location.pathname, ts: now };
