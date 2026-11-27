@@ -259,3 +259,6 @@
         setBusy: function (on) { if (els) setBusy(on, 'লগইন হচ্ছে...'); }
     };
 })();
+
+// পাসওয়ার্ড দেখান/লুকান (ফেসবুকের মতো চোখের আইকন): পপআপের পাসওয়ার্ড ফিল্ডেও বসে
+;(function () { if (window.__stzPwEye || document.querySelector('script[data-pw-eye]')) return; var s = document.createElement('script'); s.src = '/pw-eye.js'; s.defer = true; s.setAttribute('data-pw-eye', '1'); document.head.appendChild(s); })();
