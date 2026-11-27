@@ -1731,16 +1731,49 @@
         // customerAuthFetch() ডিফল্টভাবে Content-Type: application/json পাঠায়, যেটা multipart/FormData
         // আপলোডের জন্য উপযুক্ত না (boundary ভেঙে যায়) — তাই এখানে শুধু Authorization হেডার দিয়ে raw fetch()
         // ব্যবহার করা হলো, ব্রাউজার নিজেই সঠিক multipart Content-Type বসিয়ে দেবে
+        // ফোনের ক্যামেরার বড় ছবি (৩-৮MB) সরাসরি পাঠালে মোবাইল নেটে আপলোড মাঝপথে কেটে যায় ("Failed to fetch")।
+        // তাই ব্রাউজারেই ছবি ১২০০px ও JPEG ৮০%-এ ছোট করে (প্রায় ২-৩০০KB) পাঠানো হয়; ছোট করা না গেলে মূল ছবিই যায়
+        async function shrinkReturnImage(file) {
+            try {
+                if (!/^image\/(jpeg|png|webp)$/i.test(file.type) || file.size < 400 * 1024) return file;
+                let bmp;
+                try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+                catch (e) { bmp = await createImageBitmap(file); }
+                const max = 1200;
+                const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
+                const w = Math.max(1, Math.round(bmp.width * scale));
+                const h = Math.max(1, Math.round(bmp.height * scale));
+                const canvas = document.createElement('canvas');
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+                ctx.drawImage(bmp, 0, 0, w, h);
+                if (bmp.close) bmp.close();
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.8));
+                if (!blob || blob.size >= file.size) return file;
+                return new File([blob], (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+            } catch (e) {
+                return file;
+            }
+        }
+
         async function uploadReturnImages(files) {
             if (!files || !files.length) return [];
+            const small = [];
+            for (const f of files) small.push(await shrinkReturnImage(f));
             const formData = new FormData();
-            files.forEach(f => formData.append('images', f));
-            const res = await fetch(`${API_BASE}/api/returns/upload`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${getCustomerToken()}` },
-                body: formData
-            });
-            const data = await res.json();
+            small.forEach(f => formData.append('images', f));
+            let res;
+            try {
+                res = await fetch(`${API_BASE}/api/returns/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getCustomerToken()}` },
+                    body: formData
+                });
+            } catch (e) {
+                throw new Error('ছবি আপলোড হয়নি, ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন। ছবির সংখ্যা কমালেও চলবে।');
+            }
+            const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.error || 'ছবি আপলোড করা যায়নি।');
             return data.urls || [];
         }
